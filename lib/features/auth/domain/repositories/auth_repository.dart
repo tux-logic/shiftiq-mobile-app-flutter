@@ -11,6 +11,29 @@ abstract class IAuthRepository {
     required String idToken,
   });
 
+  Future<void> sendOtp({
+    required String email,
+  });
+
+  Future<void> verifyOtp({
+    required String email,
+    required String code,
+  });
+
+  Future<User> signUp({
+    required String email,
+    required String password,
+  });
+
+  Future<void> requestPasswordRecovery({
+    required String email,
+  });
+
+  Future<void> resetPassword({
+    required String token,
+    required String newPassword,
+  });
+
   Future<AuthTokens> refreshToken();
 
   Future<void> logout();

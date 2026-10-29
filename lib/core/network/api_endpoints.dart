@@ -17,8 +17,11 @@ class ApiEndpoints {
   static const String logout = '/api/v1/authentication/sessions';
   static const String passwordRecoveries = '/api/v1/authentication/password-recoveries';
   static const String passwordResets = '/api/v1/authentication/password-resets';
+  static const String otpSend = '/api/v1/authentication/otp/send';
+  static const String otpVerify = '/api/v1/authentication/otp/verify';
 
   // Users & Profiles
+  static const String users = '/api/v1/users';
   static const String userProfilesRoles = '/api/v1/profiles/roles';
   static const String userProfileByDocument = '/api/v1/profiles';
   static const String customers = '/api/v1/customers';

@@ -7,6 +7,8 @@ import '../../domain/value_objects/password.dart';
 import '../state/auth_bloc.dart';
 import '../state/auth_event.dart';
 import '../state/auth_state.dart';
+import 'forgot_password_screen.dart';
+import 'sign_up_screen.dart';
 
 class EmailLoginScreen extends StatefulWidget {
   const EmailLoginScreen({super.key});
@@ -164,7 +166,35 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                             return password.errorMessage;
                           },
                         ),
-                        const SizedBox(height: 36),
+                        const SizedBox(height: 12),
+
+                        // Forgot password link
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: InkWell(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const ForgotPasswordScreen(),
+                                ),
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(6),
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                              child: Text(
+                                '¿Olvidaste tu contraseña?',
+                                style: TextStyle(
+                                  color: Color(0xFF1E3A8A),
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 28),
 
                         // Submit Button
                         BlocBuilder<AuthBloc, AuthState>(
@@ -200,6 +230,41 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                           },
                         ),
                         const SizedBox(height: 24),
+
+                        // Register Link
+                        Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text(
+                                '¿No tienes una cuenta? ',
+                                style: TextStyle(
+                                  color: Color(0xFF64748B),
+                                  fontSize: 14.5,
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const SignUpScreen(),
+                                    ),
+                                  );
+                                },
+                                child: const Text(
+                                  'Regístrate',
+                                  style: TextStyle(
+                                    color: Color(0xFF1E3A8A),
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
                       ],
                     ),
                   ),

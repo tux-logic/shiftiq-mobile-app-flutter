@@ -9,6 +9,8 @@ import 'features/auth/application/get_active_roles_usecase.dart';
 import 'features/auth/application/login_with_email_usecase.dart';
 import 'features/auth/application/login_with_google_usecase.dart';
 import 'features/auth/application/logout_usecase.dart';
+import 'features/auth/application/sign_up_usecase.dart';
+import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/infrastructure/datasources/auth_local_datasource.dart';
 import 'features/auth/infrastructure/datasources/auth_remote_datasource.dart';
 import 'features/auth/infrastructure/repositories/auth_repository_impl.dart';
@@ -41,6 +43,7 @@ void main() async {
 
   final loginWithEmailUseCase = LoginWithEmailUseCase(repository: authRepository);
   final loginWithGoogleUseCase = LoginWithGoogleUseCase(repository: authRepository);
+  final signUpUseCase = SignUpUseCase(repository: authRepository);
   final logoutUseCase = LogoutUseCase(repository: authRepository);
   final checkAuthStatusUseCase = CheckAuthStatusUseCase(repository: authRepository);
   final getActiveRolesUseCase = GetActiveRolesUseCase(repository: authRepository);
@@ -48,30 +51,46 @@ void main() async {
   authBloc = AuthBloc(
     loginWithEmailUseCase: loginWithEmailUseCase,
     loginWithGoogleUseCase: loginWithGoogleUseCase,
+    signUpUseCase: signUpUseCase,
     logoutUseCase: logoutUseCase,
     checkAuthStatusUseCase: checkAuthStatusUseCase,
     getActiveRolesUseCase: getActiveRolesUseCase,
   )..add(const CheckAuthStatusEvent());
 
   runApp(
-    ShiftIqApp(authBloc: authBloc),
+    ShiftIqApp(
+      authBloc: authBloc,
+      authRepository: authRepository,
+    ),
   );
 }
 
 class ShiftIqApp extends StatelessWidget {
   final AuthBloc authBloc;
+  final IAuthRepository authRepository;
 
-  const ShiftIqApp({super.key, required this.authBloc});
+  const ShiftIqApp({
+    super.key,
+    required this.authBloc,
+    required this.authRepository,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: authBloc,
-      child: MaterialApp(
-        title: 'ShiftIQ',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        home: const AuthRouter(),
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<IAuthRepository>.value(value: authRepository),
+      ],
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: authBloc),
+        ],
+        child: MaterialApp(
+          title: 'ShiftIQ',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          home: const AuthRouter(),
+        ),
       ),
     );
   }
