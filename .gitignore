@@ -18,14 +18,13 @@ migrate_working_dir/
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
 # is commented out by default.
-#.vscode/
 
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
+temp_auto_push.bat
 .dart_tool/
 .flutter-plugins-dependencies
 .pub-cache/
@@ -46,8 +45,11 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+devtools_options.yaml
 
 # Agent skills & tools
 .agents/
 skills-lock.json
 
+.gitignore
+branch_structure.json

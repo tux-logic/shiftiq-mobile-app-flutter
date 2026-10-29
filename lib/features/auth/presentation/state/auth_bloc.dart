@@ -6,12 +6,14 @@ import '../../application/get_active_roles_usecase.dart';
 import '../../application/login_with_email_usecase.dart';
 import '../../application/login_with_google_usecase.dart';
 import '../../application/logout_usecase.dart';
+import '../../application/sign_up_usecase.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final LoginWithEmailUseCase loginWithEmailUseCase;
   final LoginWithGoogleUseCase loginWithGoogleUseCase;
+  final SignUpUseCase signUpUseCase;
   final LogoutUseCase logoutUseCase;
   final CheckAuthStatusUseCase checkAuthStatusUseCase;
   final GetActiveRolesUseCase getActiveRolesUseCase;
@@ -20,6 +22,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc({
     required this.loginWithEmailUseCase,
     required this.loginWithGoogleUseCase,
+    required this.signUpUseCase,
     required this.logoutUseCase,
     required this.checkAuthStatusUseCase,
     required this.getActiveRolesUseCase,
@@ -28,6 +31,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         super(const AuthInitial()) {
     on<CheckAuthStatusEvent>(_onCheckAuthStatus);
     on<LoginWithEmailEvent>(_onLoginWithEmail);
+    on<SignUpEvent>(_onSignUp);
     on<LoginWithGoogleEvent>(_onLoginWithGoogle);
     on<LogoutEvent>(_onLogout);
     on<ClearAuthErrorEvent>(_onClearAuthError);
@@ -66,6 +70,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthFailureState(message: e.message, code: e.code));
     } catch (e) {
       emit(AuthFailureState(message: 'Error al iniciar sesión: $e'));
+    }
+  }
+
+  Future<void> _onSignUp(
+    SignUpEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading(message: 'Creando cuenta...'));
+    try {
+      final user = await signUpUseCase(
+        email: event.email,
+        password: event.password,
+      );
+      final profileRole = await getActiveRolesUseCase(user.id);
+      emit(Authenticated(user: user, profileRole: profileRole));
+    } on Failure catch (e) {
+      emit(AuthFailureState(message: e.message, code: e.code));
+    } catch (e) {
+      emit(AuthFailureState(message: 'Error al registrar usuario: $e'));
     }
   }
 

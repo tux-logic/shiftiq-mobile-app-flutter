@@ -7,6 +7,7 @@ import '../state/auth_event.dart';
 import '../state/auth_state.dart';
 import '../widgets/automotive_bay_visualizer.dart';
 import 'email_login_screen.dart';
+import 'sign_up_screen.dart';
 
 class WelcomeAuthScreen extends StatefulWidget {
   const WelcomeAuthScreen({super.key});
@@ -77,6 +78,24 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen>
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
             const EmailLoginScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          const curve = Curves.easeOutCubic;
+          final tween =
+              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          return SlideTransition(position: animation.drive(tween), child: child);
+        },
+      ),
+    );
+  }
+
+  void _navigateToSignUp({bool isWorkshop = false}) {
+    HapticFeedback.lightImpact();
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            SignUpScreen(isWorkshop: isWorkshop),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           const begin = Offset(1.0, 0.0);
           const end = Offset.zero;
@@ -163,7 +182,7 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen>
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
-                _navigateToEmailLogin();
+                _navigateToSignUp(isWorkshop: true);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0F172A),

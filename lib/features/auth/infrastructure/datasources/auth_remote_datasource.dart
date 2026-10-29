@@ -11,6 +11,11 @@ abstract class IAuthRemoteDataSource {
   Future<AuthenticatedUserDto> loginWithGoogle(GoogleLoginRequestDto request);
   Future<AuthenticatedUserDto> refreshToken(RefreshTokenRequestDto request);
   Future<void> logout({required String refreshToken});
+  Future<void> sendOtp(String email);
+  Future<void> verifyOtp(String email, String code);
+  Future<Map<String, dynamic>> signUp(String email, String password);
+  Future<void> requestPasswordRecovery(String email);
+  Future<void> resetPassword(String token, String newPassword);
   Future<List<String>> getActiveRoles(String userId);
 }
 
@@ -109,6 +114,123 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
       }
       throw ServerException(
         message: 'Error al renovar la sesión',
+        statusCode: e.response?.statusCode,
+      );
+    }
+  }
+
+  @override
+  Future<void> sendOtp(String email) async {
+    try {
+      await dio.post(
+        ApiEndpoints.otpSend,
+        data: {'email': email},
+        options: Options(extra: {'isPublic': true}),
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 429) {
+        throw const AppException(
+          message: 'Límite de códigos excedido. Intenta más tarde.',
+          code: 'RATE_LIMITED',
+        );
+      }
+      throw ServerException(
+        message: e.response?.data?['message']?.toString() ?? 'Error al enviar código de verificación.',
+        statusCode: e.response?.statusCode,
+      );
+    }
+  }
+
+  @override
+  Future<void> verifyOtp(String email, String code) async {
+    try {
+      await dio.post(
+        ApiEndpoints.otpVerify,
+        data: {'email': email, 'code': code},
+        options: Options(extra: {'isPublic': true}),
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        throw const AppException(
+          message: 'Código incorrecto o expirado.',
+          code: 'INVALID_OTP',
+        );
+      }
+      if (e.response?.statusCode == 404) {
+        throw const AppException(
+          message: 'No hay código pendiente para este correo.',
+          code: 'NOT_FOUND',
+        );
+      }
+      throw ServerException(
+        message: e.response?.data?['message']?.toString() ?? 'Error al verificar código.',
+        statusCode: e.response?.statusCode,
+      );
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> signUp(String email, String password) async {
+    try {
+      final response = await dio.post(
+        ApiEndpoints.users,
+        data: {'email': email, 'password': password},
+        options: Options(extra: {'isPublic': true}),
+      );
+      if (response.statusCode == 201 && response.data != null) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw ServerException(message: 'Error al registrar usuario', statusCode: response.statusCode);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 400) {
+        final message = e.response?.data?['message']?.toString() ?? '';
+        if (message.contains('alreadyInUse')) {
+          throw const AppException(
+            message: 'Este correo electrónico ya está registrado.',
+            code: 'EMAIL_ALREADY_IN_USE',
+          );
+        }
+      }
+      throw ServerException(
+        message: e.response?.data?['message']?.toString() ?? 'Error al crear la cuenta.',
+        statusCode: e.response?.statusCode,
+      );
+    }
+  }
+
+  @override
+  Future<void> requestPasswordRecovery(String email) async {
+    try {
+      await dio.post(
+        ApiEndpoints.passwordRecoveries,
+        data: {'email': email},
+        options: Options(extra: {'isPublic': true}),
+      );
+    } on DioException catch (e) {
+      throw ServerException(
+        message: e.response?.data?['message']?.toString() ?? 'Error al solicitar recuperación.',
+        statusCode: e.response?.statusCode,
+      );
+    }
+  }
+
+  @override
+  Future<void> resetPassword(String token, String newPassword) async {
+    try {
+      await dio.post(
+        ApiEndpoints.passwordResets,
+        data: {'token': token, 'newPassword': newPassword},
+        options: Options(extra: {'isPublic': true}),
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        throw const AppException(
+          message: 'Token de recuperación inválido o expirado.',
+          code: 'INVALID_RESET_TOKEN',
+        );
+      }
+      throw ServerException(
+        message: e.response?.data?['message']?.toString() ?? 'Error al restablecer la contraseña.',
         statusCode: e.response?.statusCode,
       );
     }

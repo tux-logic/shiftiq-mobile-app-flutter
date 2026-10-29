@@ -51,6 +51,74 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
+  Future<void> sendOtp({required String email}) async {
+    try {
+      await remoteDataSource.sendOtp(email);
+    } on AppException catch (e) {
+      if (e.code == 'RATE_LIMITED') {
+        throw const OtpRateLimitFailure();
+      }
+      throw ServerAuthFailure(message: e.message);
+    } catch (e) {
+      throw ServerAuthFailure(message: 'Error al enviar código OTP: $e');
+    }
+  }
+
+  @override
+  Future<void> verifyOtp({required String email, required String code}) async {
+    try {
+      await remoteDataSource.verifyOtp(email, code);
+    } on AppException catch (e) {
+      if (e.code == 'INVALID_OTP') {
+        throw const InvalidOtpFailure();
+      }
+      throw ServerAuthFailure(message: e.message);
+    } catch (e) {
+      throw ServerAuthFailure(message: 'Error al verificar código OTP: $e');
+    }
+  }
+
+  @override
+  Future<User> signUp({required String email, required String password}) async {
+    try {
+      await remoteDataSource.signUp(email, password);
+      // Auto-login after successful registration
+      return await loginWithEmail(email: email, password: password);
+    } on AppException catch (e) {
+      if (e.code == 'EMAIL_ALREADY_IN_USE') {
+        throw const EmailAlreadyInUseFailure();
+      }
+      throw ServerAuthFailure(message: e.message);
+    } catch (e) {
+      if (e is Failure) rethrow;
+      throw ServerAuthFailure(message: 'Error al registrar usuario: $e');
+    }
+  }
+
+  @override
+  Future<void> requestPasswordRecovery({required String email}) async {
+    try {
+      await remoteDataSource.requestPasswordRecovery(email);
+    } catch (e) {
+      throw ServerAuthFailure(message: 'Error al solicitar recuperación: $e');
+    }
+  }
+
+  @override
+  Future<void> resetPassword({required String token, required String newPassword}) async {
+    try {
+      await remoteDataSource.resetPassword(token, newPassword);
+    } on AppException catch (e) {
+      if (e.code == 'INVALID_RESET_TOKEN') {
+        throw const PasswordResetInvalidTokenFailure();
+      }
+      throw ServerAuthFailure(message: e.message);
+    } catch (e) {
+      throw ServerAuthFailure(message: 'Error al restablecer contraseña: $e');
+    }
+  }
+
+  @override
   Future<User> loginWithGoogle({required String idToken}) async {
     try {
       final userDto = await remoteDataSource.loginWithGoogle(
