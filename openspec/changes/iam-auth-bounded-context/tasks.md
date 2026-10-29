@@ -10,7 +10,7 @@
 ## 2. Domain Layer (DDD)
 
 - [x] 2.1 Implement domain entities (`User`, `AuthTokens`, `UserProfileRole`) and value objects (`Email`, `Password`) in `features/auth/domain/` and verify entity immutability and validation logic
-- [ ] 2.2 Define `IAuthRepository` interface contract and domain-specific failures (`AuthFailure`) in `features/auth/domain/` and verify abstract specifications
+- [x] 2.2 Define `IAuthRepository` interface contract and domain-specific failures (`AuthFailure`) in `features/auth/domain/` and verify abstract specifications
 
 ## 3. Infrastructure Layer (DDD)
 
