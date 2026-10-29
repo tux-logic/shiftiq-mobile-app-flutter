@@ -3,7 +3,7 @@
 ## 1. Core Foundation & Networking
 
 - [x] 1.1 Add required dependencies (`dio`, `flutter_bloc`, `flutter_secure_storage`, `equatable`, `google_sign_in`) to `pubspec.yaml` and verify `flutter pub get` succeeds without version conflicts
-- [ ] 1.2 Implement `core/errors/` with `Failure` and `AppException` hierarchies and verify unit definition compiles
+- [x] 1.2 Implement `core/errors/` with `Failure` and `AppException` hierarchies and verify unit definition compiles
 - [ ] 1.3 Implement `SecureStorageService` wrapper in `core/storage/` for encrypted token persistence and verify read/write/clear methods
 - [ ] 1.4 Implement `DioClient` and `AuthInterceptor` with `QueuedInterceptor` handling 401 token refresh rotation in `core/network/` and verify request queuing and retry logic
 
