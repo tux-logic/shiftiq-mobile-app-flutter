@@ -45,6 +45,7 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+devtools_options.yaml
 
 # Agent skills & tools
 .agents/
