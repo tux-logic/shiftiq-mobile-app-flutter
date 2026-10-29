@@ -8,6 +8,7 @@ class DioClient {
 
   DioClient({
     required ISecureStorageService storageService,
+    void Function()? onSessionExpired,
     String? baseUrl,
   }) {
     dio = Dio(
@@ -23,7 +24,10 @@ class DioClient {
     );
 
     dio.interceptors.addAll([
-      AuthInterceptor(storageService: storageService),
+      AuthInterceptor(
+        storageService: storageService,
+        onSessionExpired: onSessionExpired,
+      ),
       LogInterceptor(
         request: true,
         requestHeader: true,

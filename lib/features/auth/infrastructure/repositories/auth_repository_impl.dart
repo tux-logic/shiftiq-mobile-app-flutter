@@ -83,29 +83,19 @@ class AuthRepositoryImpl implements IAuthRepository {
         throw const SessionExpiredFailure();
       }
 
-      final response = await remoteDataSource.refreshToken(
+      final userDto = await remoteDataSource.refreshToken(
         RefreshTokenRequestDto(refreshToken: currentRefreshToken),
       );
 
-      final newAccessToken = response['token'] as String;
-      final newRefreshToken = response['refreshToken'] as String;
-      final expiresIn = response['accessTokenExpiresInSeconds'] as int? ?? 900;
-
-      final userId = await localDataSource.getUserId() ?? '';
-      final role = await localDataSource.getUserRole() ?? 'ROLE_USER';
-
+      // Persist newly rotated tokens and refreshed user role/id
       await localDataSource.saveAuthSession(
-        accessToken: newAccessToken,
-        refreshToken: newRefreshToken,
-        userId: userId,
-        role: role,
+        accessToken: userDto.token,
+        refreshToken: userDto.refreshToken,
+        userId: userDto.id,
+        role: userDto.role,
       );
 
-      return AuthTokens(
-        accessToken: newAccessToken,
-        refreshToken: newRefreshToken,
-        expiresInSeconds: expiresIn,
-      );
+      return userDto.toDomainTokens();
     } on UnauthorizedException {
       await localDataSource.clearAuthSession();
       throw const SessionExpiredFailure();
@@ -120,7 +110,10 @@ class AuthRepositoryImpl implements IAuthRepository {
   @override
   Future<void> logout() async {
     try {
-      await remoteDataSource.logout();
+      final currentRefreshToken = await localDataSource.getRefreshToken();
+      if (currentRefreshToken != null && currentRefreshToken.isNotEmpty) {
+        await remoteDataSource.logout(refreshToken: currentRefreshToken);
+      }
     } finally {
       await localDataSource.clearAuthSession();
     }
@@ -146,10 +139,19 @@ class AuthRepositoryImpl implements IAuthRepository {
   @override
   Future<List<String>> getActiveRoles(String userId) async {
     try {
-      return await remoteDataSource.getActiveRoles(userId);
-    } catch (_) {
+      final roles = await remoteDataSource.getActiveRoles(userId);
+      if (roles.isNotEmpty) return roles;
+
       final localRole = await localDataSource.getUserRole();
       return localRole != null ? [localRole] : [];
+    } on ServerException catch (e) {
+      final localRole = await localDataSource.getUserRole();
+      if (localRole != null) return [localRole];
+      throw ServerAuthFailure(message: e.message);
+    } catch (e) {
+      final localRole = await localDataSource.getUserRole();
+      if (localRole != null) return [localRole];
+      throw ServerAuthFailure(message: 'Error al obtener roles activos: $e');
     }
   }
 

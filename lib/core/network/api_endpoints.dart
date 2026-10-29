@@ -15,8 +15,8 @@ class ApiEndpoints {
   static const String googleLogin = '/api/v1/authentication/sessions/google';
   static const String refreshToken = '/api/v1/authentication/sessions/refresh';
   static const String logout = '/api/v1/authentication/sessions';
-  static const String forgotPassword = '/api/v1/authentication/password/forgot';
-  static const String resetPassword = '/api/v1/authentication/password/reset';
+  static const String passwordRecoveries = '/api/v1/authentication/password-recoveries';
+  static const String passwordResets = '/api/v1/authentication/password-resets';
 
   // Users & Profiles
   static const String userProfilesRoles = '/api/v1/profiles/roles';

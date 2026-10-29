@@ -22,7 +22,14 @@ void main() async {
 
   // Core singletons
   final storageService = SecureStorageService();
-  final dioClient = DioClient(storageService: storageService);
+  late final AuthBloc authBloc;
+
+  final dioClient = DioClient(
+    storageService: storageService,
+    onSessionExpired: () {
+      authBloc.add(const LogoutEvent());
+    },
+  );
 
   // Auth dependencies
   final remoteDataSource = AuthRemoteDataSource(dio: dioClient.dio);
@@ -38,16 +45,16 @@ void main() async {
   final checkAuthStatusUseCase = CheckAuthStatusUseCase(repository: authRepository);
   final getActiveRolesUseCase = GetActiveRolesUseCase(repository: authRepository);
 
+  authBloc = AuthBloc(
+    loginWithEmailUseCase: loginWithEmailUseCase,
+    loginWithGoogleUseCase: loginWithGoogleUseCase,
+    logoutUseCase: logoutUseCase,
+    checkAuthStatusUseCase: checkAuthStatusUseCase,
+    getActiveRolesUseCase: getActiveRolesUseCase,
+  )..add(const CheckAuthStatusEvent());
+
   runApp(
-    ShiftIqApp(
-      authBloc: AuthBloc(
-        loginWithEmailUseCase: loginWithEmailUseCase,
-        loginWithGoogleUseCase: loginWithGoogleUseCase,
-        logoutUseCase: logoutUseCase,
-        checkAuthStatusUseCase: checkAuthStatusUseCase,
-        getActiveRolesUseCase: getActiveRolesUseCase,
-      )..add(const CheckAuthStatusEvent()),
-    ),
+    ShiftIqApp(authBloc: authBloc),
   );
 }
 

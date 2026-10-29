@@ -9,8 +9,8 @@ import '../dtos/refresh_token_request_dto.dart';
 abstract class IAuthRemoteDataSource {
   Future<AuthenticatedUserDto> loginWithEmail(LoginRequestDto request);
   Future<AuthenticatedUserDto> loginWithGoogle(GoogleLoginRequestDto request);
-  Future<Map<String, dynamic>> refreshToken(RefreshTokenRequestDto request);
-  Future<void> logout();
+  Future<AuthenticatedUserDto> refreshToken(RefreshTokenRequestDto request);
+  Future<void> logout({required String refreshToken});
   Future<List<String>> getActiveRoles(String userId);
 }
 
@@ -84,7 +84,7 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
   }
 
   @override
-  Future<Map<String, dynamic>> refreshToken(RefreshTokenRequestDto request) async {
+  Future<AuthenticatedUserDto> refreshToken(RefreshTokenRequestDto request) async {
     try {
       final response = await dio.post(
         ApiEndpoints.refreshToken,
@@ -93,7 +93,7 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        return response.data as Map<String, dynamic>;
+        return AuthenticatedUserDto.fromJson(response.data as Map<String, dynamic>);
       } else {
         throw ServerException(
           message: 'Error al refrescar token',
@@ -115,11 +115,15 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
   }
 
   @override
-  Future<void> logout() async {
+  Future<void> logout({required String refreshToken}) async {
     try {
-      await dio.delete(ApiEndpoints.logout);
+      await dio.delete(
+        ApiEndpoints.logout,
+        data: {'refreshToken': refreshToken},
+        options: Options(extra: {'isPublic': true}),
+      );
     } catch (_) {
-      // Ignored: best-effort remote token revocation
+      // Best-effort remote revocation
     }
   }
 
