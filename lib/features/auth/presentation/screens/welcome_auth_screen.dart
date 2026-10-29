@@ -126,7 +126,7 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen>
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: const Icon(
-                    Icons.storefront_rounded,
+                    Icons.storefront_outlined,
                     color: AppColors.primary,
                     size: 26,
                   ),
@@ -200,17 +200,13 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen>
         body: SafeArea(
           child: Column(
             children: [
-              const SizedBox(height: 8),
-
-              // 1. Top Carousel Indicators (3 dots)
-              _buildTopIndicator(),
-              const SizedBox(height: 10),
-
-              // 2. Role Switcher Pill Bar (Conductor vs Taller)
-              _buildRoleSwitcherPills(),
               const SizedBox(height: 12),
 
-              // 3. Automotive Diagnostic Stage Card (Pushed into view)
+              // 1. Top Carousel Indicators (3 dots exactly as in the mockups)
+              _buildTopIndicator(),
+              const SizedBox(height: 16),
+
+              // 2. Automotive Diagnostic Stage Card
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: SlideTransition(
@@ -221,9 +217,9 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen>
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
-              // 4. Interactive PageView (Swipe across entire bottom half)
+              // 3. Interactive Full PageView (Swipe across entire bottom area)
               Expanded(
                 child: PageView(
                   controller: _pageController,
@@ -248,115 +244,32 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen>
     );
   }
 
-  // --- Top Dots ---
+  // --- Top Dots (Exact layout from UI design) ---
   Widget _buildTopIndicator() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(3, (index) {
         final isSelected = _currentPage == index;
         return GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onTap: () => _goToPage(index),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeOutCubic,
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            width: isSelected ? 26 : 6,
-            height: 4,
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? const Color(0xFF0F172A)
-                  : const Color(0xFFCBD5E1),
-              borderRadius: BorderRadius.circular(4),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOutCubic,
+              width: isSelected ? 28 : 6,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? const Color(0xFF0F172A)
+                    : const Color(0xFFCBD5E1),
+                borderRadius: BorderRadius.circular(4),
+              ),
             ),
           ),
         );
       }),
-    );
-  }
-
-  // --- Segmented Switcher for Instant Visibility ---
-  Widget _buildRoleSwitcherPills() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: GestureDetector(
-              onTap: () => _goToPage(0),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                decoration: BoxDecoration(
-                  color: _currentPage == 0 ? Colors.white : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: _currentPage == 0
-                      ? [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.06),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ]
-                      : [],
-                ),
-                child: Center(
-                  child: Text(
-                    '🚗 Para Conductores',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight:
-                          _currentPage == 0 ? FontWeight.w700 : FontWeight.w500,
-                      color: _currentPage == 0
-                          ? const Color(0xFF0F172A)
-                          : const Color(0xFF64748B),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => _goToPage(1),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                decoration: BoxDecoration(
-                  color: _currentPage == 1 ? Colors.white : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: _currentPage == 1
-                      ? [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.06),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ]
-                      : [],
-                ),
-                child: Center(
-                  child: Text(
-                    '🔧 Para Talleres',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight:
-                          _currentPage == 1 ? FontWeight.w700 : FontWeight.w500,
-                      color: _currentPage == 1
-                          ? const Color(0xFF0F172A)
-                          : const Color(0xFF64748B),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -374,34 +287,35 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen>
             'Tu auto bajo control\ninteligente',
             style: TextStyle(
               color: Color(0xFF0F172A),
-              fontSize: 30,
+              fontSize: 32,
               fontWeight: FontWeight.w800,
-              letterSpacing: -0.7,
+              letterSpacing: -0.8,
               height: 1.15,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           const Text(
             'Telemetría preventiva OBD-II y diagnósticos precisos.',
             style: TextStyle(
               color: Color(0xFF64748B),
-              fontSize: 15,
+              fontSize: 16,
               fontWeight: FontWeight.w400,
               height: 1.35,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
 
           // Botón 1: Continuar con Google
           _buildGoogleSignInButton(
             backgroundColor: const Color(0xFF1E222A),
             textColor: Colors.white,
+            iconMode: _GoogleIconMode.colorLogo,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
           // Botón 2: Ingresar con número celular
           _buildPhoneSignInButton(),
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
 
           // Link 3: Iniciar sesión con correo tradicional ->
           _buildTraditionalEmailLink(),
@@ -425,29 +339,29 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen>
             'Control total\nde tu taller',
             style: TextStyle(
               color: Color(0xFF0F172A),
-              fontSize: 30,
+              fontSize: 32,
               fontWeight: FontWeight.w800,
-              letterSpacing: -0.7,
+              letterSpacing: -0.8,
               height: 1.15,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           const Text(
             'Gestiona bahías, órdenes de trabajo y recibe diagnósticos DTC en tiempo real sin papeleo.',
             style: TextStyle(
               color: Color(0xFF64748B),
-              fontSize: 15,
+              fontSize: 16,
               fontWeight: FontWeight.w400,
               height: 1.35,
             ),
           ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 26),
 
-          // Botón 1: Iniciar Sesión -> (Botón principal oscuro con flecha)
+          // Botón 1: Iniciar Sesión ->
           ElevatedButton(
             onPressed: _navigateToEmailLogin,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0F172A),
+              backgroundColor: const Color(0xFF081225),
               foregroundColor: Colors.white,
               elevation: 0,
               minimumSize: const Size.fromHeight(56),
@@ -460,12 +374,12 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen>
                   'Iniciar Sesión',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
-                SizedBox(width: 10),
-                Icon(Icons.arrow_forward_rounded, size: 20),
+                SizedBox(width: 12),
+                Icon(Icons.arrow_forward_rounded, size: 20, color: Colors.white),
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
           // Botón 2: Registrar mi Taller en ShiftIQ (Outline blanco)
           OutlinedButton(
@@ -480,7 +394,7 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen>
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.storefront_outlined, size: 20, color: Color(0xFF0F172A)),
+                Icon(Icons.storefront_outlined, size: 22, color: Color(0xFF0F172A)),
                 SizedBox(width: 10),
                 Text(
                   'Registrar mi Taller en ShiftIQ',
@@ -493,13 +407,14 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen>
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
-          // Botón 3: Continuar con Google (Soft pill container)
+          // Botón 3: Continuar con Google (Soft pill container como en el mockup)
           _buildGoogleSignInButton(
             backgroundColor: const Color(0xFFF1F5F9),
             textColor: const Color(0xFF1E293B),
             elevation: 0,
+            iconMode: _GoogleIconMode.circleMonochrome,
           ),
           const SizedBox(height: 16),
         ],
@@ -508,7 +423,7 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen>
   }
 
   // ==========================================
-  // SLIDE 2: TELEMETRÍA IOT / ADICIONAL
+  // SLIDE 2: TELEMETRÍA IOT / EN VIVO
   // ==========================================
   Widget _buildLiveTelemetrySlide() {
     return SingleChildScrollView(
@@ -521,28 +436,28 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen>
             'Monitoreo en vivo\nsin cables',
             style: TextStyle(
               color: Color(0xFF0F172A),
-              fontSize: 30,
+              fontSize: 32,
               fontWeight: FontWeight.w800,
-              letterSpacing: -0.7,
+              letterSpacing: -0.8,
               height: 1.15,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           const Text(
             'Conecta escáneres OBD-II y recibe alertas instantáneas de códigos de falla antes de que sea tarde.',
             style: TextStyle(
               color: Color(0xFF64748B),
-              fontSize: 15,
+              fontSize: 16,
               fontWeight: FontWeight.w400,
               height: 1.35,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
 
           ElevatedButton(
             onPressed: () => _goToPage(1),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0F172A),
+              backgroundColor: const Color(0xFF081225),
               foregroundColor: Colors.white,
               minimumSize: const Size.fromHeight(56),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -553,7 +468,7 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen>
                 Text('Ver plataforma de taller',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
                 SizedBox(width: 8),
-                Icon(Icons.arrow_forward_rounded, size: 20),
+                Icon(Icons.arrow_forward_rounded, size: 20, color: Colors.white),
               ],
             ),
           ),
@@ -562,6 +477,7 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen>
           _buildGoogleSignInButton(
             backgroundColor: const Color(0xFFF1F5F9),
             textColor: const Color(0xFF1E293B),
+            iconMode: _GoogleIconMode.circleMonochrome,
           ),
           const SizedBox(height: 16),
         ],
@@ -569,10 +485,11 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen>
     );
   }
 
-  // --- Reusable Google Button ---
+  // --- Consistent Google Button ---
   Widget _buildGoogleSignInButton({
     required Color backgroundColor,
     required Color textColor,
+    required _GoogleIconMode iconMode,
     double elevation = 0,
   }) {
     return BlocBuilder<AuthBloc, AuthState>(
@@ -601,7 +518,7 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen>
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildGoogleGLogo(),
+                    _GoogleLogoBadge(mode: iconMode),
                     const SizedBox(width: 12),
                     Text(
                       'Continuar con Google',
@@ -609,34 +526,13 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen>
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: textColor,
-                        letterSpacing: 0.2,
+                        letterSpacing: 0.1,
                       ),
                     ),
                   ],
                 ),
         );
       },
-    );
-  }
-
-  Widget _buildGoogleGLogo() {
-    return Container(
-      width: 22,
-      height: 22,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-      ),
-      child: const Center(
-        child: Text(
-          'G',
-          style: TextStyle(
-            color: Color(0xFF4285F4),
-            fontSize: 14,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ),
     );
   }
 
@@ -663,7 +559,7 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen>
       child: const Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.phone_iphone_rounded, size: 20, color: Color(0xFF0F172A)),
+          Icon(Icons.smartphone_rounded, size: 21, color: Color(0xFF0F172A)),
           SizedBox(width: 10),
           Text(
             'Ingresar con número celular',
@@ -693,6 +589,60 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen>
               fontWeight: FontWeight.w600,
               letterSpacing: 0.1,
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// --- Standardized Google Icon Modes ---
+enum _GoogleIconMode { colorLogo, circleMonochrome }
+
+class _GoogleLogoBadge extends StatelessWidget {
+  final _GoogleIconMode mode;
+
+  const _GoogleLogoBadge({required this.mode});
+
+  @override
+  Widget build(BuildContext context) {
+    if (mode == _GoogleIconMode.circleMonochrome) {
+      // Dark grey circular badge with white 'G' as shown in workshop mock
+      return Container(
+        width: 22,
+        height: 22,
+        decoration: const BoxDecoration(
+          color: Color(0xFF475569),
+          shape: BoxShape.circle,
+        ),
+        child: const Center(
+          child: Text(
+            'G',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Clean white circle with official Blue 'G' for dark button
+    return Container(
+      width: 22,
+      height: 22,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+      ),
+      child: const Center(
+        child: Text(
+          'G',
+          style: TextStyle(
+            color: Color(0xFF4285F4),
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
           ),
         ),
       ),
