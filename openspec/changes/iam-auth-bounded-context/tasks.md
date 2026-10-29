@@ -20,7 +20,7 @@
 
 ## 4. Application Layer (DDD)
 
-- [ ] 4.1 Implement application use cases (`LoginWithEmailUseCase`, `LoginWithGoogleUseCase`, `RefreshTokenUseCase`, `LogoutUseCase`, `GetActiveRolesUseCase`) in `features/auth/application/` and verify use case execution flow
+- [x] 4.1 Implement application use cases (`LoginWithEmailUseCase`, `LoginWithGoogleUseCase`, `RefreshTokenUseCase`, `LogoutUseCase`, `GetActiveRolesUseCase`) in `features/auth/application/` and verify use case execution flow
 
 ## 5. Presentation Layer & Automotive UI
 
