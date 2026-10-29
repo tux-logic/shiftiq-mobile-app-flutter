@@ -15,7 +15,7 @@
 ## 3. Infrastructure Layer (DDD)
 
 - [x] 3.1 Implement DTO models (`AuthenticatedUserDto`, `LoginRequestDto`, `GoogleLoginRequestDto`, `RefreshTokenRequestDto`) and verify JSON serialization
-- [ ] 3.2 Implement `AuthRemoteDataSource` and `AuthLocalDataSource` in `features/auth/infrastructure/` and verify API endpoint integration
+- [x] 3.2 Implement `AuthRemoteDataSource` and `AuthLocalDataSource` in `features/auth/infrastructure/` and verify API endpoint integration
 - [ ] 3.3 Implement `AuthRepositoryImpl` in `features/auth/infrastructure/` connecting remote/local data sources with domain contracts and verify error translation
 
 ## 4. Application Layer (DDD)
