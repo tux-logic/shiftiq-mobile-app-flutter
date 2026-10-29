@@ -32,4 +32,4 @@
 
 ## 6. Integration & Verification
 
-- [ ] 6.1 Update `lib/main.dart` with BLoC injection and initial route resolving, run `flutter analyze`, and verify clean static analysis without linter warnings
+- [x] 6.1 Update `lib/main.dart` with BLoC injection and initial route resolving, run `flutter analyze`, and verify clean static analysis without linter warnings
