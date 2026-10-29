@@ -27,7 +27,7 @@
 - [x] 5.1 Implement `AuthBloc`, `AuthEvent`, and `AuthState` in `features/auth/presentation/state/` and verify state transitions
 - [x] 5.2 Configure ShiftIQ automotive dark theme, neon accents, and typography in `core/theme/` and verify Material 3 styling
 - [x] 5.3 Build `AutomotiveBayVisualizer` widget featuring custom animated workshop bay lift, live DTC bus pulse, and status badges in `features/auth/presentation/widgets/` and verify animation smoothness
-- [ ] 5.4 Build `WelcomeAuthScreen` with staggered entrance animation, Google Sign-In, Phone entry trigger, and traditional email navigation in `features/auth/presentation/screens/` and verify layout responsiveness
+- [x] 5.4 Build `WelcomeAuthScreen` with staggered entrance animation, Google Sign-In, Phone entry trigger, and traditional email navigation in `features/auth/presentation/screens/` and verify layout responsiveness
 - [ ] 5.5 Build `EmailLoginScreen` with email and password input fields, validation feedback, and submission state handling in `features/auth/presentation/screens/` and verify interactive validation
 
 ## 6. Integration & Verification
