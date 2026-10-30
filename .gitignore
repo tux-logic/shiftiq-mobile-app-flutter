@@ -24,10 +24,10 @@ migrate_working_dir/
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
-temp_auto_push.bat
 .dart_tool/
 .flutter-plugins-dependencies
 .pub-cache/
+temp_auto_push.bat
 .pub/
 /build/
 /coverage/
@@ -51,5 +51,12 @@ devtools_options.yaml
 .agents/
 skills-lock.json
 
+
+### VS Code Tasks Protection ###
+
+### Environment & Secrets ###
+.env
+.env.*
+!.env.example
 .gitignore
 branch_structure.json
