@@ -27,8 +27,8 @@ migrate_working_dir/
 .dart_tool/
 .flutter-plugins-dependencies
 .pub-cache/
-temp_auto_push.bat
 .pub/
+temp_auto_push.bat
 /build/
 /coverage/
 
@@ -55,8 +55,10 @@ skills-lock.json
 ### VS Code Tasks Protection ###
 
 ### Environment & Secrets ###
-.env
-.env.*
 !.env.example
+
+### VS Code Protection ###
 .gitignore
 branch_structure.json
+config.bat
+node_modules
