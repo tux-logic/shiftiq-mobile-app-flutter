@@ -28,7 +28,7 @@ class TelemetryViewModel extends ChangeNotifier {
   DtcStatus? _selectedStatus = DtcStatus.active;
   DtcAlert? _selectedAlert;
   List<LiveSensorReading> _liveSensors = [];
-  bool _isDongleConnected = true;
+  final bool _isDongleConnected = true;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
