@@ -53,3 +53,4 @@ class DashboardViewModel extends ChangeNotifier {
 
   Future<void> refresh() => loadSummary();
 }
+
