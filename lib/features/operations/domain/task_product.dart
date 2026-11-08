@@ -18,3 +18,4 @@ class TaskProduct {
   String get formattedUnitPrice => 'S/ ${unitPrice.toStringAsFixed(2)}';
   String get formattedTotal => 'S/ ${totalAmount.toStringAsFixed(2)}';
 }
+

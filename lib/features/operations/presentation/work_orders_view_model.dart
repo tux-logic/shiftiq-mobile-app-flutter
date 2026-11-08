@@ -67,3 +67,4 @@ class WorkOrdersViewModel extends ChangeNotifier {
 
   Future<void> refresh() => loadOrders();
 }
+

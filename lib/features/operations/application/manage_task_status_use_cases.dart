@@ -20,3 +20,4 @@ class CompleteTaskUseCase {
     return repository.completeTask(taskId);
   }
 }
+

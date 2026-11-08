@@ -36,3 +36,4 @@ class WorkOrderTask {
 
   double get grandTotal => price + productsTotal;
 }
+

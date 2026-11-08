@@ -44,3 +44,4 @@ abstract class WorkOrderRepository {
 
   Future<WorkOrder> completeWorkOrder(String workOrderId);
 }
+

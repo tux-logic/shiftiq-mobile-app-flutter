@@ -10,3 +10,4 @@ class GetWorkOrderDetailUseCase {
     return repository.getWorkOrderById(id);
   }
 }
+

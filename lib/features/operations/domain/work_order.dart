@@ -55,3 +55,4 @@ class WorkOrder {
   String get formattedAmount => 'S/ ${totalAmount.toStringAsFixed(2)}';
   String get formattedMileage => '${mileageIn.toString()} km';
 }
+

@@ -32,3 +32,4 @@ class CompleteWorkOrderUseCase {
     return repository.completeWorkOrder(workOrderId);
   }
 }
+

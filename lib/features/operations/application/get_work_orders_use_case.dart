@@ -14,3 +14,4 @@ class GetWorkOrdersUseCase {
     return repository.getWorkOrders(branchId: branchId, status: status);
   }
 }
+
