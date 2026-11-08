@@ -47,6 +47,14 @@ import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/repositorie
 import 'package:shiftiq_mobile_app_flutter/features/inventory/infrastructure/remote/inventory_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/infrastructure/repositories/inventory_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/presentation/controllers/inventory_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/application/commandservices/update_dtc_status_command_service.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/application/queryservices/get_dtc_alerts_query_service.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/application/queryservices/get_dtc_detail_query_service.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/application/queryservices/get_live_sensor_stream_query_service.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/domain/repositories/telemetry_repository.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/infrastructure/remote/telemetry_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/infrastructure/repositories/telemetry_repository_impl.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/controllers/telemetry_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/application/commandservices/create_quote_command_service.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/application/commandservices/emit_voucher_command_service.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/application/commandservices/process_payment_command_service.dart';
@@ -297,7 +305,49 @@ void setupDependencies() {
     ),
   );
 
-  // 8. Billing & SUNAT Invoicing Context
+  // 8. IoT Telemetry & OBD-II Context
+  getIt.registerLazySingleton<TelemetryApi>(
+    () => TelemetryApi(apiClient: getIt<ApiClient>()),
+  );
+
+  getIt.registerLazySingleton<TelemetryRepository>(
+    () => TelemetryRepositoryImpl(telemetryApi: getIt<TelemetryApi>()),
+  );
+
+  getIt.registerLazySingleton<GetDtcAlertsQueryService>(
+    () => GetDtcAlertsQueryService(
+      telemetryRepository: getIt<TelemetryRepository>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<GetDtcDetailQueryService>(
+    () => GetDtcDetailQueryService(
+      telemetryRepository: getIt<TelemetryRepository>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<GetLiveSensorStreamQueryService>(
+    () => GetLiveSensorStreamQueryService(
+      telemetryRepository: getIt<TelemetryRepository>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<UpdateDtcStatusCommandService>(
+    () => UpdateDtcStatusCommandService(
+      telemetryRepository: getIt<TelemetryRepository>(),
+    ),
+  );
+
+  getIt.registerFactory<TelemetryViewModel>(
+    () => TelemetryViewModel(
+      getDtcAlertsQuery: getIt<GetDtcAlertsQueryService>(),
+      getDtcDetailQuery: getIt<GetDtcDetailQueryService>(),
+      getLiveSensorsQuery: getIt<GetLiveSensorStreamQueryService>(),
+      updateDtcStatusCommand: getIt<UpdateDtcStatusCommandService>(),
+    ),
+  );
+
+  // 9. Billing & SUNAT Invoicing Context
   getIt.registerLazySingleton<BillingApi>(
     () => BillingApi(apiClient: getIt<ApiClient>()),
   );
