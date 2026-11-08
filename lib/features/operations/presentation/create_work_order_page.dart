@@ -6,11 +6,21 @@ import 'package:shiftiq_mobile_app_flutter/features/operations/application/creat
 class CreateWorkOrderPage extends StatefulWidget {
   final String branchId;
   final CreateWorkOrderUseCase? createWorkOrderUseCase;
+  final String? initialPlate;
+  final String? initialCustomerName;
+  final String? initialPhone;
+  final String? initialModel;
+  final String? initialDiagnostic;
 
   const CreateWorkOrderPage({
     super.key,
     required this.branchId,
     this.createWorkOrderUseCase,
+    this.initialPlate,
+    this.initialCustomerName,
+    this.initialPhone,
+    this.initialModel,
+    this.initialDiagnostic,
   });
 
   @override
@@ -20,15 +30,27 @@ class CreateWorkOrderPage extends StatefulWidget {
 class _CreateWorkOrderPageState extends State<CreateWorkOrderPage> {
   final _formKey = GlobalKey<FormState>();
 
-  final _plateController = TextEditingController(text: 'D2A-789');
-  final _modelController = TextEditingController(text: 'Toyota Yaris 2022');
-  final _customerController = TextEditingController(text: 'Mario Salcedo');
-  final _phoneController = TextEditingController(text: '+51 965 432 109');
-  final _mileageController = TextEditingController(text: '35000');
-  final _diagnosticController =
-      TextEditingController(text: 'Mantenimiento preventivo y cambio de bujías');
+  late final TextEditingController _plateController;
+  late final TextEditingController _modelController;
+  late final TextEditingController _customerController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _mileageController;
+  late final TextEditingController _diagnosticController;
 
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _plateController = TextEditingController(text: widget.initialPlate ?? 'D2A-789');
+    _modelController = TextEditingController(text: widget.initialModel ?? 'Toyota Yaris 2022');
+    _customerController = TextEditingController(text: widget.initialCustomerName ?? 'Mario Salcedo');
+    _phoneController = TextEditingController(text: widget.initialPhone ?? '+51 965 432 109');
+    _mileageController = TextEditingController(text: '35000');
+    _diagnosticController = TextEditingController(
+      text: widget.initialDiagnostic ?? 'Mantenimiento preventivo y cambio de bujías',
+    );
+  }
 
   @override
   void dispose() {

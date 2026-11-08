@@ -30,6 +30,14 @@ import 'package:shiftiq_mobile_app_flutter/features/operations/infrastructure/re
 import 'package:shiftiq_mobile_app_flutter/features/operations/infrastructure/work_order_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_order_detail_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_orders_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/commandservices/create_appointment_command_service.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/commandservices/update_appointment_status_command_service.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/queryservices/get_appointments_by_branch_query_service.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/queryservices/get_customer_directory_query_service.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/repositories/appointment_repository.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/remote/appointment_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/repositories/appointment_repository_impl.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/controllers/appointments_view_model.dart';
 
 final getIt = GetIt.instance;
 
@@ -177,6 +185,48 @@ void setupDependencies() {
       addTaskUseCase: getIt<AddTaskToWorkOrderUseCase>(),
       addProductUseCase: getIt<AddProductToTaskUseCase>(),
       completeWorkOrderUseCase: getIt<CompleteWorkOrderUseCase>(),
+    ),
+  );
+
+  // 6. Fleet & CRM Context (Appointments, Bays & Customer Directory)
+  getIt.registerLazySingleton<AppointmentApi>(
+    () => AppointmentApi(apiClient: getIt<ApiClient>()),
+  );
+
+  getIt.registerLazySingleton<AppointmentRepository>(
+    () => AppointmentRepositoryImpl(appointmentApi: getIt<AppointmentApi>()),
+  );
+
+  getIt.registerLazySingleton<GetAppointmentsByBranchQueryService>(
+    () => GetAppointmentsByBranchQueryService(
+      appointmentRepository: getIt<AppointmentRepository>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<GetCustomerDirectoryQueryService>(
+    () => GetCustomerDirectoryQueryService(
+      appointmentRepository: getIt<AppointmentRepository>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<CreateAppointmentCommandService>(
+    () => CreateAppointmentCommandService(
+      appointmentRepository: getIt<AppointmentRepository>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<UpdateAppointmentStatusCommandService>(
+    () => UpdateAppointmentStatusCommandService(
+      appointmentRepository: getIt<AppointmentRepository>(),
+    ),
+  );
+
+  getIt.registerFactory<AppointmentsViewModel>(
+    () => AppointmentsViewModel(
+      getAppointmentsQuery: getIt<GetAppointmentsByBranchQueryService>(),
+      getCustomerDirectoryQuery: getIt<GetCustomerDirectoryQueryService>(),
+      createAppointmentCommand: getIt<CreateAppointmentCommandService>(),
+      updateStatusCommand: getIt<UpdateAppointmentStatusCommandService>(),
     ),
   );
 }

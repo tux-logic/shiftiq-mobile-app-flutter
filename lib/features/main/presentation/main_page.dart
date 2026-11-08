@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/dashboard/presentation/dashboard_page.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/views/appointments_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_orders_page.dart';
 
 class MainPage extends StatefulWidget {
@@ -40,11 +41,7 @@ class _MainPageState extends State<MainPage> {
             onNavigateToIot: () => _onDestinationSelected(4),
           ),
           const WorkOrdersPage(),
-          _buildPlaceholderPage(
-            title: 'Citas y Flota de Clientes',
-            subtitle: 'Hito 4: Agenda Semanal y Directorio de Clientes',
-            icon: Icons.calendar_month_outlined,
-          ),
+          const AppointmentsPage(),
           _buildPlaceholderPage(
             title: 'Inventario y Lotes',
             subtitle: 'Hito 5: Catálogo de Repuestos y Stock Mínimo',
