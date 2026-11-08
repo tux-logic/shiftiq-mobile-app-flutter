@@ -47,8 +47,7 @@ class CreateAppointmentCommandService {
       throw ArgumentError('La placa del vehículo es obligatoria.');
     }
 
-    final appointment = Appointment(
-      id: 'apt-${DateTime.now().millisecondsSinceEpoch}',
+    return appointmentRepository.createAppointment(
       branchId: command.branchId,
       customerId: command.customerId,
       customerName: command.customerName.trim(),
@@ -58,10 +57,8 @@ class CreateAppointmentCommandService {
       vehicleModel: command.vehicleModel.trim(),
       scheduledStart: command.scheduledStart,
       serviceType: command.serviceType.trim(),
-      notes: command.notes?.trim(),
+      notes: command.notes?.trim() ?? '',
       bayNumber: command.bayNumber,
     );
-
-    return appointmentRepository.createAppointment(appointment);
   }
 }

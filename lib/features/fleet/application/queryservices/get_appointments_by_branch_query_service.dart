@@ -14,7 +14,7 @@ class GetAppointmentsByBranchQueryService {
     DateTime? date,
     AppointmentStatus? status,
   }) async {
-    return appointmentRepository.getAppointmentsByBranch(
+    return appointmentRepository.getAppointments(
       branchId: branchId,
       date: date,
       status: status,

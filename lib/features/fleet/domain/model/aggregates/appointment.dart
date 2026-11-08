@@ -54,4 +54,38 @@ class Appointment {
   }
 
   String get formattedBay => 'Bahía $bayNumber';
+
+  Appointment copyWith({
+    String? id,
+    String? branchId,
+    String? customerId,
+    String? customerName,
+    String? customerPhone,
+    String? vehicleId,
+    String? vehiclePlate,
+    String? vehicleModel,
+    DateTime? scheduledStart,
+    String? serviceType,
+    String? notes,
+    AppointmentStatus? status,
+    int? bayNumber,
+    DateTime? createdAt,
+  }) {
+    return Appointment(
+      id: id ?? this.id,
+      branchId: branchId ?? this.branchId,
+      customerId: customerId ?? this.customerId,
+      customerName: customerName ?? this.customerName,
+      customerPhone: customerPhone ?? this.customerPhone,
+      vehicleId: vehicleId ?? this.vehicleId,
+      vehiclePlate: vehiclePlate ?? this.vehiclePlate,
+      vehicleModel: vehicleModel ?? this.vehicleModel,
+      scheduledStart: scheduledStart ?? this.scheduledStart,
+      serviceType: serviceType ?? this.serviceType,
+      notes: notes ?? this.notes,
+      status: status ?? this.status,
+      bayNumber: bayNumber ?? this.bayNumber,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }

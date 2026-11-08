@@ -79,7 +79,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           initialCustomerName: appointment.customerName,
           initialPhone: appointment.customerPhone,
           initialModel: appointment.vehicleModel,
-          initialDiagnostic: '${appointment.serviceType}${appointment.notes != null ? ' - ${appointment.notes}' : ''}',
+          initialDiagnostic:
+              '${appointment.serviceType}${appointment.notes.isNotEmpty ? ' - ${appointment.notes}' : ''}',
         ),
       ),
     );
@@ -129,7 +130,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
               DateStripSelector(
                 selectedDate: _viewModel.selectedDate,
                 onDateSelected: (date) =>
-                    _viewModel.selectDate(date, widget.branchId),
+                    _viewModel.selectDate(date, _effectiveBranchId),
               ),
 
               // Filter Chips
@@ -156,7 +157,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                           fontSize: 12,
                         ),
                         onSelected: (_) =>
-                            _viewModel.filterByStatus(null, widget.branchId),
+                            _viewModel.filterByStatus(null, _effectiveBranchId),
                       ),
                       const SizedBox(width: 8),
                       FilterChip(
@@ -178,7 +179,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                         ),
                         onSelected: (_) => _viewModel.filterByStatus(
                           AppointmentStatus.pending,
-                          widget.branchId,
+                          _effectiveBranchId,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -201,7 +202,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                         ),
                         onSelected: (_) => _viewModel.filterByStatus(
                           AppointmentStatus.confirmed,
-                          widget.branchId,
+                          _effectiveBranchId,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -220,7 +221,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                         ),
                         onSelected: (_) => _viewModel.filterByStatus(
                           AppointmentStatus.completed,
-                          widget.branchId,
+                          _effectiveBranchId,
                         ),
                       ),
                     ],
@@ -303,16 +304,16 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                                     _openWorkOrderFromAppointment(appointment),
                                 onConfirm: () => _viewModel.confirmAppointment(
                                   appointment.id,
-                                  widget.branchId,
+                                  _effectiveBranchId,
                                 ),
                                 onCancel: () => _viewModel.cancelAppointment(
                                   appointment.id,
-                                  widget.branchId,
+                                  _effectiveBranchId,
                                 ),
                                 onComplete: () =>
                                     _viewModel.completeAppointment(
                                   appointment.id,
-                                  widget.branchId,
+                                  _effectiveBranchId,
                                 ),
                               );
                             },

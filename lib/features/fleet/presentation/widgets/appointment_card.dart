@@ -224,10 +224,10 @@ class AppointmentCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if (appointment.notes != null && appointment.notes!.isNotEmpty) ...[
+                  if (appointment.notes.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
-                      appointment.notes!,
+                      appointment.notes,
                       style: const TextStyle(
                         fontSize: 11,
                         color: AppColors.neutralLight,

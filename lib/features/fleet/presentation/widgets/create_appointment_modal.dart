@@ -173,7 +173,7 @@ class _CreateAppointmentModalState extends State<CreateAppointmentModal> {
               // Quick select existing customer
               if (customers.isNotEmpty) ...[
                 DropdownButtonFormField<CustomerRegistration>(
-                  value: _selectedCustomer,
+                  initialValue: _selectedCustomer,
                   isExpanded: true,
                   decoration: const InputDecoration(
                     labelText: 'Seleccionar Cliente Registrado (Opcional)',
@@ -278,7 +278,7 @@ class _CreateAppointmentModalState extends State<CreateAppointmentModal> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.calendar_today_outlined,
                               size: 18,
                               color: AppColors.primary,
@@ -307,7 +307,7 @@ class _CreateAppointmentModalState extends State<CreateAppointmentModal> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.access_time,
                               size: 18,
                               color: AppColors.primary,
@@ -327,9 +327,9 @@ class _CreateAppointmentModalState extends State<CreateAppointmentModal> {
               const SizedBox(height: 12),
 
               // Bay Selection
-              const Text(
+              Text(
                 'Bahía Asignada:',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
                   color: AppColors.neutralDark,
@@ -363,7 +363,7 @@ class _CreateAppointmentModalState extends State<CreateAppointmentModal> {
 
               // Service selection dropdown
               DropdownButtonFormField<String>(
-                value: _selectedService,
+                initialValue: _selectedService,
                 isExpanded: true,
                 decoration: const InputDecoration(
                   labelText: 'Tipo de Servicio / Trabajo',

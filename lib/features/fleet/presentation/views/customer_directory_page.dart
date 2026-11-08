@@ -177,7 +177,7 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
                         : ListView.separated(
                             padding: const EdgeInsets.all(16),
                             itemCount: customers.length,
-                            separatorBuilder: (_, __) =>
+                            separatorBuilder: (_, _) =>
                                 const SizedBox(height: 10),
                             itemBuilder: (context, index) {
                               final customer = customers[index];
@@ -295,10 +295,10 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
                       ),
                     ),
                   ),
-                  if (customer.email != null) ...[
+                  if (customer.email.isNotEmpty) ...[
                     const SizedBox(width: 6),
                     Text(
-                      customer.email!,
+                      customer.email,
                       style: const TextStyle(
                         fontSize: 11,
                         color: AppColors.neutralLight,
