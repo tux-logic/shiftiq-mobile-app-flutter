@@ -13,11 +13,15 @@ class ApiConstants {
   static const String authRefresh = '/api/v1/authentication/sessions/refresh';
   static const String passwordRecoveries = '/api/v1/authentication/password-recoveries';
   static const String users = '/api/v1/users';
+  static const String profilesMe = '/api/v1/profiles/me';
 
   // Core Context
   static const String owners = '/api/v1/owners';
+  static String ownerByUserId(String userId) => '/api/v1/owners?userId=$userId';
   static const String workshops = '/api/v1/workshops';
-  static String workshopBranches(String workshopId) => '/api/v1/workshops/$workshopId/branches';
+  static String ownerWorkshops(String ownerId) => '/api/v1/workshops?ownerId=$ownerId';
+  static String workshopBranches(String workshopId) => '/api/v1/branches?workshopId=$workshopId';
+  static String branchesByWorkshop(String workshopId) => '/api/v1/branches?workshopId=$workshopId';
   static String branchEmployees(String branchId) => '/api/v1/branches/$branchId/employees';
 
   // Analytics Context
@@ -61,3 +65,4 @@ class ApiConstants {
   // Shared
   static const String health = '/api/v1/health';
 }
+

@@ -73,18 +73,21 @@ void main() {
     expect(branches[1].district, 'Los Olivos');
   });
 
-  test('SelectActiveBranchUseCase should store the active branch in repository', () async {
-    const branch = Branch(
-      id: 'br-smp-001',
-      workshopId: 'ws-001',
-      name: 'Sede San Martín de Porres',
-      address: 'Av. Canta Callao 1420',
-    );
+  test(
+    'SelectActiveBranchUseCase should store the active branch in repository',
+    () async {
+      const branch = Branch(
+        id: 'br-smp-001',
+        workshopId: 'ws-001',
+        name: 'Sede San Martín de Porres',
+        address: 'Av. Canta Callao 1420',
+      );
 
-    await selectBranchUseCase.execute(branch);
+      await selectBranchUseCase.execute(branch);
 
-    final activeId = await mockRepository.getActiveBranchId();
-    expect(activeId, 'br-smp-001');
-    expect(mockRepository.activeBranch?.name, 'Sede San Martín de Porres');
-  });
+      final activeId = await mockRepository.getActiveBranchId();
+      expect(activeId, 'br-smp-001');
+      expect(mockRepository.activeBranch?.name, 'Sede San Martín de Porres');
+    },
+  );
 }

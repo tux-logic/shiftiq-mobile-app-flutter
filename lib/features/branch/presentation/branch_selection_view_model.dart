@@ -46,3 +46,4 @@ class BranchSelectionViewModel extends ChangeNotifier {
     }
   }
 }
+

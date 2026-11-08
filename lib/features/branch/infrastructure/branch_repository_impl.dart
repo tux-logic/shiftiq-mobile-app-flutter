@@ -7,10 +7,7 @@ class BranchRepositoryImpl implements BranchRepository {
   final BranchApi branchApi;
   final SessionStorage sessionStorage;
 
-  BranchRepositoryImpl({
-    required this.branchApi,
-    required this.sessionStorage,
-  });
+  BranchRepositoryImpl({required this.branchApi, required this.sessionStorage});
 
   @override
   Future<List<Workshop>> getWorkshops() async {

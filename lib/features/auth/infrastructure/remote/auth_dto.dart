@@ -16,7 +16,7 @@ class SessionResponseDto {
   });
 
   factory SessionResponseDto.fromJson(Map<String, dynamic> json) {
-    final rolesRaw = json['roles'];
+    final rolesRaw = json['roles'] ?? json['role'];
     List<String> parsedRoles = [];
     if (rolesRaw is List) {
       parsedRoles = rolesRaw.map((e) => e.toString()).toList();
@@ -43,3 +43,4 @@ class SessionResponseDto {
     );
   }
 }
+

@@ -134,10 +134,7 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
                     const Text(
                       'Verifique el registro de su taller en el portal administrativo o contacte a soporte.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF64748B),
-                      ),
+                      style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
                     ),
                     const SizedBox(height: 24),
                     OutlinedButton.icon(
@@ -207,7 +204,9 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: ShiftIQColors.primaryBlue.withAlpha(20),
+                                  color: ShiftIQColors.primaryBlue.withAlpha(
+                                    20,
+                                  ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Icon(
@@ -234,8 +233,12 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: branch.active
-                                      ? ShiftIQColors.preventiveGreen.withAlpha(25)
-                                      : ShiftIQColors.severityCrimson.withAlpha(25),
+                                      ? ShiftIQColors.preventiveGreen.withAlpha(
+                                          25,
+                                        )
+                                      : ShiftIQColors.severityCrimson.withAlpha(
+                                          25,
+                                        ),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(

@@ -56,27 +56,27 @@ void main() {
     useCase = LoginUseCase(repository: mockRepository);
   });
 
-  test('LoginUseCase should return UserSession when credentials are valid', () async {
-    final session = await useCase.execute(
-      email: 'felipe.taller@castromotors.pe',
-      password: 'Password123!',
-    );
+  test(
+    'LoginUseCase should return UserSession when credentials are valid',
+    () async {
+      final session = await useCase.execute(
+        email: 'felipe.taller@castromotors.pe',
+        password: 'Password123!',
+      );
 
-    expect(session.id, 'usr-1234');
-    expect(session.username, 'felipe.taller@castromotors.pe');
-    expect(session.token, 'jwt-access-token-xyz');
-    expect(session.isOwner, true);
-    expect(session.hasWorkshopManagementAccess, true);
-  });
+      expect(session.id, 'usr-1234');
+      expect(session.username, 'felipe.taller@castromotors.pe');
+      expect(session.token, 'jwt-access-token-xyz');
+      expect(session.isOwner, true);
+      expect(session.hasWorkshopManagementAccess, true);
+    },
+  );
 
   test('LoginUseCase should rethrow exception when repository fails', () async {
     mockRepository.shouldThrow = true;
 
     expect(
-      () => useCase.execute(
-        email: 'wrong@castromotors.pe',
-        password: 'wrong',
-      ),
+      () => useCase.execute(email: 'wrong@castromotors.pe', password: 'wrong'),
       throwsA(isA<Exception>()),
     );
   });

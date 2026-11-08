@@ -67,3 +67,4 @@ class NetworkException extends AppException {
     super.details,
   });
 }
+

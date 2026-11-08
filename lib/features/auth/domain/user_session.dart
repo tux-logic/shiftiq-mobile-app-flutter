@@ -22,3 +22,4 @@ class UserSession {
 
   bool get hasWorkshopManagementAccess => isOwner || isBranchManager;
 }
+

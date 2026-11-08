@@ -13,21 +13,18 @@ class AuthApi {
   }) async {
     final response = await apiClient.post(
       ApiConstants.authSessions,
-      body: {
-        'email': email.trim(),
-        'password': password,
-      },
+      body: {'email': email.trim(), 'password': password},
     );
 
     return SessionResponseDto.fromJson(response as Map<String, dynamic>);
   }
 
-  Future<SessionResponseDto> refreshToken({required String refreshToken}) async {
+  Future<SessionResponseDto> refreshToken({
+    required String refreshToken,
+  }) async {
     final response = await apiClient.post(
       ApiConstants.authRefresh,
-      body: {
-        'refreshToken': refreshToken,
-      },
+      body: {'refreshToken': refreshToken},
     );
 
     return SessionResponseDto.fromJson(response as Map<String, dynamic>);
@@ -36,9 +33,7 @@ class AuthApi {
   Future<void> sendPasswordRecoveryOtp(String email) async {
     await apiClient.post(
       ApiConstants.passwordRecoveries,
-      body: {
-        'email': email.trim(),
-      },
+      body: {'email': email.trim()},
     );
   }
 }

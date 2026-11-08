@@ -24,7 +24,8 @@ class WorkshopDto {
       businessName: json['businessName'] as String? ?? '',
       brandName: json['brandName'] as String? ?? '',
       taxId: json['taxId'] as String? ?? '',
-      mileageIntervalConfig: (json['mileageIntervalConfig'] as num?)?.toInt() ?? 5000,
+      mileageIntervalConfig:
+          (json['mileageIntervalConfig'] as num?)?.toInt() ?? 5000,
     );
   }
 

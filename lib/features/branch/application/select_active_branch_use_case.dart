@@ -10,3 +10,4 @@ class SelectActiveBranchUseCase {
     return repository.setActiveBranch(branch);
   }
 }
+

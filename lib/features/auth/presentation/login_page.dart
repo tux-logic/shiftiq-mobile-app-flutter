@@ -35,9 +35,7 @@ class _LoginPageState extends State<LoginPage> {
 
     if (success && mounted) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => const BranchSelectionPage(),
-        ),
+        MaterialPageRoute(builder: (context) => const BranchSelectionPage()),
       );
     }
   }
@@ -49,7 +47,10 @@ class _LoginPageState extends State<LoginPage> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 32.0,
+            ),
             child: ListenableBuilder(
               listenable: widget.viewModel,
               builder: (context, _) {
@@ -99,7 +100,9 @@ class _LoginPageState extends State<LoginPage> {
                             TextSpan(text: 'Shift'),
                             TextSpan(
                               text: 'IQ',
-                              style: TextStyle(color: ShiftIQColors.accentSkyBlue),
+                              style: TextStyle(
+                                color: ShiftIQColors.accentSkyBlue,
+                              ),
                             ),
                             TextSpan(
                               text: ' Workshop',
@@ -131,7 +134,9 @@ class _LoginPageState extends State<LoginPage> {
                             color: ShiftIQColors.severityCrimson.withAlpha(25),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: ShiftIQColors.severityCrimson.withAlpha(120),
+                              color: ShiftIQColors.severityCrimson.withAlpha(
+                                120,
+                              ),
                             ),
                           ),
                           child: Row(
