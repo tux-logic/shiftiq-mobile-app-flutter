@@ -37,3 +37,4 @@ abstract class InventoryRepository {
 
   Future<List<Product>> getLowStockAlerts(String branchId);
 }
+
