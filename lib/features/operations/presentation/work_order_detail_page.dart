@@ -465,7 +465,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
 
                       if (confirmed == true) {
                         final ok = await vm.completeOrder();
-                        if (ok && mounted) {
+                        if (ok && context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text(
