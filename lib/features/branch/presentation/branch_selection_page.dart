@@ -3,6 +3,7 @@ import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/branch/domain/branch.dart';
 import 'package:shiftiq_mobile_app_flutter/features/branch/presentation/branch_selection_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/main/presentation/main_page.dart';
 
 class BranchSelectionPage extends StatefulWidget {
   const BranchSelectionPage({super.key});
@@ -32,7 +33,10 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
           backgroundColor: ShiftIQColors.preventiveGreen,
         ),
       );
-      // In Hito 1, show confirmation screen or direct entry
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const MainPage()),
+        (route) => false,
+      );
     }
   }
 
