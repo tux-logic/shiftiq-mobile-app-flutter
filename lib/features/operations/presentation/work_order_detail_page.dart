@@ -3,6 +3,8 @@ import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/work_order_task.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_order_detail_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/entities/voucher_item.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/checkout_voucher_page.dart';
 
 class WorkOrderDetailPage extends StatefulWidget {
   final String workOrderId;
@@ -500,7 +502,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                       ],
                     ),
                   )
-                else
+                else ...[
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -528,6 +530,57 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      final items = <VoucherItem>[];
+                      for (final task in order.tasks) {
+                        items.add(
+                          VoucherItem.create(
+                            id: 'svc-${task.id}',
+                            description: task.description,
+                            itemType: VoucherItemType.service,
+                            quantity: 1,
+                            unitPrice: task.price,
+                          ),
+                        );
+                        for (final p in task.products) {
+                          items.add(
+                            VoucherItem.create(
+                              id: 'sp-${p.id}',
+                              description: p.productName,
+                              itemType: VoucherItemType.sparePart,
+                              quantity: p.quantity,
+                              unitPrice: p.unitPrice,
+                            ),
+                          );
+                        }
+                      }
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CheckoutVoucherPage(
+                            branchId: order.branchId,
+                            workOrderId: order.id,
+                            initialCustomerName: order.customerName,
+                            initialPlate: order.vehiclePlate,
+                            initialItems: items.isNotEmpty ? items : null,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.receipt_long),
+                    label: const Text('EMITIR BOLETA / FACTURA SUNAT'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ShiftIQColors.primaryBlue,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size.fromHeight(48),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ],
 
                 const SizedBox(height: 20),
               ],

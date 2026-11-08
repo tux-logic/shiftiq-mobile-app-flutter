@@ -46,6 +46,16 @@ import 'package:shiftiq_mobile_app_flutter/features/iot/domain/repositories/tele
 import 'package:shiftiq_mobile_app_flutter/features/iot/infrastructure/remote/telemetry_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/infrastructure/repositories/telemetry_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/controllers/telemetry_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/application/commandservices/create_quote_command_service.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/application/commandservices/emit_voucher_command_service.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/application/commandservices/process_payment_command_service.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/application/queryservices/get_quotes_query_service.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/application/queryservices/get_voucher_detail_query_service.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/application/queryservices/get_vouchers_by_branch_query_service.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/domain/repositories/billing_repository.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/infrastructure/remote/billing_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/infrastructure/repositories/billing_repository_impl.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/controllers/billing_view_model.dart';
 
 final getIt = GetIt.instance;
 
@@ -277,6 +287,62 @@ void setupDependencies() {
       getDtcDetailQuery: getIt<GetDtcDetailQueryService>(),
       getLiveSensorsQuery: getIt<GetLiveSensorStreamQueryService>(),
       updateDtcStatusCommand: getIt<UpdateDtcStatusCommandService>(),
+    ),
+  );
+
+  // 8. Billing & SUNAT Invoicing Context
+  getIt.registerLazySingleton<BillingApi>(
+    () => BillingApi(apiClient: getIt<ApiClient>()),
+  );
+
+  getIt.registerLazySingleton<BillingRepository>(
+    () => BillingRepositoryImpl(billingApi: getIt<BillingApi>()),
+  );
+
+  getIt.registerLazySingleton<GetVouchersByBranchQueryService>(
+    () => GetVouchersByBranchQueryService(
+      billingRepository: getIt<BillingRepository>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<GetVoucherDetailQueryService>(
+    () => GetVoucherDetailQueryService(
+      billingRepository: getIt<BillingRepository>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<GetQuotesQueryService>(
+    () => GetQuotesQueryService(
+      billingRepository: getIt<BillingRepository>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<EmitVoucherCommandService>(
+    () => EmitVoucherCommandService(
+      billingRepository: getIt<BillingRepository>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<ProcessPaymentCommandService>(
+    () => ProcessPaymentCommandService(
+      billingRepository: getIt<BillingRepository>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<CreateQuoteCommandService>(
+    () => CreateQuoteCommandService(
+      billingRepository: getIt<BillingRepository>(),
+    ),
+  );
+
+  getIt.registerFactory<BillingViewModel>(
+    () => BillingViewModel(
+      getVouchersQuery: getIt<GetVouchersByBranchQueryService>(),
+      getVoucherDetailQuery: getIt<GetVoucherDetailQueryService>(),
+      getQuotesQuery: getIt<GetQuotesQueryService>(),
+      emitVoucherCommand: getIt<EmitVoucherCommandService>(),
+      processPaymentCommand: getIt<ProcessPaymentCommandService>(),
+      createQuoteCommand: getIt<CreateQuoteCommandService>(),
     ),
   );
 }
