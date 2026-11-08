@@ -4,7 +4,7 @@ import 'package:sqflite/sqflite.dart';
 
 /// Storage manager for B2B session tokens, user identity, and active branch
 class SessionStorage {
-  final AppDatabase appDatabase;
+  final AppDatabase? appDatabase;
 
   // In-memory cache for high-speed synchronous access
   String? _accessToken;
@@ -16,7 +16,7 @@ class SessionStorage {
   String? _activeBranchId;
   String? _activeBranchName;
 
-  SessionStorage({required this.appDatabase});
+  SessionStorage({this.appDatabase});
 
   // Keys in SQLite app_settings table
   static const String _keyAccessToken = 'auth_access_token';
@@ -30,8 +30,9 @@ class SessionStorage {
 
   /// Initializes in-memory cache from persistent SQLite database
   Future<void> initialize() async {
+    if (appDatabase == null) return;
     try {
-      final db = await appDatabase.database;
+      final db = await appDatabase!.database;
       final results = await db.query('app_settings');
       for (final row in results) {
         final key = row['key'] as String;
@@ -69,8 +70,9 @@ class SessionStorage {
   }
 
   Future<void> _persistSetting(String key, String? value) async {
+    if (appDatabase == null) return;
     try {
-      final db = await appDatabase.database;
+      final db = await appDatabase!.database;
       if (value == null) {
         await db.delete('app_settings', where: 'key = ?', whereArgs: [key]);
       } else {
@@ -88,6 +90,8 @@ class SessionStorage {
   // Getters & Setters
   Future<String?> getAccessToken() async => _accessToken;
   Future<String?> getRefreshToken() async => _refreshToken;
+  Future<String?> getActiveBranchId() async => _activeBranchId;
+  Future<String?> getActiveBranchName() async => _activeBranchName;
   String? get userId => _userId;
   String? get username => _username;
   List<String> get roles => _roles;
@@ -153,11 +157,14 @@ class SessionStorage {
     _activeBranchId = null;
     _activeBranchName = null;
 
-    try {
-      final db = await appDatabase.database;
-      await db.delete('app_settings');
-    } catch (_) {
-      // Ignored during testing
+    if (appDatabase != null) {
+      try {
+        final db = await appDatabase!.database;
+        await db.delete('app_settings');
+      } catch (_) {
+        // Ignored during testing
+      }
     }
   }
 }
+

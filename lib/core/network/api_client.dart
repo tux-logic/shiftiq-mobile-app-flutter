@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:http/http.dart' as http;
 import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/network/app_exception.dart';
@@ -11,12 +12,12 @@ class ApiClient {
   final SessionStorage sessionStorage;
   final http.Client _client;
 
-  ApiClient({
-    required this.sessionStorage,
-    http.Client? client,
-  }) : _client = client ?? http.Client();
+  ApiClient({required this.sessionStorage, http.Client? client})
+    : _client = client ?? http.Client();
 
-  Future<Map<String, String>> _buildHeaders([Map<String, String>? extraHeaders]) async {
+  Future<Map<String, String>> _buildHeaders([
+    Map<String, String>? extraHeaders,
+  ]) async {
     final token = await sessionStorage.getAccessToken();
     final headers = <String, String>{
       HttpHeaders.contentTypeHeader: 'application/json',
@@ -191,18 +192,32 @@ class ApiClient {
     }
 
     final message = decodedJson is Map<String, dynamic>
-        ? (decodedJson['message'] ?? decodedJson['error'] ?? 'Error del servidor')
+        ? (decodedJson['message'] ??
+              decodedJson['error'] ??
+              'Error del servidor')
         : 'Error del servidor ($statusCode)';
 
     switch (statusCode) {
       case 400:
-        throw ValidationException(message: message.toString(), details: decodedJson);
+        throw ValidationException(
+          message: message.toString(),
+          details: decodedJson,
+        );
       case 401:
-        throw AuthenticationException(message: message.toString(), details: decodedJson);
+        throw AuthenticationException(
+          message: message.toString(),
+          details: decodedJson,
+        );
       case 403:
-        throw AccessDeniedException(message: message.toString(), details: decodedJson);
+        throw AccessDeniedException(
+          message: message.toString(),
+          details: decodedJson,
+        );
       case 404:
-        throw NotFoundException(message: message.toString(), details: decodedJson);
+        throw NotFoundException(
+          message: message.toString(),
+          details: decodedJson,
+        );
       case 500:
       default:
         throw ServerException(

@@ -37,3 +37,4 @@ class Branch {
     this.active = true,
   });
 }
+
