@@ -38,6 +38,15 @@ import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/repositories/ap
 import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/remote/appointment_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/repositories/appointment_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/controllers/appointments_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/inventory/application/commandservices/create_product_command_service.dart';
+import 'package:shiftiq_mobile_app_flutter/features/inventory/application/commandservices/register_batch_command_service.dart';
+import 'package:shiftiq_mobile_app_flutter/features/inventory/application/queryservices/get_low_stock_alerts_query_service.dart';
+import 'package:shiftiq_mobile_app_flutter/features/inventory/application/queryservices/get_product_detail_query_service.dart';
+import 'package:shiftiq_mobile_app_flutter/features/inventory/application/queryservices/get_products_by_branch_query_service.dart';
+import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/repositories/inventory_repository.dart';
+import 'package:shiftiq_mobile_app_flutter/features/inventory/infrastructure/remote/inventory_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/inventory/infrastructure/repositories/inventory_repository_impl.dart';
+import 'package:shiftiq_mobile_app_flutter/features/inventory/presentation/controllers/inventory_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/application/commandservices/update_dtc_status_command_service.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/application/queryservices/get_dtc_alerts_query_service.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/application/queryservices/get_dtc_detail_query_service.dart';
@@ -248,7 +257,55 @@ void setupDependencies() {
     ),
   );
 
-  // 7. IoT Telemetry & OBD-II Context
+  // 7. Inventory Context (Products, Spare Parts & Batch Management)
+  getIt.registerLazySingleton<InventoryApi>(
+    () => InventoryApi(apiClient: getIt<ApiClient>()),
+  );
+
+  getIt.registerLazySingleton<InventoryRepository>(
+    () => InventoryRepositoryImpl(inventoryApi: getIt<InventoryApi>()),
+  );
+
+  getIt.registerLazySingleton<GetProductsByBranchQueryService>(
+    () => GetProductsByBranchQueryService(
+      inventoryRepository: getIt<InventoryRepository>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<GetProductDetailQueryService>(
+    () => GetProductDetailQueryService(
+      inventoryRepository: getIt<InventoryRepository>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<GetLowStockAlertsQueryService>(
+    () => GetLowStockAlertsQueryService(
+      inventoryRepository: getIt<InventoryRepository>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<CreateProductCommandService>(
+    () => CreateProductCommandService(
+      inventoryRepository: getIt<InventoryRepository>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<RegisterBatchCommandService>(
+    () => RegisterBatchCommandService(
+      inventoryRepository: getIt<InventoryRepository>(),
+    ),
+  );
+
+  getIt.registerFactory<InventoryViewModel>(
+    () => InventoryViewModel(
+      getProductsQuery: getIt<GetProductsByBranchQueryService>(),
+      getProductDetailQuery: getIt<GetProductDetailQueryService>(),
+      createProductCommand: getIt<CreateProductCommandService>(),
+      registerBatchCommand: getIt<RegisterBatchCommandService>(),
+    ),
+  );
+
+  // 8. IoT Telemetry & OBD-II Context
   getIt.registerLazySingleton<TelemetryApi>(
     () => TelemetryApi(apiClient: getIt<ApiClient>()),
   );
@@ -290,7 +347,7 @@ void setupDependencies() {
     ),
   );
 
-  // 8. Billing & SUNAT Invoicing Context
+  // 9. Billing & SUNAT Invoicing Context
   getIt.registerLazySingleton<BillingApi>(
     () => BillingApi(apiClient: getIt<ApiClient>()),
   );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/dashboard/presentation/dashboard_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/views/appointments_page.dart';
+import 'package:shiftiq_mobile_app_flutter/features/inventory/presentation/views/inventory_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/views/telemetry_dashboard_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_orders_page.dart';
 
@@ -43,11 +44,7 @@ class _MainPageState extends State<MainPage> {
           ),
           const WorkOrdersPage(),
           const AppointmentsPage(),
-          _buildPlaceholderPage(
-            title: 'Inventario y Lotes',
-            subtitle: 'Hito 5: Catálogo de Repuestos y Stock Mínimo',
-            icon: Icons.inventory_2_outlined,
-          ),
+          const InventoryPage(),
           const TelemetryDashboardPage(),
         ],
       ),
@@ -82,55 +79,6 @@ class _MainPageState extends State<MainPage> {
             label: 'Telemetría',
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPlaceholderPage({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-  }) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: ShiftIQColors.primaryBlue.withAlpha(20),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, size: 48, color: ShiftIQColors.primaryBlue),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: ShiftIQColors.graphiteText,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                subtitle,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
