@@ -4,3 +4,4 @@ import 'package:shiftiq_mobile_app_flutter/features/dashboard/domain/model/aggre
 abstract class AnalyticsRepository {
   Future<BranchSummary> getBranchSummary(String branchId);
 }
+

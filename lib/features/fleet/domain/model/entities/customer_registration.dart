@@ -25,3 +25,4 @@ class CustomerRegistration {
 
   bool get isActive => status.toUpperCase() == 'ACTIVE';
 }
+

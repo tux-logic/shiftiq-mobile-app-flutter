@@ -301,3 +301,4 @@ class AppointmentRepositoryImpl implements AppointmentRepository {
         .toList();
   }
 }
+

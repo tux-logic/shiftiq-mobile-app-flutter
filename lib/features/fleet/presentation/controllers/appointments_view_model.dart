@@ -150,3 +150,4 @@ class AppointmentsViewModel extends ChangeNotifier {
     }
   }
 }
+

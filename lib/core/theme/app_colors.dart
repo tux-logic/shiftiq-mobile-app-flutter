@@ -17,3 +17,4 @@ class AppColors {
   static const Color stateError = ShiftIQColors.severityCrimson;
   static const Color stateInfo = Color(0xFF2563EB);
 }
+

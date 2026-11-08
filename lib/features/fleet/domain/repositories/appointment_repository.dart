@@ -32,3 +32,4 @@ abstract class AppointmentRepository {
 
   Future<List<CustomerRegistration>> getCustomerDirectory(String branchId);
 }
+

@@ -12,3 +12,4 @@ abstract class BranchRepository {
 
   Future<String?> getActiveBranchName();
 }
+

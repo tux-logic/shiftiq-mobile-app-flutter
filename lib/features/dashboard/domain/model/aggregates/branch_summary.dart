@@ -20,3 +20,4 @@ class BranchSummary {
   int get totalAlertsCount => lowStockAlertsCount + dtcAlertsCount;
   String get formattedRevenue => 'S/ ${totalRevenue.toStringAsFixed(2)}';
 }
+
