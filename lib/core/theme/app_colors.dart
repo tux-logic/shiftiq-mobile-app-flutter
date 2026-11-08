@@ -16,5 +16,13 @@ class AppColors {
   static const Color stateWarning = ShiftIQColors.severityAmber;
   static const Color stateError = ShiftIQColors.severityCrimson;
   static const Color stateInfo = Color(0xFF2563EB);
-}
 
+  // Convenient semantic aliases
+  static const Color success = ShiftIQColors.preventiveGreen;
+  static const Color warning = ShiftIQColors.severityAmber;
+  static const Color error = ShiftIQColors.severityCrimson;
+  static const Color info = Color(0xFF2563EB);
+  static const Color border = ShiftIQColors.borderSlate;
+  static const Color textSecondary = Color(0xFF64748B);
+  static const Color surface = Colors.white;
+}

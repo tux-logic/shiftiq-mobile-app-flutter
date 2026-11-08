@@ -6,6 +6,7 @@ import 'package:shiftiq_mobile_app_flutter/features/dashboard/presentation/dashb
 import 'package:shiftiq_mobile_app_flutter/features/dashboard/presentation/widgets/dtc_alert_banner.dart';
 import 'package:shiftiq_mobile_app_flutter/features/dashboard/presentation/widgets/kpi_metric_card.dart';
 import 'package:shiftiq_mobile_app_flutter/features/dashboard/presentation/widgets/quick_actions_row.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/billing_dashboard_page.dart';
 
 class DashboardPage extends StatefulWidget {
   final DashboardViewModel? viewModel;
@@ -95,6 +96,17 @@ class _DashboardPageState extends State<DashboardPage> {
               ],
             ),
             actions: [
+              IconButton(
+                tooltip: 'Facturación y Cotizaciones SUNAT',
+                icon: const Icon(Icons.receipt_long),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const BillingDashboardPage(),
+                    ),
+                  );
+                },
+              ),
               IconButton(
                 tooltip: 'Cambiar de Sede',
                 icon: const Icon(Icons.storefront_outlined),
@@ -199,6 +211,13 @@ class _DashboardPageState extends State<DashboardPage> {
                               subtitle: '+14% vs mes anterior',
                               icon: Icons.trending_up,
                               accentColor: ShiftIQColors.preventiveGreen,
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const BillingDashboardPage(),
+                                  ),
+                                );
+                              },
                             ),
                             KpiMetricCard(
                               title: 'Órdenes Trabajo',
