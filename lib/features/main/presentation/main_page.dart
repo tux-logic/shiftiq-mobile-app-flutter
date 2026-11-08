@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/dashboard/presentation/dashboard_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/views/appointments_page.dart';
+import 'package:shiftiq_mobile_app_flutter/features/inventory/presentation/views/inventory_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_orders_page.dart';
 
 class MainPage extends StatefulWidget {
@@ -42,11 +43,7 @@ class _MainPageState extends State<MainPage> {
           ),
           const WorkOrdersPage(),
           const AppointmentsPage(),
-          _buildPlaceholderPage(
-            title: 'Inventario y Lotes',
-            subtitle: 'Hito 5: Catálogo de Repuestos y Stock Mínimo',
-            icon: Icons.inventory_2_outlined,
-          ),
+          const InventoryPage(),
           _buildPlaceholderPage(
             title: 'Telemetría IoT & OBD-II',
             subtitle: 'Hito 6: Códigos DTC y Diagnóstico de Sensores en Vivo',
