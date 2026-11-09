@@ -18,17 +18,19 @@ class VehicleApi {
     String? photoUrl,
     String? customerId,
   }) async {
+    final body = <String, dynamic>{
+      'plateNumber': plateNumber,
+      'brand': brand,
+      'model': model,
+      'year': year,
+      'vin': vin,
+    };
+    if (photoUrl != null) body['photoUrl'] = photoUrl;
+    if (customerId != null) body['customerId'] = customerId;
+
     final response = await apiClient.post(
       ApiConstants.vehicles,
-      body: {
-        'plateNumber': plateNumber,
-        'brand': brand,
-        'model': model,
-        'year': year,
-        'vin': vin,
-        if (photoUrl != null) 'photoUrl': photoUrl,
-        if (customerId != null) 'customerId': customerId,
-      },
+      body: body,
     );
     return response as Map<String, dynamic>;
   }
@@ -59,16 +61,18 @@ class VehicleApi {
     required String vin,
     String? photoUrl,
   }) async {
+    final body = <String, dynamic>{
+      'plateNumber': plateNumber,
+      'brand': brand,
+      'model': model,
+      'year': year,
+      'vin': vin,
+    };
+    if (photoUrl != null) body['photoUrl'] = photoUrl;
+
     final response = await apiClient.put(
       ApiConstants.vehicleById(id),
-      body: {
-        'plateNumber': plateNumber,
-        'brand': brand,
-        'model': model,
-        'year': year,
-        'vin': vin,
-        if (photoUrl != null) 'photoUrl': photoUrl,
-      },
+      body: body,
     );
     return response as Map<String, dynamic>;
   }

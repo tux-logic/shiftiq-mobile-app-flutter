@@ -24,5 +24,31 @@ class CustomerRegistration {
     this.registeredAt,
   });
 
+  CustomerRegistration copyWith({
+    String? id,
+    String? branchId,
+    String? customerId,
+    String? customerName,
+    String? phone,
+    String? email,
+    String? vehiclePlate,
+    String? vehicleModel,
+    String? status,
+    DateTime? registeredAt,
+  }) {
+    return CustomerRegistration(
+      id: id ?? this.id,
+      branchId: branchId ?? this.branchId,
+      customerId: customerId ?? this.customerId,
+      customerName: customerName ?? this.customerName,
+      phone: phone ?? this.phone,
+      email: email ?? this.email,
+      vehiclePlate: vehiclePlate ?? this.vehiclePlate,
+      vehicleModel: vehicleModel ?? this.vehicleModel,
+      status: status ?? this.status,
+      registeredAt: registeredAt ?? this.registeredAt,
+    );
+  }
+
   bool get isActive => status.toUpperCase() == 'ACTIVE';
 }

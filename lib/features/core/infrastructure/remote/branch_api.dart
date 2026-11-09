@@ -15,15 +15,17 @@ class BranchApi {
     required String address,
     String? phone,
   }) async {
+    final body = <String, dynamic>{
+      'workshopId': workshopId,
+      'code': code,
+      'name': name,
+      'address': address,
+    };
+    if (phone != null) body['phone'] = phone;
+
     final response = await apiClient.post(
       ApiConstants.branches,
-      body: {
-        'workshopId': workshopId,
-        'code': code,
-        'name': name,
-        'address': address,
-        if (phone != null) 'phone': phone,
-      },
+      body: body,
     );
     return response as Map<String, dynamic>;
   }
@@ -36,14 +38,16 @@ class BranchApi {
     required String address,
     String? phone,
   }) async {
+    final body = <String, dynamic>{
+      'code': code,
+      'name': name,
+      'address': address,
+    };
+    if (phone != null) body['phone'] = phone;
+
     final response = await apiClient.put(
       ApiConstants.branchById(branchId),
-      body: {
-        'code': code,
-        'name': name,
-        'address': address,
-        if (phone != null) 'phone': phone,
-      },
+      body: body,
     );
     return response as Map<String, dynamic>;
   }

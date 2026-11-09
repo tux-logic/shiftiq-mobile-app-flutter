@@ -79,16 +79,18 @@ class AppointmentApi {
     required String status,
     String? notes,
   }) async {
+    final body = <String, dynamic>{
+      'branchId': branchId,
+      'customerId': customerId,
+      'vehicleId': vehicleId,
+      'scheduledStart': scheduledStart.toIso8601String(),
+      'status': status.toUpperCase(),
+    };
+    if (notes != null) body['notes'] = notes;
+
     final response = await apiClient.put(
       ApiConstants.appointmentById(id),
-      body: {
-        'branchId': branchId,
-        'customerId': customerId,
-        'vehicleId': vehicleId,
-        'scheduledStart': scheduledStart.toIso8601String(),
-        'status': status.toUpperCase(),
-        if (notes != null) 'notes': notes,
-      },
+      body: body,
     );
     return response as Map<String, dynamic>;
   }

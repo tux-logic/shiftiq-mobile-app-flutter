@@ -38,15 +38,17 @@ class EmployeeRegistrationApi {
     String? specialityName,
     double? salary,
   }) async {
+    final body = <String, dynamic>{
+      'employeeId': employeeId,
+      'branchId': branchId,
+    };
+    if (speciality != null) body['speciality'] = speciality;
+    if (specialityName != null) body['specialityName'] = specialityName;
+    if (salary != null) body['salary'] = salary;
+
     final response = await apiClient.post(
       ApiConstants.employeeRegistrationRequestJoin,
-      body: {
-        'employeeId': employeeId,
-        'branchId': branchId,
-        if (speciality != null) 'speciality': speciality,
-        if (specialityName != null) 'specialityName': specialityName,
-        if (salary != null) 'salary': salary,
-      },
+      body: body,
     );
     return response as Map<String, dynamic>;
   }
