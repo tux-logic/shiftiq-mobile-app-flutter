@@ -60,6 +60,14 @@ abstract class FleetRepository {
 
   Future<CustomerRegistration> getCustomerRegistrationById(String registrationId);
 
+  Future<CustomerRegistration> updateCustomerRegistrationStatus({
+    required String registrationId,
+    required String status,
+    String? reason,
+  });
+
+  Future<void> deleteCustomerRegistration(String registrationId);
+
   Future<List<CustomerRegistration>> getCustomerDirectory(String branchId);
 
   // --- Employee Registrations (Hierarchical Onboarding) ---

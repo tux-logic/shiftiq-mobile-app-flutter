@@ -161,6 +161,25 @@ class FleetRepositoryImpl implements FleetRepository {
   }
 
   @override
+  Future<CustomerRegistration> updateCustomerRegistrationStatus({
+    required String registrationId,
+    required String status,
+    String? reason,
+  }) async {
+    final json = await customerRegistrationApi.updateCustomerRegistrationStatus(
+      id: registrationId,
+      status: status,
+      reason: reason,
+    );
+    return CustomerRegistrationDto.fromJson(json).toDomain();
+  }
+
+  @override
+  Future<void> deleteCustomerRegistration(String registrationId) async {
+    await customerRegistrationApi.deleteCustomerRegistration(registrationId);
+  }
+
+  @override
   Future<List<CustomerRegistration>> getCustomerDirectory(
     String branchId,
   ) async {
