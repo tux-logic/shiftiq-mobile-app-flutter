@@ -28,6 +28,9 @@ class QuoteCard extends StatelessWidget {
       case QuoteStatus.converted:
         statusColor = AppColors.secondary;
         break;
+      case QuoteStatus.canceled:
+        statusColor = AppColors.error;
+        break;
       case QuoteStatus.draft:
         statusColor = AppColors.warning;
         break;
