@@ -183,17 +183,22 @@ class InventoryRepositoryImpl implements InventoryRepository {
     String? category,
     String? query,
     StockStatus? status,
+    String? name,
+    bool? lowStockOnly,
   }) async {
     try {
       final remoteDtos = await inventoryApi.getProducts(
         branchId: branchId,
         category: category,
-        query: query,
+        query: query ?? name,
       );
       if (remoteDtos.isNotEmpty) {
         var list = remoteDtos.map((dto) => dto.toDomain()).toList();
         if (status != null) {
           list = list.where((p) => p.status == status).toList();
+        }
+        if (lowStockOnly == true) {
+          list = list.where((p) => p.isLowStock || p.isOutOfStock).toList();
         }
         return list;
       }
@@ -209,12 +214,12 @@ class InventoryRepositoryImpl implements InventoryRepository {
       list = list.where((p) => p.category.toUpperCase() == category.toUpperCase()).toList();
     }
 
-    if (query != null && query.trim().isNotEmpty) {
-      final q = query.trim().toLowerCase();
+    final effectiveQuery = (query ?? name)?.trim().toLowerCase();
+    if (effectiveQuery != null && effectiveQuery.isNotEmpty) {
       list = list.where((p) {
-        return p.name.toLowerCase().contains(q) ||
-            p.sku.toLowerCase().contains(q) ||
-            p.category.toLowerCase().contains(q);
+        return p.name.toLowerCase().contains(effectiveQuery) ||
+            p.sku.toLowerCase().contains(effectiveQuery) ||
+            p.category.toLowerCase().contains(effectiveQuery);
       }).toList();
     }
 
@@ -222,8 +227,16 @@ class InventoryRepositoryImpl implements InventoryRepository {
       list = list.where((p) => p.status == status).toList();
     }
 
+    if (lowStockOnly == true) {
+      list = list.where((p) => p.isLowStock || p.isOutOfStock).toList();
+    }
+
     return list;
   }
+
+  @override
+  Future<List<Product>> getBranchCatalog(String branchId) =>
+      getProducts(branchId: branchId);
 
   @override
   Future<Product> getProductById(String id) async {
@@ -246,20 +259,22 @@ class InventoryRepositoryImpl implements InventoryRepository {
     required String sku,
     required String name,
     required String category,
-    required double unitPrice,
-    required double costPrice,
-    required int initialStock,
+    double? salePrice,
+    double? unitPrice,
+    double costPrice = 0.0,
+    int initialStock = 0,
     int minimumStock = 5,
     String unitOfMeasure = 'UND',
     String description = '',
   }) async {
+    final effectivePrice = salePrice ?? unitPrice ?? 0.0;
     try {
       final dto = await inventoryApi.createProduct(
         branchId: branchId,
         sku: sku,
         name: name,
         category: category,
-        unitPrice: unitPrice,
+        unitPrice: effectivePrice,
         costPrice: costPrice,
         initialStock: initialStock,
         minimumStock: minimumStock,
@@ -279,7 +294,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
       sku: sku.toUpperCase().trim(),
       name: name.trim(),
       category: category.toUpperCase().trim(),
-      unitPrice: unitPrice,
+      salePrice: effectivePrice,
       costPrice: costPrice,
       currentStock: initialStock,
       minimumStock: minimumStock,
@@ -307,23 +322,59 @@ class InventoryRepositoryImpl implements InventoryRepository {
   }
 
   @override
-  Future<ProductBatch> registerBatch({
-    required String branchId,
+  Future<Product> updateProduct({
     required String productId,
-    required String batchNumber,
-    required String supplierName,
+    required String name,
+    required String category,
+    required String sku,
+    String description = '',
+    required double salePrice,
+    required int minimumStock,
+  }) async {
+    final index = _localProducts.indexWhere((p) => p.id == productId);
+    if (index != -1) {
+      final updated = _localProducts[index].copyWith(
+        name: name,
+        category: category,
+        sku: sku,
+        description: description,
+        salePrice: salePrice,
+        minimumStock: minimumStock,
+      );
+      _localProducts[index] = updated;
+      return updated;
+    }
+    throw Exception('Product not found: $productId');
+  }
+
+  @override
+  Future<void> deleteProduct(String productId) async {
+    _localProducts.removeWhere((p) => p.id == productId);
+  }
+
+  @override
+  Future<ProductBatch> registerBatch({
+    required String productId,
     required int quantity,
-    required double costPrice,
+    String? branchId,
+    String? batchNumber,
+    String? supplierName,
+    double? costPrice,
+    double? acquisitionCost,
     DateTime? expirationDate,
   }) async {
+    final effectiveCost = acquisitionCost ?? costPrice ?? 0.0;
+    final effectiveBatchNum = batchNumber ?? 'LOT-${DateTime.now().millisecondsSinceEpoch}';
+    final effectiveSupplier = supplierName ?? 'Distribuidor General';
+
     try {
       final dto = await inventoryApi.registerBatch(
-        branchId: branchId,
+        branchId: branchId ?? '',
         productId: productId,
-        batchNumber: batchNumber,
-        supplierName: supplierName,
+        batchNumber: effectiveBatchNum,
+        supplierName: effectiveSupplier,
         quantity: quantity,
-        costPrice: costPrice,
+        costPrice: effectiveCost,
         expirationDate: expirationDate,
       );
       final batch = dto.toDomain();
@@ -335,18 +386,33 @@ class InventoryRepositoryImpl implements InventoryRepository {
 
     final newBatch = ProductBatch(
       id: 'batch-${DateTime.now().millisecondsSinceEpoch}',
-      batchNumber: batchNumber.toUpperCase().trim(),
+      batchNumber: effectiveBatchNum.toUpperCase().trim(),
       productId: productId,
-      supplierName: supplierName.trim(),
+      supplierName: effectiveSupplier.trim(),
       quantityReceived: quantity,
       quantityRemaining: quantity,
-      costPrice: costPrice,
+      costPrice: effectiveCost,
       receptionDate: DateTime.now(),
       expirationDate: expirationDate,
     );
 
     _updateLocalStockWithBatch(productId, newBatch);
     return newBatch;
+  }
+
+  @override
+  Future<int> adjustStock({
+    required String productId,
+    required int quantity,
+    double acquisitionCost = 0.0,
+  }) async {
+    await registerBatch(
+      productId: productId,
+      quantity: quantity,
+      acquisitionCost: acquisitionCost,
+    );
+    final product = await getProductById(productId);
+    return product.currentStock;
   }
 
   void _updateLocalStockWithBatch(String productId, ProductBatch batch) {

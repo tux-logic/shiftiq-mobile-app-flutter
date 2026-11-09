@@ -62,27 +62,36 @@ class MockInventoryRepository implements InventoryRepository {
   ];
 
   @override
+  @override
   Future<List<Product>> getProducts({
     required String branchId,
     String? category,
     String? query,
     StockStatus? status,
+    String? name,
+    bool? lowStockOnly,
   }) async {
     return _products.where((p) {
       if (p.branchId != branchId) return false;
       if (category != null && category.isNotEmpty && category != 'TODOS') {
         if (p.category.toUpperCase() != category.toUpperCase()) return false;
       }
-      if (query != null && query.isNotEmpty) {
-        final q = query.toLowerCase();
+      final effectiveQuery = query ?? name;
+      if (effectiveQuery != null && effectiveQuery.isNotEmpty) {
+        final q = effectiveQuery.toLowerCase();
         final match = p.name.toLowerCase().contains(q) ||
             p.sku.toLowerCase().contains(q);
         if (!match) return false;
       }
       if (status != null && p.status != status) return false;
+      if (lowStockOnly == true && !p.isLowStock && !p.isOutOfStock) return false;
       return true;
     }).toList();
   }
+
+  @override
+  Future<List<Product>> getBranchCatalog(String branchId) =>
+      getProducts(branchId: branchId);
 
   @override
   Future<Product> getProductById(String id) async {
@@ -98,20 +107,22 @@ class MockInventoryRepository implements InventoryRepository {
     required String sku,
     required String name,
     required String category,
-    required double unitPrice,
-    required double costPrice,
-    required int initialStock,
+    double? salePrice,
+    double? unitPrice,
+    double costPrice = 0.0,
+    int initialStock = 0,
     int minimumStock = 5,
     String unitOfMeasure = 'UND',
     String description = '',
   }) async {
+    final effectivePrice = salePrice ?? unitPrice ?? 0.0;
     final product = Product(
       id: 'prod-${_products.length + 1}',
       branchId: branchId,
       sku: sku,
       name: name,
       category: category,
-      unitPrice: unitPrice,
+      salePrice: effectivePrice,
       costPrice: costPrice,
       currentStock: initialStock,
       minimumStock: minimumStock,
@@ -123,26 +134,58 @@ class MockInventoryRepository implements InventoryRepository {
   }
 
   @override
-  Future<ProductBatch> registerBatch({
-    required String branchId,
+  Future<Product> updateProduct({
     required String productId,
-    required String batchNumber,
-    required String supplierName,
+    required String name,
+    required String category,
+    required String sku,
+    String description = '',
+    required double salePrice,
+    required int minimumStock,
+  }) async {
+    final index = _products.indexWhere((p) => p.id == productId);
+    if (index == -1) throw Exception('Product not found');
+    final updated = _products[index].copyWith(
+      name: name,
+      category: category,
+      sku: sku,
+      description: description,
+      salePrice: salePrice,
+      minimumStock: minimumStock,
+    );
+    _products[index] = updated;
+    return updated;
+  }
+
+  @override
+  Future<void> deleteProduct(String productId) async {
+    _products.removeWhere((p) => p.id == productId);
+  }
+
+  @override
+  Future<ProductBatch> registerBatch({
+    required String productId,
     required int quantity,
-    required double costPrice,
+    String? branchId,
+    String? batchNumber,
+    String? supplierName,
+    double? costPrice,
+    double? acquisitionCost,
     DateTime? expirationDate,
   }) async {
     final index = _products.indexWhere((p) => p.id == productId);
     if (index == -1) throw Exception('Product not found');
 
+    final effectiveCost = acquisitionCost ?? costPrice ?? 0.0;
+    final effectiveBatchNum = batchNumber ?? 'LOT-${DateTime.now().millisecondsSinceEpoch}';
+
     final batch = ProductBatch(
-      id: 'batch-${DateTime.now().millisecondsSinceEpoch}',
-      batchNumber: batchNumber,
+      batchNumber: effectiveBatchNum,
       productId: productId,
-      supplierName: supplierName,
+      supplierName: supplierName ?? 'Bosch Lima',
       quantityReceived: quantity,
       quantityRemaining: quantity,
-      costPrice: costPrice,
+      acquisitionCost: effectiveCost,
       receptionDate: DateTime.now(),
       expirationDate: expirationDate,
     );
@@ -155,6 +198,21 @@ class MockInventoryRepository implements InventoryRepository {
     );
 
     return batch;
+  }
+
+  @override
+  Future<int> adjustStock({
+    required String productId,
+    required int quantity,
+    double acquisitionCost = 0.0,
+  }) async {
+    await registerBatch(
+      productId: productId,
+      quantity: quantity,
+      acquisitionCost: acquisitionCost,
+    );
+    final p = await getProductById(productId);
+    return p.currentStock;
   }
 
   @override
