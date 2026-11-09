@@ -24,6 +24,7 @@ import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/ge
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_workshops.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/lookup_profile_by_document.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/manage_branch_subscription.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/manage_profile_lifecycle.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/manage_specialties.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/select_active_branch.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/repositories/core_repository.dart';
@@ -51,7 +52,9 @@ import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/c
 import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/create_appointment.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/get_appointments.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/get_customer_registrations.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/manage_customer_registration_status.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/manage_employee_applications.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/manage_staff_affiliations.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/onboard_employee.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/register_customer_to_branch.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/update_appointment.dart';
@@ -234,6 +237,10 @@ void setupDependencies() {
     () => LookupProfileByDocumentUseCase(repository: getIt<CoreRepository>()),
   );
 
+  getIt.registerLazySingleton<ManageProfileLifecycle>(
+    () => ManageProfileLifecycle(repository: getIt<CoreRepository>()),
+  );
+
   getIt.registerFactory<BranchSelectionViewModel>(
     () => BranchSelectionViewModel(
       getUserBranchesUseCase: getIt<GetUserBranchesUseCase>(),
@@ -374,12 +381,20 @@ void setupDependencies() {
     () => GetCustomerRegistrationsUseCase(repository: getIt<FleetRepository>()),
   );
 
+  getIt.registerLazySingleton<ManageCustomerRegistrationStatus>(
+    () => ManageCustomerRegistrationStatus(repository: getIt<FleetRepository>()),
+  );
+
   getIt.registerLazySingleton<OnboardEmployeeUseCase>(
     () => OnboardEmployeeUseCase(repository: getIt<FleetRepository>()),
   );
 
   getIt.registerLazySingleton<ManageEmployeeApplicationsUseCase>(
     () => ManageEmployeeApplicationsUseCase(repository: getIt<FleetRepository>()),
+  );
+
+  getIt.registerLazySingleton<ManageStaffAffiliations>(
+    () => ManageStaffAffiliations(repository: getIt<FleetRepository>()),
   );
 
   getIt.registerFactory<AppointmentsViewModel>(
