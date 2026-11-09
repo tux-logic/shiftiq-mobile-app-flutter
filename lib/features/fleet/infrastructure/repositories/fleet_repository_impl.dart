@@ -256,6 +256,48 @@ class FleetRepositoryImpl implements FleetRepository {
         .map((json) => EmployeeRegistrationDto.fromJson(json).toDomain())
         .toList();
   }
+
+  @override
+  Future<EmployeeRegistration> getEmployeeRegistrationById(
+    String registrationId,
+  ) async {
+    final json = await employeeRegistrationApi.getEmployeeRegistrationById(
+      registrationId,
+    );
+    return EmployeeRegistrationDto.fromJson(json).toDomain();
+  }
+
+  @override
+  Future<EmployeeRegistration> updateEmployeeRegistration({
+    required String registrationId,
+    String? speciality,
+    String? specialityName,
+    double? salary,
+  }) async {
+    final json = await employeeRegistrationApi.updateEmployeeRegistration(
+      id: registrationId,
+      speciality: speciality,
+      specialityName: specialityName,
+      salary: salary,
+    );
+    return EmployeeRegistrationDto.fromJson(json).toDomain();
+  }
+
+  @override
+  Future<void> deleteEmployeeRegistration(String registrationId) async {
+    await employeeRegistrationApi.deleteEmployeeRegistration(registrationId);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getEmployeeCareerHistory({
+    required String branchId,
+    required String employeeId,
+  }) {
+    return employeeRegistrationApi.getEmployeeCareerHistory(
+      branchId: branchId,
+      employeeId: employeeId,
+    );
+  }
 }
 
 /// Backward compatibility alias.

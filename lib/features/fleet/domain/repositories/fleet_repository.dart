@@ -97,6 +97,24 @@ abstract class FleetRepository {
     String? status,
     String? employeeId,
   });
+
+  Future<EmployeeRegistration> getEmployeeRegistrationById(
+    String registrationId,
+  );
+
+  Future<EmployeeRegistration> updateEmployeeRegistration({
+    required String registrationId,
+    String? speciality,
+    String? specialityName,
+    double? salary,
+  });
+
+  Future<void> deleteEmployeeRegistration(String registrationId);
+
+  Future<List<Map<String, dynamic>>> getEmployeeCareerHistory({
+    required String branchId,
+    required String employeeId,
+  });
 }
 
 /// Backward compatibility alias.
