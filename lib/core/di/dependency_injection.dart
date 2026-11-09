@@ -18,12 +18,20 @@ import 'package:shiftiq_mobile_app_flutter/features/auth/infrastructure/auth_rep
 import 'package:shiftiq_mobile_app_flutter/features/auth/infrastructure/remote/auth_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/infrastructure/remote/user_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
-import 'package:shiftiq_mobile_app_flutter/features/branch/application/get_user_branches_use_case.dart';
-import 'package:shiftiq_mobile_app_flutter/features/branch/application/select_active_branch_use_case.dart';
-import 'package:shiftiq_mobile_app_flutter/features/branch/domain/branch_repository.dart';
-import 'package:shiftiq_mobile_app_flutter/features/branch/infrastructure/branch_repository_impl.dart';
-import 'package:shiftiq_mobile_app_flutter/features/branch/infrastructure/remote/branch_api.dart';
-import 'package:shiftiq_mobile_app_flutter/features/branch/presentation/branch_selection_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/create_workshop.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_user_branches.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_user_profile_context.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_workshops.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/lookup_profile_by_document.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/manage_branch_subscription.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/manage_specialties.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/select_active_branch.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/domain/repositories/core_repository.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/branch_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/profile_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/workshop_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/repositories/core_repository_impl.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/dashboard/application/get_branch_summary_use_case.dart';
 import 'package:shiftiq_mobile_app_flutter/features/dashboard/domain/analytics_repository.dart';
 import 'package:shiftiq_mobile_app_flutter/features/dashboard/infrastructure/analytics_repository_impl.dart';
@@ -166,24 +174,59 @@ void setupDependencies() {
     () => LoginViewModel(loginUseCase: getIt<LoginWithPasswordUseCase>()),
   );
 
-  // 3. Core Context (Workshops & Branches)
+  // 3. Core Context (Workshops, Branches, Profiles)
+  getIt.registerLazySingleton<WorkshopApi>(
+    () => WorkshopApi(apiClient: getIt<ApiClient>()),
+  );
+
   getIt.registerLazySingleton<BranchApi>(
     () => BranchApi(apiClient: getIt<ApiClient>()),
   );
 
-  getIt.registerLazySingleton<BranchRepository>(
-    () => BranchRepositoryImpl(
+  getIt.registerLazySingleton<ProfileApi>(
+    () => ProfileApi(apiClient: getIt<ApiClient>()),
+  );
+
+  getIt.registerLazySingleton<CoreRepository>(
+    () => CoreRepositoryImpl(
+      workshopApi: getIt<WorkshopApi>(),
       branchApi: getIt<BranchApi>(),
+      profileApi: getIt<ProfileApi>(),
       sessionStorage: getIt<SessionStorage>(),
+      eventBus: getIt<DomainEventBus>(),
     ),
   );
 
+  getIt.registerLazySingleton<CreateWorkshopUseCase>(
+    () => CreateWorkshopUseCase(repository: getIt<CoreRepository>()),
+  );
+
+  getIt.registerLazySingleton<GetWorkshopsUseCase>(
+    () => GetWorkshopsUseCase(repository: getIt<CoreRepository>()),
+  );
+
+  getIt.registerLazySingleton<ManageSpecialtiesUseCase>(
+    () => ManageSpecialtiesUseCase(repository: getIt<CoreRepository>()),
+  );
+
   getIt.registerLazySingleton<GetUserBranchesUseCase>(
-    () => GetUserBranchesUseCase(repository: getIt<BranchRepository>()),
+    () => GetUserBranchesUseCase(repository: getIt<CoreRepository>()),
   );
 
   getIt.registerLazySingleton<SelectActiveBranchUseCase>(
-    () => SelectActiveBranchUseCase(repository: getIt<BranchRepository>()),
+    () => SelectActiveBranchUseCase(repository: getIt<CoreRepository>()),
+  );
+
+  getIt.registerLazySingleton<ManageBranchSubscriptionUseCase>(
+    () => ManageBranchSubscriptionUseCase(repository: getIt<CoreRepository>()),
+  );
+
+  getIt.registerLazySingleton<GetUserProfileContextUseCase>(
+    () => GetUserProfileContextUseCase(repository: getIt<CoreRepository>()),
+  );
+
+  getIt.registerLazySingleton<LookupProfileByDocumentUseCase>(
+    () => LookupProfileByDocumentUseCase(repository: getIt<CoreRepository>()),
   );
 
   getIt.registerFactory<BranchSelectionViewModel>(

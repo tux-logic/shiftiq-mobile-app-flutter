@@ -7,8 +7,19 @@ class GetUserBranchesUseCase {
 
   GetUserBranchesUseCase({required this.repository});
 
-  Future<List<Branch>> execute(String workshopId) {
-    return repository.getBranchesByWorkshop(workshopId);
+  /// Retrieves branches for a specific workshop, or across all accessible workshops if omitted.
+  Future<List<Branch>> execute([String? workshopId]) async {
+    if (workshopId != null && workshopId.isNotEmpty) {
+      return repository.getBranchesByWorkshop(workshopId);
+    }
+
+    final workshops = await repository.getWorkshops();
+    final allBranches = <Branch>[];
+    for (final workshop in workshops) {
+      final branches = await repository.getBranchesByWorkshop(workshop.id);
+      allBranches.addAll(branches);
+    }
+    return allBranches;
   }
 
   Future<Branch> getBranchById(String branchId) {
