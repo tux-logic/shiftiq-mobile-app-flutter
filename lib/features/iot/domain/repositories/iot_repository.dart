@@ -114,7 +114,8 @@ abstract class IotRepository {
   // --- Telemetry Batches ---
   Future<void> ingestTelemetryBatch(TelemetryBatch batch);
 
-  // --- Live Sensor Stream (Monitoring compatibility) ---
+  // --- Live Sensor Stream & Readings (Monitoring compatibility) ---
+  Future<List<LiveSensorReading>> getLiveSensorReadings(String vehicleId);
   Stream<List<LiveSensorReading>> getLiveSensorStream(String branchId);
 }
 
