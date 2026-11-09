@@ -46,4 +46,12 @@ class ManageEmployeeApplicationsUseCase {
       employeeId: employeeId,
     );
   }
+
+  /// Alias for querying employee applications.
+  Future<List<EmployeeRegistration>> getApplications({
+    String? branchId,
+    String? status,
+    String? employeeId,
+  }) =>
+      list(branchId: branchId, status: status, employeeId: employeeId);
 }

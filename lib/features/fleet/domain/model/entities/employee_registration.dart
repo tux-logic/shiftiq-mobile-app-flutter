@@ -27,4 +27,30 @@ class EmployeeRegistration {
   bool get isActive => status.toUpperCase() == 'ACTIVE';
   bool get isPendingApproval => status.toUpperCase() == 'PENDING_APPROVAL';
   bool get isRejected => status.toUpperCase() == 'REJECTED';
+
+  EmployeeRegistration copyWith({
+    String? id,
+    String? employeeId,
+    String? branchId,
+    String? speciality,
+    String? specialityName,
+    double? salary,
+    String? role,
+    String? status,
+    DateTime? createdAt,
+    DateTime? approvedAt,
+  }) {
+    return EmployeeRegistration(
+      id: id ?? this.id,
+      employeeId: employeeId ?? this.employeeId,
+      branchId: branchId ?? this.branchId,
+      speciality: speciality ?? this.speciality,
+      specialityName: specialityName ?? this.specialityName,
+      salary: salary ?? this.salary,
+      role: role ?? this.role,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      approvedAt: approvedAt ?? this.approvedAt,
+    );
+  }
 }
