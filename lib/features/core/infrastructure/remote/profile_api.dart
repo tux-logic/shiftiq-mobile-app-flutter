@@ -74,6 +74,36 @@ class ProfileApi {
     return null;
   }
 
+  /// GET /api/v1/owners/{ownerId}
+  Future<Map<String, dynamic>> getOwnerById(String ownerId) async {
+    final response = await apiClient.get(ApiConstants.ownerById(ownerId));
+    return response as Map<String, dynamic>;
+  }
+
+  /// PUT /api/v1/owners/{ownerId}
+  Future<Map<String, dynamic>> updateOwnerProfile({
+    required String ownerId,
+    String? firstName,
+    String? lastName,
+    String? phone,
+  }) async {
+    final body = <String, dynamic>{};
+    if (firstName != null) body['firstName'] = firstName;
+    if (lastName != null) body['lastName'] = lastName;
+    if (phone != null) body['phone'] = phone;
+
+    final response = await apiClient.put(
+      ApiConstants.ownerById(ownerId),
+      body: body,
+    );
+    return response as Map<String, dynamic>;
+  }
+
+  /// DELETE /api/v1/owners/{ownerId}
+  Future<void> deleteOwnerProfile(String ownerId) async {
+    await apiClient.delete(ApiConstants.ownerById(ownerId));
+  }
+
   /// POST /api/v1/employees - Create employee profile linked to IAM user.
   Future<Map<String, dynamic>> createEmployeeProfile({
     required String userId,
@@ -109,6 +139,52 @@ class ProfileApi {
     return null;
   }
 
+  /// GET /api/v1/employees/{employeeId}
+  Future<Map<String, dynamic>> getEmployeeById(String employeeId) async {
+    final response = await apiClient.get(ApiConstants.employeeById(employeeId));
+    return response as Map<String, dynamic>;
+  }
+
+  /// GET /api/v1/employees?documentNumber={documentNumber}
+  Future<List<Map<String, dynamic>>> getEmployeesByDocumentNumber(
+    String documentNumber,
+  ) async {
+    final response = await apiClient.get(
+      ApiConstants.employeeByDocument(documentNumber),
+    );
+    if (response is List) {
+      return response.cast<Map<String, dynamic>>();
+    }
+    if (response is Map<String, dynamic>) {
+      return [response];
+    }
+    return [];
+  }
+
+  /// PUT /api/v1/employees/{employeeId}
+  Future<Map<String, dynamic>> updateEmployeeProfile({
+    required String employeeId,
+    String? firstName,
+    String? lastName,
+    String? phone,
+  }) async {
+    final body = <String, dynamic>{};
+    if (firstName != null) body['firstName'] = firstName;
+    if (lastName != null) body['lastName'] = lastName;
+    if (phone != null) body['phone'] = phone;
+
+    final response = await apiClient.put(
+      ApiConstants.employeeById(employeeId),
+      body: body,
+    );
+    return response as Map<String, dynamic>;
+  }
+
+  /// DELETE /api/v1/employees/{employeeId}
+  Future<void> deleteEmployeeProfile(String employeeId) async {
+    await apiClient.delete(ApiConstants.employeeById(employeeId));
+  }
+
   /// POST /api/v1/customers - Create customer profile linked to IAM user.
   Future<Map<String, dynamic>> createCustomerProfile({
     required String userId,
@@ -119,17 +195,19 @@ class ProfileApi {
     required String documentNumber,
     required String phone,
   }) async {
+    final body = <String, dynamic>{
+      'userId': userId,
+      'firstName': firstName,
+      'lastName': lastName,
+      'documentType': documentType,
+      'documentNumber': documentNumber,
+      'phone': phone,
+    };
+    if (businessName != null) body['businessName'] = businessName;
+
     final response = await apiClient.post(
       ApiConstants.customers,
-      body: {
-        'userId': userId,
-        'firstName': firstName,
-        'lastName': lastName,
-        if (businessName != null) 'businessName': businessName,
-        'documentType': documentType,
-        'documentNumber': documentNumber,
-        'phone': phone,
-      },
+      body: body,
     );
     return response as Map<String, dynamic>;
   }
@@ -144,5 +222,37 @@ class ProfileApi {
       return response.first as Map<String, dynamic>;
     }
     return null;
+  }
+
+  /// GET /api/v1/customers/{customerId}
+  Future<Map<String, dynamic>> getCustomerById(String customerId) async {
+    final response = await apiClient.get(ApiConstants.customerById(customerId));
+    return response as Map<String, dynamic>;
+  }
+
+  /// PUT /api/v1/customers/{customerId}
+  Future<Map<String, dynamic>> updateCustomerProfile({
+    required String customerId,
+    String? firstName,
+    String? lastName,
+    String? businessName,
+    String? phone,
+  }) async {
+    final body = <String, dynamic>{};
+    if (firstName != null) body['firstName'] = firstName;
+    if (lastName != null) body['lastName'] = lastName;
+    if (businessName != null) body['businessName'] = businessName;
+    if (phone != null) body['phone'] = phone;
+
+    final response = await apiClient.put(
+      ApiConstants.customerById(customerId),
+      body: body,
+    );
+    return response as Map<String, dynamic>;
+  }
+
+  /// DELETE /api/v1/customers/{customerId}
+  Future<void> deleteCustomerProfile(String customerId) async {
+    await apiClient.delete(ApiConstants.customerById(customerId));
   }
 }

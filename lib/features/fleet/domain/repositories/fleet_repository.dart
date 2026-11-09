@@ -60,6 +60,14 @@ abstract class FleetRepository {
 
   Future<CustomerRegistration> getCustomerRegistrationById(String registrationId);
 
+  Future<CustomerRegistration> updateCustomerRegistrationStatus({
+    required String registrationId,
+    required String status,
+    String? reason,
+  });
+
+  Future<void> deleteCustomerRegistration(String registrationId);
+
   Future<List<CustomerRegistration>> getCustomerDirectory(String branchId);
 
   // --- Employee Registrations (Hierarchical Onboarding) ---
@@ -88,6 +96,24 @@ abstract class FleetRepository {
     String? branchId,
     String? status,
     String? employeeId,
+  });
+
+  Future<EmployeeRegistration> getEmployeeRegistrationById(
+    String registrationId,
+  );
+
+  Future<EmployeeRegistration> updateEmployeeRegistration({
+    required String registrationId,
+    String? speciality,
+    String? specialityName,
+    double? salary,
+  });
+
+  Future<void> deleteEmployeeRegistration(String registrationId);
+
+  Future<List<Map<String, dynamic>>> getEmployeeCareerHistory({
+    required String branchId,
+    required String employeeId,
   });
 }
 

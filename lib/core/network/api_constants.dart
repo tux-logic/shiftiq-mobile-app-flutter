@@ -33,6 +33,8 @@ class ApiConstants {
   static String employeeById(String id) => '/api/v1/employees/$id';
   static String employeeByUserId(String userId) =>
       '/api/v1/employees?userId=$userId';
+  static String employeeByDocument(String documentNumber) =>
+      '/api/v1/employees?documentNumber=$documentNumber';
   static const String customers = '/api/v1/customers';
   static String customerById(String id) => '/api/v1/customers/$id';
   static String customerByUserId(String userId) =>
@@ -122,12 +124,16 @@ class ApiConstants {
       '/api/v1/branches/$branchId/customer-registrations';
   static const String employeeRegistrations =
       '/api/v1/employee-registrations';
+  static String employeeRegistrationById(String id) =>
+      '/api/v1/employee-registrations/$id';
   static const String employeeRegistrationRequestJoin =
       '/api/v1/employee-registrations/request-join';
   static String employeeRegistrationApprove(String id) =>
       '/api/v1/employee-registrations/$id/approve';
   static String employeeRegistrationReject(String id) =>
       '/api/v1/employee-registrations/$id/reject';
+  static String branchEmployeeHistory(String branchId, String employeeId) =>
+      '/api/v1/branches/$branchId/employees/$employeeId/history';
 
   // Inventory Context
   static const String inventoryProducts = '/api/v1/inventory/products';

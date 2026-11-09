@@ -76,13 +76,15 @@ class WorkshopApi {
     required String code,
     String? description,
   }) async {
+    final body = <String, dynamic>{
+      'name': name,
+      'code': code.toUpperCase(),
+    };
+    if (description != null) body['description'] = description;
+
     final response = await apiClient.post(
       ApiConstants.workshopSpecialties(workshopId),
-      body: {
-        'name': name,
-        'code': code.toUpperCase(),
-        if (description != null) 'description': description,
-      },
+      body: body,
     );
     return response as Map<String, dynamic>;
   }
@@ -119,12 +121,14 @@ class WorkshopApi {
     required String name,
     String? description,
   }) async {
+    final body = <String, dynamic>{
+      'name': name,
+    };
+    if (description != null) body['description'] = description;
+
     final response = await apiClient.put(
       ApiConstants.workshopSpecialtyById(workshopId, specialtyId),
-      body: {
-        'name': name,
-        if (description != null) 'description': description,
-      },
+      body: body,
     );
     return response as Map<String, dynamic>;
   }

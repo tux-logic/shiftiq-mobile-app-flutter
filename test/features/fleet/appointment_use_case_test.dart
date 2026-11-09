@@ -293,6 +293,72 @@ class MockAppointmentRepository implements AppointmentRepository {
   }) async {
     return [];
   }
+
+  @override
+  Future<CustomerRegistration> updateCustomerRegistrationStatus({
+    required String registrationId,
+    required String status,
+    String? reason,
+  }) async {
+    final index = _customers.indexWhere((c) => c.id == registrationId);
+    if (index == -1) throw Exception('Customer registration not found');
+    final updated = _customers[index].copyWith(status: status);
+    _customers[index] = updated;
+    return updated;
+  }
+
+  @override
+  Future<void> deleteCustomerRegistration(String registrationId) async {
+    _customers.removeWhere((c) => c.id == registrationId);
+  }
+
+  @override
+  Future<EmployeeRegistration> getEmployeeRegistrationById(
+    String registrationId,
+  ) async {
+    return EmployeeRegistration(
+      id: registrationId,
+      employeeId: 'emp-1',
+      branchId: 'b-01',
+      speciality: 'General',
+      specialityName: 'General Mechanic',
+      salary: 1000.0,
+      role: 'ROLE_EMPLOYEE',
+      status: 'ACTIVE',
+    );
+  }
+
+  @override
+  Future<EmployeeRegistration> updateEmployeeRegistration({
+    required String registrationId,
+    String? speciality,
+    String? specialityName,
+    double? salary,
+  }) async {
+    return EmployeeRegistration(
+      id: registrationId,
+      employeeId: 'emp-1',
+      branchId: 'b-01',
+      speciality: speciality ?? 'General',
+      specialityName: specialityName ?? 'General Mechanic',
+      salary: salary ?? 1000.0,
+      role: 'ROLE_EMPLOYEE',
+      status: 'ACTIVE',
+    );
+  }
+
+  @override
+  Future<void> deleteEmployeeRegistration(String registrationId) async {}
+
+  @override
+  Future<List<Map<String, dynamic>>> getEmployeeCareerHistory({
+    required String branchId,
+    required String employeeId,
+  }) async {
+    return [
+      {'branchId': branchId, 'employeeId': employeeId, 'role': 'ROLE_EMPLOYEE'},
+    ];
+  }
 }
 
 void main() {

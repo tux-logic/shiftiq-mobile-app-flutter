@@ -58,4 +58,31 @@ class CustomerRegistrationApi {
     );
     return response as Map<String, dynamic>;
   }
+
+  /// PUT /api/v1/customer-registrations/{id} - Update customer registration status.
+  Future<Map<String, dynamic>> updateCustomerRegistrationStatus({
+    required String id,
+    required String status,
+    String? reason,
+  }) async {
+    final body = <String, dynamic>{
+      'status': status.toUpperCase(),
+    };
+    if (reason != null && reason.trim().isNotEmpty) {
+      body['reason'] = reason.trim();
+    }
+
+    final response = await apiClient.put(
+      ApiConstants.customerRegistrationById(id),
+      body: body,
+    );
+    return response as Map<String, dynamic>;
+  }
+
+  /// DELETE /api/v1/customer-registrations/{id} - Deactivate customer registration.
+  Future<void> deleteCustomerRegistration(String id) async {
+    await apiClient.delete(
+      ApiConstants.customerRegistrationById(id),
+    );
+  }
 }

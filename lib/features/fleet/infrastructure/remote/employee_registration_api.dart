@@ -38,15 +38,17 @@ class EmployeeRegistrationApi {
     String? specialityName,
     double? salary,
   }) async {
+    final body = <String, dynamic>{
+      'employeeId': employeeId,
+      'branchId': branchId,
+    };
+    if (speciality != null) body['speciality'] = speciality;
+    if (specialityName != null) body['specialityName'] = specialityName;
+    if (salary != null) body['salary'] = salary;
+
     final response = await apiClient.post(
       ApiConstants.employeeRegistrationRequestJoin,
-      body: {
-        'employeeId': employeeId,
-        'branchId': branchId,
-        if (speciality != null) 'speciality': speciality,
-        if (specialityName != null) 'specialityName': specialityName,
-        if (salary != null) 'salary': salary,
-      },
+      body: body,
     );
     return response as Map<String, dynamic>;
   }
@@ -91,6 +93,54 @@ class EmployeeRegistrationApi {
     );
     final response = await apiClient.get(uri.toString());
 
+    if (response is List) {
+      return response.cast<Map<String, dynamic>>();
+    }
+    return [];
+  }
+
+  /// GET /api/v1/employee-registrations/{id} - Get single employee registration by ID.
+  Future<Map<String, dynamic>> getEmployeeRegistrationById(String id) async {
+    final response = await apiClient.get(
+      ApiConstants.employeeRegistrationById(id),
+    );
+    return response as Map<String, dynamic>;
+  }
+
+  /// PUT /api/v1/employee-registrations/{id} - Update contract specialty / salary.
+  Future<Map<String, dynamic>> updateEmployeeRegistration({
+    required String id,
+    String? speciality,
+    String? specialityName,
+    double? salary,
+  }) async {
+    final body = <String, dynamic>{};
+    if (speciality != null) body['speciality'] = speciality;
+    if (specialityName != null) body['specialityName'] = specialityName;
+    if (salary != null) body['salary'] = salary;
+
+    final response = await apiClient.put(
+      ApiConstants.employeeRegistrationById(id),
+      body: body,
+    );
+    return response as Map<String, dynamic>;
+  }
+
+  /// DELETE /api/v1/employee-registrations/{id} - Soft delete / dismiss staff member.
+  Future<void> deleteEmployeeRegistration(String id) async {
+    await apiClient.delete(
+      ApiConstants.employeeRegistrationById(id),
+    );
+  }
+
+  /// GET /api/v1/branches/{branchId}/employees/{employeeId}/history - Staff career history.
+  Future<List<Map<String, dynamic>>> getEmployeeCareerHistory({
+    required String branchId,
+    required String employeeId,
+  }) async {
+    final response = await apiClient.get(
+      ApiConstants.branchEmployeeHistory(branchId, employeeId),
+    );
     if (response is List) {
       return response.cast<Map<String, dynamic>>();
     }

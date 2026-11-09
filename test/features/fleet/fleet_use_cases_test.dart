@@ -257,6 +257,68 @@ class InMemoryFleetRepository implements FleetRepository {
       return true;
     }).toList();
   }
+
+  @override
+  Future<CustomerRegistration> updateCustomerRegistrationStatus({
+    required String registrationId,
+    required String status,
+    String? reason,
+  }) async {
+    final index = customerRegistrations.indexWhere((c) => c.id == registrationId);
+    if (index == -1) throw StateError('Customer registration not found');
+    final updated = customerRegistrations[index].copyWith(status: status);
+    customerRegistrations[index] = updated;
+    return updated;
+  }
+
+  @override
+  Future<void> deleteCustomerRegistration(String registrationId) async {
+    customerRegistrations.removeWhere((c) => c.id == registrationId);
+  }
+
+  @override
+  Future<EmployeeRegistration> getEmployeeRegistrationById(
+    String registrationId,
+  ) async {
+    return employeeRegistrations.firstWhere(
+      (e) => e.id == registrationId,
+      orElse: () => throw StateError('Employee registration not found'),
+    );
+  }
+
+  @override
+  Future<EmployeeRegistration> updateEmployeeRegistration({
+    required String registrationId,
+    String? speciality,
+    String? specialityName,
+    double? salary,
+  }) async {
+    final index = employeeRegistrations.indexWhere((e) => e.id == registrationId);
+    if (index == -1) throw StateError('Employee registration not found');
+    final existing = employeeRegistrations[index];
+    final updated = existing.copyWith(
+      speciality: speciality ?? existing.speciality,
+      specialityName: specialityName ?? existing.specialityName,
+      salary: salary ?? existing.salary,
+    );
+    employeeRegistrations[index] = updated;
+    return updated;
+  }
+
+  @override
+  Future<void> deleteEmployeeRegistration(String registrationId) async {
+    employeeRegistrations.removeWhere((e) => e.id == registrationId);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getEmployeeCareerHistory({
+    required String branchId,
+    required String employeeId,
+  }) async {
+    return [
+      {'branchId': branchId, 'employeeId': employeeId, 'role': 'ROLE_EMPLOYEE'},
+    ];
+  }
 }
 
 void main() {
