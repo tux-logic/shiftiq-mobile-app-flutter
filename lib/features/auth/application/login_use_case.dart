@@ -1,10 +1,11 @@
 import 'package:shiftiq_mobile_app_flutter/features/auth/domain/auth_repository.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/domain/user_session.dart';
 
-class LoginUseCase {
+/// Use case orchestrating user login using email and password credentials.
+class LoginWithPasswordUseCase {
   final AuthRepository repository;
 
-  LoginUseCase({required this.repository});
+  LoginWithPasswordUseCase({required this.repository});
 
   Future<UserSession> execute({
     required String email,
@@ -14,3 +15,5 @@ class LoginUseCase {
   }
 }
 
+/// Backward compatibility alias for existing presentation layer components.
+typedef LoginUseCase = LoginWithPasswordUseCase;
