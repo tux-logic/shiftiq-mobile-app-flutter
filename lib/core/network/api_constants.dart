@@ -28,12 +28,47 @@ class ApiConstants {
 
   // Core Context
   static const String owners = '/api/v1/owners';
+  static String ownerById(String id) => '/api/v1/owners/$id';
   static String ownerByUserId(String userId) => '/api/v1/owners?userId=$userId';
+  static const String employees = '/api/v1/employees';
+  static String employeeById(String id) => '/api/v1/employees/$id';
+  static String employeeByUserId(String userId) =>
+      '/api/v1/employees?userId=$userId';
+  static const String customers = '/api/v1/customers';
+  static String customerById(String id) => '/api/v1/customers/$id';
+  static String customerByUserId(String userId) =>
+      '/api/v1/customers?userId=$userId';
+  static const String profiles = '/api/v1/profiles';
+  static const String profilesMe = '/api/v1/profiles/me';
+  static String profileRoles(String userId) =>
+      '/api/v1/profiles/roles?userId=$userId';
+  static String profileByDocument(String documentNumber) =>
+      '/api/v1/profiles?documentNumber=$documentNumber';
   static const String workshops = '/api/v1/workshops';
-  static String ownerWorkshops(String ownerId) => '/api/v1/workshops?ownerId=$ownerId';
-  static String workshopBranches(String workshopId) => '/api/v1/branches?workshopId=$workshopId';
-  static String branchesByWorkshop(String workshopId) => '/api/v1/branches?workshopId=$workshopId';
-  static String branchEmployees(String branchId) => '/api/v1/branches/$branchId/employees';
+  static String workshopById(String id) => '/api/v1/workshops/$id';
+  static String ownerWorkshops(String ownerId) =>
+      '/api/v1/workshops?ownerId=$ownerId';
+  static String workshopSpecialties(String workshopId) =>
+      '/api/v1/workshops/$workshopId/specialties';
+  static String workshopSpecialtyById(String workshopId, String specialtyId) =>
+      '/api/v1/workshops/$workshopId/specialties/$specialtyId';
+  static String workshopSpecialtyHistory(
+    String workshopId,
+    String specialtyId,
+  ) =>
+      '/api/v1/workshops/$workshopId/specialties/$specialtyId/history';
+  static const String branches = '/api/v1/branches';
+  static String branchById(String id) => '/api/v1/branches/$id';
+  static String workshopBranches(String workshopId) =>
+      '/api/v1/branches?workshopId=$workshopId';
+  static String branchesByWorkshop(String workshopId) =>
+      '/api/v1/branches?workshopId=$workshopId';
+  static String branchSubscriptions(String branchId) =>
+      '/api/v1/branches/$branchId/subscriptions';
+  static String branchSubscription(String branchId) =>
+      '/api/v1/branches/$branchId/subscription';
+  static String branchEmployees(String branchId) =>
+      '/api/v1/branches/$branchId/employees';
 
   // Analytics Context
   static String branchAnalyticsSummary(String branchId) =>
