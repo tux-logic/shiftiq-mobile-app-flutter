@@ -1,3 +1,4 @@
+/// Entity representing the operational link between a Customer profile and a Branch.
 class CustomerRegistration {
   final String id;
   final String branchId;
@@ -25,4 +26,3 @@ class CustomerRegistration {
 
   bool get isActive => status.toUpperCase() == 'ACTIVE';
 }
-
