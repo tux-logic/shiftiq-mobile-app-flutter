@@ -385,6 +385,13 @@ class BillingRepositoryImpl implements BillingRepository {
 
   @override
   Future<Quote> getQuoteById(String quoteId) async {
+    try {
+      final dto = await billingApi.getQuoteById(quoteId);
+      return dto.toDomain();
+    } catch (_) {
+      // Local fallback
+    }
+
     return _localQuotes.firstWhere(
       (q) => q.id == quoteId,
       orElse: () => throw Exception('Quote not found: $quoteId'),
@@ -396,6 +403,19 @@ class BillingRepositoryImpl implements BillingRepository {
     required String quoteId,
     required double discountPercentage,
   }) async {
+    try {
+      final dto = await billingApi.updateQuoteDiscount(
+        quoteId,
+        {'discountPercentage': discountPercentage},
+      );
+      final domain = dto.toDomain();
+      final idx = _localQuotes.indexWhere((q) => q.id == quoteId);
+      if (idx != -1) _localQuotes[idx] = domain;
+      return domain;
+    } catch (_) {
+      // Local fallback
+    }
+
     final idx = _localQuotes.indexWhere((q) => q.id == quoteId);
     if (idx != -1) {
       final current = _localQuotes[idx];
@@ -413,6 +433,16 @@ class BillingRepositoryImpl implements BillingRepository {
 
   @override
   Future<Quote> approveQuote(String quoteId) async {
+    try {
+      final dto = await billingApi.approveQuote(quoteId);
+      final domain = dto.toDomain();
+      final idx = _localQuotes.indexWhere((q) => q.id == quoteId);
+      if (idx != -1) _localQuotes[idx] = domain;
+      return domain;
+    } catch (_) {
+      // Local fallback
+    }
+
     final idx = _localQuotes.indexWhere((q) => q.id == quoteId);
     if (idx != -1) {
       final updated = _localQuotes[idx].copyWith(
@@ -427,6 +457,16 @@ class BillingRepositoryImpl implements BillingRepository {
 
   @override
   Future<Quote> cancelQuote(String quoteId) async {
+    try {
+      final dto = await billingApi.cancelQuote(quoteId);
+      final domain = dto.toDomain();
+      final idx = _localQuotes.indexWhere((q) => q.id == quoteId);
+      if (idx != -1) _localQuotes[idx] = domain;
+      return domain;
+    } catch (_) {
+      // Local fallback
+    }
+
     final idx = _localQuotes.indexWhere((q) => q.id == quoteId);
     if (idx != -1) {
       final updated = _localQuotes[idx].copyWith(status: QuoteStatus.canceled);
@@ -442,6 +482,19 @@ class BillingRepositoryImpl implements BillingRepository {
     required double amount,
     required PaymentMethod method,
   }) async {
+    try {
+      final dto = await billingApi.registerPayment(
+        voucherId,
+        {'amount': amount, 'method': method.code},
+      );
+      final domain = dto.toDomain();
+      final idx = _localVouchers.indexWhere((v) => v.id == voucherId);
+      if (idx != -1) _localVouchers[idx] = domain;
+      return domain;
+    } catch (_) {
+      // Local fallback
+    }
+
     final idx = _localVouchers.indexWhere((v) => v.id == voucherId);
     if (idx != -1) {
       final current = _localVouchers[idx];
@@ -475,6 +528,12 @@ class BillingRepositoryImpl implements BillingRepository {
     required String voucherId,
     required String paymentId,
   }) async {
+    try {
+      await billingApi.deletePayment(voucherId, paymentId);
+    } catch (_) {
+      // Local fallback
+    }
+
     final idx = _localVouchers.indexWhere((v) => v.id == voucherId);
     if (idx != -1) {
       final current = _localVouchers[idx];
@@ -500,6 +559,22 @@ class BillingRepositoryImpl implements BillingRepository {
     required PaymentMethod method,
     String? branchId,
   }) async {
+    try {
+      final dto = await billingApi.checkoutDirect({
+        'quoteId': quoteId,
+        'type': type.code,
+        'customerDocumentType': customerDocumentType,
+        'customerDocumentNumber': customerDocumentNumber,
+        'customerName': customerName,
+        'method': method.code,
+      });
+      final domain = dto.toDomain();
+      _localVouchers.insert(0, domain);
+      return domain;
+    } catch (_) {
+      // Local fallback
+    }
+
     final quote = await getQuoteById(quoteId);
     final voucher = ElectronicVoucher.calculateAndCreate(
       id: 'vouch-${DateTime.now().millisecondsSinceEpoch}',
@@ -541,6 +616,22 @@ class BillingRepositoryImpl implements BillingRepository {
     required String paymentId,
     String? branchId,
   }) async {
+    try {
+      final dto = await billingApi.confirmMercadoPagoCheckout({
+        'quoteId': quoteId,
+        'type': type.code,
+        'customerDocumentType': customerDocumentType,
+        'customerDocumentNumber': customerDocumentNumber,
+        'customerName': customerName,
+        'paymentId': paymentId,
+      });
+      final domain = dto.toDomain();
+      _localVouchers.insert(0, domain);
+      return domain;
+    } catch (_) {
+      // Local fallback
+    }
+
     return checkoutDirect(
       quoteId: quoteId,
       type: type,
@@ -560,6 +651,19 @@ class BillingRepositoryImpl implements BillingRepository {
     String? customerDocumentNumber,
     String? customerName,
   }) async {
+    try {
+      final res = await billingApi.createMercadoPagoPreference({
+        'quoteId': quoteId,
+        'type'?: type?.code,
+        'customerDocumentType'?: customerDocumentType,
+        'customerDocumentNumber'?: customerDocumentNumber,
+        'customerName'?: customerName,
+      });
+      return MercadoPagoPreferenceDto.fromJson(res).toDomain();
+    } catch (_) {
+      // Local fallback
+    }
+
     final quote = await getQuoteById(quoteId);
     return MercadoPagoPreference(
       preferenceId: 'pref-${DateTime.now().millisecondsSinceEpoch}',
