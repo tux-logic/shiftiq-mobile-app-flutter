@@ -1,5 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:shiftiq_mobile_app_flutter/core/app_database.dart';
+import 'package:shiftiq_mobile_app_flutter/core/domain/event/domain_event_bus.dart';
+import 'package:shiftiq_mobile_app_flutter/core/infrastructure/event/stream_domain_event_bus.dart';
 import 'package:shiftiq_mobile_app_flutter/core/network/api_client.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/application/login_use_case.dart';
@@ -76,6 +78,8 @@ void setupDependencies() {
   getIt.registerLazySingleton<SessionStorage>(
     () => SessionStorage(appDatabase: getIt<AppDatabase>()),
   );
+
+  getIt.registerLazySingleton<DomainEventBus>(() => StreamDomainEventBus());
 
   getIt.registerLazySingleton<ApiClient>(
     () => ApiClient(sessionStorage: getIt<SessionStorage>()),
