@@ -36,6 +36,25 @@ final class ActiveBranchChangedEvent extends DomainEvent {
       'ActiveBranchChangedEvent(branchId: $branchId, branchName: $branchName)';
 }
 
+/// Dispatched when a user successfully establishes an authenticated session.
+final class UserLoggedInEvent extends DomainEvent {
+  final String userId;
+  final String username;
+  final List<String> roles;
+
+  UserLoggedInEvent({
+    required this.userId,
+    required this.username,
+    required this.roles,
+    super.eventId,
+    super.occurredOn,
+  });
+
+  @override
+  String toString() =>
+      'UserLoggedInEvent(userId: $userId, username: $username, roles: $roles)';
+}
+
 /// Dispatched when the current user explicitly logs out of the application.
 final class UserLoggedOutEvent extends DomainEvent {
   final String? userId;

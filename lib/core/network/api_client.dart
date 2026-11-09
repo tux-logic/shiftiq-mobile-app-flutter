@@ -161,6 +161,7 @@ class ApiClient {
 
   Future<dynamic> delete(
     String path, {
+    dynamic body,
     Map<String, dynamic>? queryParameters,
     Map<String, String>? headers,
   }) async {
@@ -168,7 +169,11 @@ class ApiClient {
       final uri = _buildUri(path, queryParameters);
       final requestHeaders = await _buildHeaders(headers);
       final response = await _client
-          .delete(uri, headers: requestHeaders)
+          .delete(
+            uri,
+            headers: requestHeaders,
+            body: body != null ? jsonEncode(body) : null,
+          )
           .timeout(ApiConstants.requestTimeout);
       return _processResponse(response);
     } on SocketException catch (e) {

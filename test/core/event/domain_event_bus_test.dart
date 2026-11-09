@@ -98,6 +98,11 @@ void main() {
           branchId: 'b-99',
           branchName: 'Callao Workshop',
         ),
+        UserLoggedInEvent(
+          userId: 'usr-10',
+          username: 'owner@shiftiq.com',
+          roles: ['ROLE_OWNER'],
+        ),
         UserLoggedOutEvent(userId: 'usr-42', reason: 'User clicked logout'),
         SessionExpiredEvent(reason: 'JWT 401 Unauthorized'),
       ];
@@ -106,6 +111,8 @@ void main() {
         return switch (event) {
           ActiveBranchChangedEvent(:final branchId, :final branchName) =>
             'BRANCH:$branchId:$branchName',
+          UserLoggedInEvent(:final userId, :final username) =>
+            'LOGIN:$userId:$username',
           UserLoggedOutEvent(:final userId, :final reason) =>
             'LOGOUT:$userId:$reason',
           SessionExpiredEvent(:final reason) =>
@@ -119,10 +126,14 @@ void main() {
       );
       expect(
         summaries[1],
-        equals('LOGOUT:usr-42:User clicked logout'),
+        equals('LOGIN:usr-10:owner@shiftiq.com'),
       );
       expect(
         summaries[2],
+        equals('LOGOUT:usr-42:User clicked logout'),
+      );
+      expect(
+        summaries[3],
         equals('EXPIRED:JWT 401 Unauthorized'),
       );
     });

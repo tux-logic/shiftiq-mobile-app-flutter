@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shiftiq_mobile_app_flutter/features/auth/application/login_use_case.dart';
+import 'package:shiftiq_mobile_app_flutter/features/auth/application/usecases/login_with_password.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/domain/auth_repository.dart';
+import 'package:shiftiq_mobile_app_flutter/features/auth/domain/model/entities/user_account.dart';
+import 'package:shiftiq_mobile_app_flutter/features/auth/domain/model/value_objects/user_role.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/domain/user_session.dart';
 
 class MockAuthRepository implements AuthRepository {
@@ -14,7 +16,7 @@ class MockAuthRepository implements AuthRepository {
     required String password,
   }) async {
     if (shouldThrow) {
-      throw Exception('Credenciales incorrectas');
+      throw Exception('Invalid credentials');
     }
 
     if (email == expectedEmail && password == expectedPassword) {
@@ -26,14 +28,31 @@ class MockAuthRepository implements AuthRepository {
         roles: ['ROLE_OWNER'],
       );
     }
-    throw Exception('Credenciales incorrectas');
+    throw Exception('Invalid credentials');
+  }
+
+  @override
+  Future<UserSession> loginWithGoogle({required String idToken}) async {
+    return const UserSession(
+      id: 'usr-google',
+      username: 'google.user@shiftiq.com',
+      token: 'jwt-google-token',
+      refreshToken: 'refresh-google-token',
+      roles: ['ROLE_USER'],
+    );
   }
 
   @override
   Future<void> logout() async {}
 
   @override
-  Future<void> recoverPassword(String email) async {}
+  Future<void> requestPasswordRecovery({required String email}) async {}
+
+  @override
+  Future<void> resetPassword({
+    required String token,
+    required String newPassword,
+  }) async {}
 
   @override
   Future<UserSession> refreshToken() async {
@@ -45,6 +64,66 @@ class MockAuthRepository implements AuthRepository {
       roles: ['ROLE_OWNER'],
     );
   }
+
+  @override
+  Future<void> sendOtp({required String email}) async {}
+
+  @override
+  Future<void> verifyOtp({
+    required String email,
+    required String code,
+  }) async {}
+
+  @override
+  Future<UserAccount> signUp({
+    required String email,
+    required String password,
+  }) async {
+    return UserAccount(
+      id: 'usr-new',
+      email: email,
+      role: UserRole.user,
+    );
+  }
+
+  @override
+  Future<UserAccount> getUserById(String userId) async {
+    return UserAccount(
+      id: userId,
+      email: 'user@castromotors.pe',
+      role: UserRole.owner,
+    );
+  }
+
+  @override
+  Future<UserAccount> getUserByEmail(String email) async {
+    return UserAccount(
+      id: 'usr-1234',
+      email: email,
+      role: UserRole.owner,
+    );
+  }
+
+  @override
+  Future<UserSession> updateUserEmail({
+    required String userId,
+    required String newEmail,
+  }) async {
+    return UserSession(
+      id: userId,
+      username: newEmail,
+      token: 'jwt-updated-token',
+      refreshToken: 'refresh-updated-token',
+      roles: const ['ROLE_OWNER'],
+    );
+  }
+
+  @override
+  Future<void> updateUserPassword({
+    required String userId,
+    required String currentPassword,
+    required String newPassword,
+  }) async {}
 }
 
 void main() {
