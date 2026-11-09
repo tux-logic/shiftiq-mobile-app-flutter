@@ -1,9 +1,9 @@
-import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/model/aggregates/product.dart';
-import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/model/entities/product_batch.dart';
-import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/model/valueobjects/stock_status.dart';
-import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/repositories/inventory_repository.dart';
+import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/inventory_domain.dart';
+import 'package:shiftiq_mobile_app_flutter/features/inventory/infrastructure/remote/dtos/inventory_dto.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/infrastructure/remote/inventory_api.dart';
 
+/// Implementation of [InventoryRepository] coordinating remote HTTP calls via [InventoryApi]
+/// and mapping to pure immutable domain aggregates.
 class InventoryRepositoryImpl implements InventoryRepository {
   final InventoryApi inventoryApi;
 
@@ -24,34 +24,33 @@ class InventoryRepositoryImpl implements InventoryRepository {
         branchId: 'b-01-smp',
         sku: 'OIL-SYN-5W30',
         name: 'Aceite Sintético Castrol Edge 5W-30',
-        description: 'Lubricante 100% sintético para motores gasolina y diésel ligero con tecnología Fluid TITANIUM',
+        description:
+            'Lubricante 100% sintético para motores gasolina y diésel ligero con tecnología Fluid TITANIUM',
         category: 'LUBRICANTES',
         unitOfMeasure: 'GALON',
-        unitPrice: 165.00,
+        salePrice: 165.00,
         costPrice: 110.00,
         currentStock: 28,
         minimumStock: 8,
         createdAt: now.subtract(const Duration(days: 30)),
         batches: [
           ProductBatch(
-            id: 'batch-01-1',
-            batchNumber: 'LOT-CASTROL-2026-08',
+            batchId: 'LOT-CASTROL-2026-08',
             productId: 'prod-01',
             supplierName: 'Castrol Perú S.A.C.',
-            quantityReceived: 30,
-            quantityRemaining: 18,
-            costPrice: 110.00,
-            receptionDate: now.subtract(const Duration(days: 20)),
+            initialQuantity: 30,
+            availableQuantity: 18,
+            acquisitionCost: 110.00,
+            createdAt: now.subtract(const Duration(days: 20)),
           ),
           ProductBatch(
-            id: 'batch-01-2',
-            batchNumber: 'LOT-CASTROL-2026-11',
+            batchId: 'LOT-CASTROL-2026-11',
             productId: 'prod-01',
             supplierName: 'Castrol Perú S.A.C.',
-            quantityReceived: 10,
-            quantityRemaining: 10,
-            costPrice: 110.00,
-            receptionDate: now.subtract(const Duration(days: 5)),
+            initialQuantity: 10,
+            availableQuantity: 10,
+            acquisitionCost: 110.00,
+            createdAt: now.subtract(const Duration(days: 5)),
           ),
         ],
       ),
@@ -60,119 +59,40 @@ class InventoryRepositoryImpl implements InventoryRepository {
         branchId: 'b-01-smp',
         sku: 'FLT-OIL-P3300',
         name: 'Filtro de Aceite Bosch P3300',
-        description: 'Filtro blindado de alta eficiencia para línea Toyota Yaris, Hilux y Nissan Sentra',
+        description: 'Filtro de aceite blindado de alta eficiencia para vehículos asiáticos',
         category: 'FILTROS',
         unitOfMeasure: 'UND',
-        unitPrice: 38.00,
+        salePrice: 38.00,
         costPrice: 20.00,
-        currentStock: 4, // LOW STOCK
+        currentStock: 4,
         minimumStock: 10,
-        createdAt: now.subtract(const Duration(days: 25)),
+        createdAt: now.subtract(const Duration(days: 45)),
         batches: [
           ProductBatch(
-            id: 'batch-02-1',
-            batchNumber: 'LOT-BOSCH-8842',
+            batchId: 'LOT-BOSCH-2026-05',
             productId: 'prod-02',
-            supplierName: 'Bosch Autopartes Lima S.A.',
-            quantityReceived: 25,
-            quantityRemaining: 4,
-            costPrice: 20.00,
-            receptionDate: now.subtract(const Duration(days: 18)),
+            supplierName: 'Bosch Autopartes Lima',
+            initialQuantity: 20,
+            availableQuantity: 4,
+            acquisitionCost: 20.00,
+            createdAt: now.subtract(const Duration(days: 40)),
           ),
         ],
       ),
       Product(
         id: 'prod-03',
         branchId: 'b-01-smp',
-        sku: 'BRK-PAD-FRD90',
-        name: 'Pastillas de Freno Delanteras Ferodo Racing',
-        description: 'Juego de pastillas cerámicas delanteras con láminas anti-ruido para Toyota Hilux y SW4',
-        category: 'FRENOS',
-        unitOfMeasure: 'JUEGO',
-        unitPrice: 175.00,
-        costPrice: 105.00,
-        currentStock: 12,
-        minimumStock: 4,
-        createdAt: now.subtract(const Duration(days: 40)),
-        batches: [
-          ProductBatch(
-            id: 'batch-03-1',
-            batchNumber: 'LOT-FERODO-401',
-            productId: 'prod-03',
-            supplierName: 'Frenos y Repuestos Lima S.A.C.',
-            quantityReceived: 15,
-            quantityRemaining: 12,
-            costPrice: 105.00,
-            receptionDate: now.subtract(const Duration(days: 12)),
-          ),
-        ],
-      ),
-      Product(
-        id: 'prod-04',
-        branchId: 'b-01-smp',
-        sku: 'BRK-DOT4-500',
-        name: 'Líquido de Frenos DOT 4 Bosch 500ml',
-        description: 'Fluido sintético de frenos para sistemas con ABS y ESP. Punto de ebullición húmedo 165°C',
-        category: 'FRENOS',
-        unitOfMeasure: 'BOTELLA',
-        unitPrice: 34.00,
-        costPrice: 18.00,
-        currentStock: 2, // LOW STOCK
-        minimumStock: 6,
-        createdAt: now.subtract(const Duration(days: 15)),
-        batches: [
-          ProductBatch(
-            id: 'batch-04-1',
-            batchNumber: 'LOT-BOSCH-DOT4-99',
-            productId: 'prod-04',
-            supplierName: 'Bosch Autopartes Lima S.A.',
-            quantityReceived: 20,
-            quantityRemaining: 2,
-            costPrice: 18.00,
-            receptionDate: now.subtract(const Duration(days: 14)),
-          ),
-        ],
-      ),
-      Product(
-        id: 'prod-05',
-        branchId: 'b-01-smp',
         sku: 'SUS-AMR-MNR77',
         name: 'Amortiguador Delantero Monroe Gas-Magnum',
-        description: 'Amortiguador bitubo de gas presurizado para eje delantero camionetas 4x4',
+        description: 'Amortiguador presurizado con gas nitrógeno para trabajo pesado',
         category: 'SUSPENSION',
         unitOfMeasure: 'PAR',
-        unitPrice: 380.00,
+        salePrice: 380.00,
         costPrice: 240.00,
-        currentStock: 0, // OUT OF STOCK
+        currentStock: 0,
         minimumStock: 2,
         createdAt: now.subtract(const Duration(days: 60)),
-        batches: [],
-      ),
-      Product(
-        id: 'prod-06',
-        branchId: 'b-01-smp',
-        sku: 'SPK-NGK-IRID',
-        name: 'Bujía de Iridio NGK Laser LFR6AIX-11',
-        description: 'Bujía de alta conductividad térmica con electrodo central de iridio fino de 0.6 mm',
-        category: 'MOTOR',
-        unitOfMeasure: 'UND',
-        unitPrice: 48.00,
-        costPrice: 26.00,
-        currentStock: 24,
-        minimumStock: 8,
-        createdAt: now.subtract(const Duration(days: 20)),
-        batches: [
-          ProductBatch(
-            id: 'batch-06-1',
-            batchNumber: 'LOT-NGK-2026-X',
-            productId: 'prod-06',
-            supplierName: 'Importadora Automotriz San Jacinto',
-            quantityReceived: 30,
-            quantityRemaining: 24,
-            costPrice: 26.00,
-            receptionDate: now.subtract(const Duration(days: 10)),
-          ),
-        ],
+        batches: const [],
       ),
     ]);
   }
@@ -183,22 +103,31 @@ class InventoryRepositoryImpl implements InventoryRepository {
     String? category,
     String? query,
     StockStatus? status,
+    String? name,
+    bool? lowStockOnly,
   }) async {
     try {
-      final remoteDtos = await inventoryApi.getProducts(
+      final effectiveName = name ?? query;
+      final rawList = await inventoryApi.getProductsRaw(
         branchId: branchId,
         category: category,
-        query: query,
+        name: effectiveName,
+        lowStockOnly: lowStockOnly,
       );
-      if (remoteDtos.isNotEmpty) {
-        var list = remoteDtos.map((dto) => dto.toDomain()).toList();
+
+      if (rawList.isNotEmpty) {
+        var list = rawList
+            .whereType<Map<String, dynamic>>()
+            .map((item) => ProductDto.fromJson(item).toDomain())
+            .toList();
+
         if (status != null) {
           list = list.where((p) => p.status == status).toList();
         }
         return list;
       }
     } catch (_) {
-      // Local fallback
+      // Local demo fallback
     }
 
     var list = _localProducts
@@ -209,12 +138,12 @@ class InventoryRepositoryImpl implements InventoryRepository {
       list = list.where((p) => p.category.toUpperCase() == category.toUpperCase()).toList();
     }
 
-    if (query != null && query.trim().isNotEmpty) {
-      final q = query.trim().toLowerCase();
+    final effectiveSearch = (query ?? name)?.trim().toLowerCase();
+    if (effectiveSearch != null && effectiveSearch.isNotEmpty) {
       list = list.where((p) {
-        return p.name.toLowerCase().contains(q) ||
-            p.sku.toLowerCase().contains(q) ||
-            p.category.toLowerCase().contains(q);
+        return p.name.toLowerCase().contains(effectiveSearch) ||
+            p.sku.toLowerCase().contains(effectiveSearch) ||
+            p.category.toLowerCase().contains(effectiveSearch);
       }).toList();
     }
 
@@ -222,14 +151,34 @@ class InventoryRepositoryImpl implements InventoryRepository {
       list = list.where((p) => p.status == status).toList();
     }
 
+    if (lowStockOnly == true) {
+      list = list.where((p) => p.isLowStock || p.isOutOfStock).toList();
+    }
+
     return list;
+  }
+
+  @override
+  Future<List<Product>> getBranchCatalog(String branchId) async {
+    try {
+      final rawList = await inventoryApi.getBranchCatalogRaw(branchId);
+      if (rawList.isNotEmpty) {
+        return rawList
+            .whereType<Map<String, dynamic>>()
+            .map((item) => ProductDto.fromJson(item).toDomain())
+            .toList();
+      }
+    } catch (_) {
+      // Local fallback
+    }
+    return getProducts(branchId: branchId);
   }
 
   @override
   Future<Product> getProductById(String id) async {
     try {
-      final dto = await inventoryApi.getProductById(id);
-      return dto.toDomain();
+      final raw = await inventoryApi.getProductByIdRaw(id);
+      return ProductDto.fromJson(raw).toDomain();
     } catch (_) {
       // Local fallback
     }
@@ -246,27 +195,26 @@ class InventoryRepositoryImpl implements InventoryRepository {
     required String sku,
     required String name,
     required String category,
-    required double unitPrice,
-    required double costPrice,
-    required int initialStock,
+    double? salePrice,
+    double? unitPrice,
+    double costPrice = 0.0,
+    int initialStock = 0,
     int minimumStock = 5,
     String unitOfMeasure = 'UND',
     String description = '',
   }) async {
+    final effectivePrice = salePrice ?? unitPrice ?? 0.0;
     try {
-      final dto = await inventoryApi.createProduct(
+      final raw = await inventoryApi.createProductRaw(
         branchId: branchId,
-        sku: sku,
-        name: name,
         category: category,
-        unitPrice: unitPrice,
-        costPrice: costPrice,
-        initialStock: initialStock,
-        minimumStock: minimumStock,
-        unitOfMeasure: unitOfMeasure,
+        name: name,
+        sku: sku,
         description: description,
+        salePrice: effectivePrice,
+        minimumStock: minimumStock,
       );
-      final product = dto.toDomain();
+      final product = ProductDto.fromJson(raw).toDomain();
       _localProducts.add(product);
       return product;
     } catch (_) {
@@ -279,7 +227,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
       sku: sku.toUpperCase().trim(),
       name: name.trim(),
       category: category.toUpperCase().trim(),
-      unitPrice: unitPrice,
+      salePrice: effectivePrice,
       costPrice: costPrice,
       currentStock: initialStock,
       minimumStock: minimumStock,
@@ -289,17 +237,16 @@ class InventoryRepositoryImpl implements InventoryRepository {
       batches: initialStock > 0
           ? [
               ProductBatch(
-                id: 'batch-${DateTime.now().millisecondsSinceEpoch}',
-                batchNumber: 'LOT-INI-${DateTime.now().month}${DateTime.now().day}',
+                batchId: 'LOT-INI-${DateTime.now().month}${DateTime.now().day}',
                 productId: 'prod-${DateTime.now().millisecondsSinceEpoch}',
                 supplierName: 'Inventario Inicial',
-                quantityReceived: initialStock,
-                quantityRemaining: initialStock,
-                costPrice: costPrice,
-                receptionDate: DateTime.now(),
+                initialQuantity: initialStock,
+                availableQuantity: initialStock,
+                acquisitionCost: costPrice,
+                createdAt: DateTime.now(),
               ),
             ]
-          : [],
+          : const [],
     );
 
     _localProducts.add(newProduct);
@@ -307,26 +254,83 @@ class InventoryRepositoryImpl implements InventoryRepository {
   }
 
   @override
-  Future<ProductBatch> registerBatch({
-    required String branchId,
+  Future<Product> updateProduct({
     required String productId,
-    required String batchNumber,
-    required String supplierName,
-    required int quantity,
-    required double costPrice,
-    DateTime? expirationDate,
+    required String name,
+    required String category,
+    required String sku,
+    String description = '',
+    required double salePrice,
+    required int minimumStock,
   }) async {
     try {
-      final dto = await inventoryApi.registerBatch(
-        branchId: branchId,
+      final raw = await inventoryApi.updateProductRaw(
         productId: productId,
-        batchNumber: batchNumber,
-        supplierName: supplierName,
-        quantity: quantity,
-        costPrice: costPrice,
-        expirationDate: expirationDate,
+        name: name,
+        category: category,
+        sku: sku,
+        description: description,
+        salePrice: salePrice,
+        minimumStock: minimumStock,
       );
-      final batch = dto.toDomain();
+      final product = ProductDto.fromJson(raw).toDomain();
+      final index = _localProducts.indexWhere((p) => p.id == productId);
+      if (index != -1) {
+        _localProducts[index] = product;
+      }
+      return product;
+    } catch (_) {
+      // Local fallback
+    }
+
+    final index = _localProducts.indexWhere((p) => p.id == productId);
+    if (index != -1) {
+      final updated = _localProducts[index].copyWith(
+        name: name,
+        category: category,
+        sku: sku,
+        description: description,
+        salePrice: salePrice,
+        minimumStock: minimumStock,
+      );
+      _localProducts[index] = updated;
+      return updated;
+    }
+    throw Exception('Product not found: $productId');
+  }
+
+  @override
+  Future<void> deleteProduct(String productId) async {
+    try {
+      await inventoryApi.deleteProduct(productId);
+    } catch (_) {
+      // Continue to local cleanup
+    }
+    _localProducts.removeWhere((p) => p.id == productId);
+  }
+
+  @override
+  Future<ProductBatch> registerBatch({
+    required String productId,
+    required int quantity,
+    String? branchId,
+    String? batchNumber,
+    String? supplierName,
+    double? costPrice,
+    double? acquisitionCost,
+    DateTime? expirationDate,
+  }) async {
+    final effectiveCost = acquisitionCost ?? costPrice ?? 0.0;
+    final effectiveBatchNum = batchNumber ?? 'LOT-${DateTime.now().millisecondsSinceEpoch}';
+    final effectiveSupplier = supplierName ?? 'Distribuidor General';
+
+    try {
+      final raw = await inventoryApi.registerBatchRaw(
+        productId: productId,
+        quantity: quantity,
+        acquisitionCost: effectiveCost,
+      );
+      final batch = ProductBatchDto.fromJson(raw).toDomain();
       _updateLocalStockWithBatch(productId, batch);
       return batch;
     } catch (_) {
@@ -334,19 +338,45 @@ class InventoryRepositoryImpl implements InventoryRepository {
     }
 
     final newBatch = ProductBatch(
-      id: 'batch-${DateTime.now().millisecondsSinceEpoch}',
-      batchNumber: batchNumber.toUpperCase().trim(),
+      batchId: effectiveBatchNum.toUpperCase().trim(),
       productId: productId,
-      supplierName: supplierName.trim(),
-      quantityReceived: quantity,
-      quantityRemaining: quantity,
-      costPrice: costPrice,
-      receptionDate: DateTime.now(),
+      supplierName: effectiveSupplier.trim(),
+      initialQuantity: quantity,
+      availableQuantity: quantity,
+      acquisitionCost: effectiveCost,
+      createdAt: DateTime.now(),
       expirationDate: expirationDate,
     );
 
     _updateLocalStockWithBatch(productId, newBatch);
     return newBatch;
+  }
+
+  @override
+  Future<int> adjustStock({
+    required String productId,
+    required int quantity,
+    double acquisitionCost = 0.0,
+  }) async {
+    try {
+      final raw = await inventoryApi.registerBatchRaw(
+        productId: productId,
+        quantity: quantity,
+        acquisitionCost: acquisitionCost,
+      );
+      final res = StockAdjustmentResponseDto.fromJson(raw);
+      return res.currentStock;
+    } catch (_) {
+      // Local fallback
+    }
+
+    await registerBatch(
+      productId: productId,
+      quantity: quantity,
+      acquisitionCost: acquisitionCost,
+    );
+    final p = await getProductById(productId);
+    return p.currentStock;
   }
 
   void _updateLocalStockWithBatch(String productId, ProductBatch batch) {
@@ -366,7 +396,6 @@ class InventoryRepositoryImpl implements InventoryRepository {
 
   @override
   Future<List<Product>> getLowStockAlerts(String branchId) async {
-    final products = await getProducts(branchId: branchId);
-    return products.where((p) => p.isLowStock || p.isOutOfStock).toList();
+    return getProducts(branchId: branchId, lowStockOnly: true);
   }
 }

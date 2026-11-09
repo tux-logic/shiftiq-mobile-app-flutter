@@ -130,8 +130,12 @@ class ApiConstants {
       '/api/v1/employee-registrations/$id/reject';
 
   // Inventory Context
-  static String branchProducts(String branchId) => '/api/v1/branches/$branchId/products';
-  static String productBatches(String productId) => '/api/v1/products/$productId/batches';
+  static const String inventoryProducts = '/api/v1/inventory/products';
+  static String inventoryProductById(String id) => '/api/v1/inventory/products/$id';
+  static String inventoryBranchCatalog(String branchId) => '/api/v1/inventory/products/branch/$branchId';
+  static String inventoryProductBatches(String productId) => '/api/v1/inventory/products/$productId/batches';
+  static String branchProducts(String branchId) => '/api/v1/inventory/products?branchId=$branchId';
+  static String productBatches(String productId) => '/api/v1/inventory/products/$productId/batches';
 
   // IoT Context
   static const String vehicles = '/api/v1/vehicles';

@@ -1,37 +1,145 @@
 import 'package:shiftiq_mobile_app_flutter/core/network/api_client.dart';
+import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/infrastructure/remote/dtos/product_batch_dto.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/infrastructure/remote/dtos/product_dto.dart';
 
+/// Remote HTTP client consuming backend Inventory endpoints (`/api/v1/inventory/products`).
 class InventoryApi {
   final ApiClient apiClient;
 
-  InventoryApi({required this.apiClient});
+  const InventoryApi({required this.apiClient});
 
-  Future<List<ProductDto>> getProducts({
+  /// POST /api/v1/inventory/products
+  Future<Map<String, dynamic>> createProductRaw({
     required String branchId,
-    String? category,
-    String? query,
+    required String category,
+    required String name,
+    required String sku,
+    String description = '',
+    required double salePrice,
+    required int minimumStock,
   }) async {
-    var url = '/api/v1/products?branchId=$branchId';
-    if (category != null && category.isNotEmpty && category != 'TODOS') {
-      url += '&category=$category';
+    final response = await apiClient.post(
+      ApiConstants.inventoryProducts,
+      body: {
+        'branchId': branchId,
+        'category': category,
+        'name': name,
+        'sku': sku,
+        if (description.isNotEmpty) 'description': description,
+        'salePrice': salePrice,
+        'minimumStock': minimumStock,
+      },
+    );
+    return response as Map<String, dynamic>;
+  }
+
+  /// GET /api/v1/inventory/products?branchId={branchId}
+  Future<List<dynamic>> getProductsRaw({
+    required String branchId,
+    String? name,
+    String? category,
+    bool? lowStockOnly,
+  }) async {
+    var url = '${ApiConstants.inventoryProducts}?branchId=$branchId';
+    if (name != null && name.isNotEmpty) {
+      url += '&name=${Uri.encodeComponent(name)}';
     }
-    if (query != null && query.isNotEmpty) {
-      url += '&query=$query';
+    if (category != null && category.isNotEmpty && category != 'TODOS') {
+      url += '&category=${Uri.encodeComponent(category)}';
+    }
+    if (lowStockOnly == true) {
+      url += '&lowStockOnly=true';
     }
 
     final response = await apiClient.get(url);
     if (response is List) {
-      return response
-          .map((item) => ProductDto.fromJson(item as Map<String, dynamic>))
-          .toList();
+      return response;
     }
     return [];
   }
 
+  /// GET /api/v1/inventory/products/branch/{branchId}
+  Future<List<dynamic>> getBranchCatalogRaw(String branchId) async {
+    final response = await apiClient.get(ApiConstants.inventoryBranchCatalog(branchId));
+    if (response is List) {
+      return response;
+    }
+    return [];
+  }
+
+  /// GET /api/v1/inventory/products/{productId}
+  Future<Map<String, dynamic>> getProductByIdRaw(String productId) async {
+    final response = await apiClient.get(ApiConstants.inventoryProductById(productId));
+    return response as Map<String, dynamic>;
+  }
+
+  /// PUT /api/v1/inventory/products/{productId}
+  Future<Map<String, dynamic>> updateProductRaw({
+    required String productId,
+    required String name,
+    required String category,
+    required String sku,
+    String description = '',
+    required double salePrice,
+    required int minimumStock,
+  }) async {
+    final response = await apiClient.put(
+      ApiConstants.inventoryProductById(productId),
+      body: {
+        'name': name,
+        'category': category,
+        'sku': sku,
+        if (description.isNotEmpty) 'description': description,
+        'salePrice': salePrice,
+        'minimumStock': minimumStock,
+      },
+    );
+    return response as Map<String, dynamic>;
+  }
+
+  /// POST /api/v1/inventory/products/{productId}/batches
+  Future<Map<String, dynamic>> registerBatchRaw({
+    required String productId,
+    required int quantity,
+    required double acquisitionCost,
+  }) async {
+    final response = await apiClient.post(
+      ApiConstants.inventoryProductBatches(productId),
+      body: {
+        'quantity': quantity,
+        'acquisitionCost': acquisitionCost,
+      },
+    );
+    return response as Map<String, dynamic>;
+  }
+
+  /// DELETE /api/v1/inventory/products/{productId}
+  Future<void> deleteProduct(String productId) async {
+    await apiClient.delete(ApiConstants.inventoryProductById(productId));
+  }
+
+  // Backward compatibility methods for existing callers
+  Future<List<ProductDto>> getProducts({
+    required String branchId,
+    String? category,
+    String? query,
+    bool? lowStockOnly,
+  }) async {
+    final rawList = await getProductsRaw(
+      branchId: branchId,
+      name: query,
+      category: category,
+      lowStockOnly: lowStockOnly,
+    );
+    return rawList
+        .map((item) => ProductDto.fromJson(item as Map<String, dynamic>))
+        .toList();
+  }
+
   Future<ProductDto> getProductById(String id) async {
-    final response = await apiClient.get('/api/v1/products/$id');
-    return ProductDto.fromJson(response as Map<String, dynamic>);
+    final raw = await getProductByIdRaw(id);
+    return ProductDto.fromJson(raw);
   }
 
   Future<ProductDto> createProduct({
@@ -39,29 +147,25 @@ class InventoryApi {
     required String sku,
     required String name,
     required String category,
-    required double unitPrice,
-    required double costPrice,
-    required int initialStock,
+    double? unitPrice,
+    double? salePrice,
+    double costPrice = 0.0,
+    int initialStock = 0,
     int minimumStock = 5,
     String unitOfMeasure = 'UND',
     String description = '',
   }) async {
-    final response = await apiClient.post(
-      '/api/v1/products',
-      body: {
-        'branchId': branchId,
-        'sku': sku,
-        'name': name,
-        'category': category,
-        'unitPrice': unitPrice,
-        'costPrice': costPrice,
-        'currentStock': initialStock,
-        'minimumStock': minimumStock,
-        'unitOfMeasure': unitOfMeasure,
-        'description': description,
-      },
+    final effectivePrice = salePrice ?? unitPrice ?? 0.0;
+    final raw = await createProductRaw(
+      branchId: branchId,
+      category: category,
+      name: name,
+      sku: sku,
+      description: description,
+      salePrice: effectivePrice,
+      minimumStock: minimumStock,
     );
-    return ProductDto.fromJson(response as Map<String, dynamic>);
+    return ProductDto.fromJson(raw);
   }
 
   Future<ProductBatchDto> registerBatch({
@@ -70,22 +174,16 @@ class InventoryApi {
     required String batchNumber,
     required String supplierName,
     required int quantity,
-    required double costPrice,
+    double? costPrice,
+    double? acquisitionCost,
     DateTime? expirationDate,
   }) async {
-    final response = await apiClient.post(
-      '/api/v1/inventory/batches',
-      body: {
-        'branchId': branchId,
-        'productId': productId,
-        'batchNumber': batchNumber,
-        'supplierName': supplierName,
-        'quantity': quantity,
-        'costPrice': costPrice,
-        if (expirationDate != null)
-          'expirationDate': expirationDate.toIso8601String(),
-      },
+    final effectiveCost = acquisitionCost ?? costPrice ?? 0.0;
+    final raw = await registerBatchRaw(
+      productId: productId,
+      quantity: quantity,
+      acquisitionCost: effectiveCost,
     );
-    return ProductBatchDto.fromJson(response as Map<String, dynamic>);
+    return ProductBatchDto.fromJson(raw);
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
-import 'package:shiftiq_mobile_app_flutter/features/inventory/application/commandservices/register_batch_command_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/model/aggregates/product.dart';
+import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/models/product.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/presentation/controllers/inventory_view_model.dart';
 
 class RegisterBatchModal extends StatefulWidget {
@@ -75,17 +74,16 @@ class _RegisterBatchModalState extends State<RegisterBatchModal> {
 
     setState(() => _isLoading = true);
 
-    final command = RegisterBatchCommand(
+    final quantity = int.tryParse(_quantityCtrl.text) ?? 1;
+    final success = await widget.viewModel.registerBatch(
       branchId: widget.branchId,
       productId: widget.product.id,
       batchNumber: _batchNumberCtrl.text,
       supplierName: _supplierNameCtrl.text,
-      quantity: int.tryParse(_quantityCtrl.text) ?? 1,
-      costPrice: double.tryParse(_costPriceCtrl.text) ?? widget.product.costPrice,
+      quantity: quantity,
+      acquisitionCost: double.tryParse(_costPriceCtrl.text) ?? widget.product.costPrice,
       expirationDate: _expirationDate,
     );
-
-    final success = await widget.viewModel.registerBatch(command, widget.branchId);
 
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -95,7 +93,7 @@ class _RegisterBatchModalState extends State<RegisterBatchModal> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Lote ingresado correctamente. Nuevo stock: ${widget.product.currentStock + command.quantity} ${widget.product.unitOfMeasure}',
+            'Lote ingresado correctamente. Nuevo stock: ${widget.product.currentStock + quantity} ${widget.product.unitOfMeasure}',
           ),
           backgroundColor: ShiftIQColors.preventiveGreen,
         ),
