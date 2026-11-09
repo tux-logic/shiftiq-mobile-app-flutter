@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shiftiq_mobile_app_flutter/features/auth/application/login_use_case.dart';
+import 'package:shiftiq_mobile_app_flutter/features/auth/application/usecases/login_with_password.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/domain/auth_repository.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/domain/model/entities/user_account.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/domain/model/value_objects/user_role.dart';

@@ -15,5 +15,5 @@ class LoginWithPasswordUseCase {
   }
 }
 
-/// Backward compatibility alias for existing presentation layer components.
+/// Backward compatibility alias for presentation layer.
 typedef LoginUseCase = LoginWithPasswordUseCase;

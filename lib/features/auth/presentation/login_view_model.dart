@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shiftiq_mobile_app_flutter/features/auth/application/login_use_case.dart';
+import 'package:shiftiq_mobile_app_flutter/features/auth/application/usecases/login_with_password.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/domain/user_session.dart';
 
 class LoginViewModel extends ChangeNotifier {
