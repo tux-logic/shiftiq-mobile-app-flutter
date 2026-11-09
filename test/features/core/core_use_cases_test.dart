@@ -7,9 +7,7 @@ import 'package:shiftiq_mobile_app_flutter/core/infrastructure/event/stream_doma
 import 'package:shiftiq_mobile_app_flutter/core/network/api_client.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/create_workshop.dart';
-import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_user_branches.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_user_profile_context.dart';
-import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_workshops.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/lookup_profile_by_document.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/manage_branch_subscription.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/manage_specialties.dart';

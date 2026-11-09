@@ -1,6 +1,4 @@
-import 'package:shiftiq_mobile_app_flutter/features/iot/domain/model/aggregates/dtc_alert.dart';
-import 'package:shiftiq_mobile_app_flutter/features/iot/domain/model/valueobjects/dtc_severity.dart';
-import 'package:shiftiq_mobile_app_flutter/features/iot/domain/model/valueobjects/dtc_status.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/domain/iot_domain.dart';
 
 class DtcAlertDto {
   final String id;

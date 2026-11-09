@@ -114,10 +114,40 @@ class ApiConstants {
 
   // IoT Context
   static const String vehicles = '/api/v1/vehicles';
-  static String vehicleDtcAlerts(String vehicleId) => '/api/v1/vehicles/$vehicleId/dtc-alerts';
+  static String vehicleById(String id) => '/api/v1/vehicles/$id';
+  static String branchVehicles(String branchId, {String status = 'available-for-linking'}) =>
+      '/api/v1/vehicles?branchId=$branchId&status=$status';
+  static String vehicleDtcAlerts(String vehicleId) =>
+      '/api/v1/vehicles/$vehicleId/dtc-alerts';
   static String vehicleTelemetrySnapshots(String vehicleId) =>
       '/api/v1/vehicles/$vehicleId/telemetry-snapshots';
+  static String customerVehicles(String customerId) =>
+      '/api/v1/customers/$customerId/vehicles';
+
+  static const String obd2Devices = '/api/v1/obd2-devices';
+  static String obd2DeviceById(String id) => '/api/v1/obd2-devices/$id';
+  static String branchObd2Devices(String branchId, {String? status}) =>
+      status != null
+          ? '/api/v1/obd2-devices?branchId=$branchId&status=$status'
+          : '/api/v1/obd2-devices?branchId=$branchId';
+  static String obd2DeviceLatestTelemetry(String deviceId) =>
+      '/api/v1/obd2-devices/$deviceId/telemetry-snapshots/latest';
+  static String obd2DeviceTelemetry(String deviceId) =>
+      '/api/v1/obd2-devices/$deviceId/telemetry-snapshots';
+
   static const String obd2DeviceRegistrations = '/api/v1/obd2-device-registrations';
+  static String obd2DeviceRegistrationById(String id) =>
+      '/api/v1/obd2-device-registrations/$id';
+  static String branchObd2DeviceRegistrations(String branchId, {String? status}) =>
+      status != null
+          ? '/api/v1/obd2-device-registrations?branchId=$branchId&status=$status'
+          : '/api/v1/obd2-device-registrations?branchId=$branchId';
+  static String obd2DeviceRegistrationTelemetry(String registrationId) =>
+      '/api/v1/obd2-device-registrations/$registrationId/telemetry-snapshots';
+  static String obd2DeviceRegistrationDtcAlerts(String registrationId) =>
+      '/api/v1/obd2-device-registrations/$registrationId/dtc-alerts';
+
+  static const String telemetryBatches = '/api/v1/telemetry-batches';
 
   // Billing Context
   static const String quotes = '/api/v1/quotes';

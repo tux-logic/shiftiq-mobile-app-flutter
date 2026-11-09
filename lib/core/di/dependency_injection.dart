@@ -73,13 +73,14 @@ import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/repositorie
 import 'package:shiftiq_mobile_app_flutter/features/inventory/infrastructure/remote/inventory_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/infrastructure/repositories/inventory_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/presentation/controllers/inventory_view_model.dart';
-import 'package:shiftiq_mobile_app_flutter/features/iot/application/commandservices/update_dtc_status_command_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/iot/application/queryservices/get_dtc_alerts_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/iot/application/queryservices/get_dtc_detail_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/iot/application/queryservices/get_live_sensor_stream_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/iot/domain/repositories/telemetry_repository.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/application/iot_application.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/domain/repositories/iot_repository.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/infrastructure/remote/obd2_device_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/infrastructure/remote/obd2_registration_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/infrastructure/remote/telemetry_api.dart';
-import 'package:shiftiq_mobile_app_flutter/features/iot/infrastructure/repositories/telemetry_repository_impl.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/infrastructure/remote/telemetry_batch_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/infrastructure/remote/vehicle_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/infrastructure/repositories/iot_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/controllers/telemetry_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/application/commandservices/create_quote_command_service.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/application/commandservices/emit_voucher_command_service.dart';
@@ -449,45 +450,77 @@ void setupDependencies() {
     ),
   );
 
-  // 8. IoT Telemetry & OBD-II Context
+  // 8. IoT Bounded Context (Vehicles, OBD-II Hardware, Telemetry)
+  getIt.registerLazySingleton<VehicleApi>(
+    () => VehicleApi(apiClient: getIt<ApiClient>()),
+  );
+
+  getIt.registerLazySingleton<Obd2DeviceApi>(
+    () => Obd2DeviceApi(apiClient: getIt<ApiClient>()),
+  );
+
+  getIt.registerLazySingleton<Obd2RegistrationApi>(
+    () => Obd2RegistrationApi(apiClient: getIt<ApiClient>()),
+  );
+
+  getIt.registerLazySingleton<TelemetryBatchApi>(
+    () => TelemetryBatchApi(apiClient: getIt<ApiClient>()),
+  );
+
   getIt.registerLazySingleton<TelemetryApi>(
     () => TelemetryApi(apiClient: getIt<ApiClient>()),
   );
 
-  getIt.registerLazySingleton<TelemetryRepository>(
-    () => TelemetryRepositoryImpl(telemetryApi: getIt<TelemetryApi>()),
-  );
-
-  getIt.registerLazySingleton<GetDtcAlertsQueryService>(
-    () => GetDtcAlertsQueryService(
-      telemetryRepository: getIt<TelemetryRepository>(),
+  getIt.registerLazySingleton<IotRepository>(
+    () => IotRepositoryImpl(
+      vehicleApi: getIt<VehicleApi>(),
+      obd2DeviceApi: getIt<Obd2DeviceApi>(),
+      obd2RegistrationApi: getIt<Obd2RegistrationApi>(),
+      telemetryBatchApi: getIt<TelemetryBatchApi>(),
+      telemetryApi: getIt<TelemetryApi>(),
     ),
   );
 
-  getIt.registerLazySingleton<GetDtcDetailQueryService>(
-    () => GetDtcDetailQueryService(
-      telemetryRepository: getIt<TelemetryRepository>(),
-    ),
+  getIt.registerLazySingleton<RegisterVehicle>(
+    () => RegisterVehicle(repository: getIt<IotRepository>()),
   );
 
-  getIt.registerLazySingleton<GetLiveSensorStreamQueryService>(
-    () => GetLiveSensorStreamQueryService(
-      telemetryRepository: getIt<TelemetryRepository>(),
-    ),
+  getIt.registerLazySingleton<GetVehicles>(
+    () => GetVehicles(repository: getIt<IotRepository>()),
   );
 
-  getIt.registerLazySingleton<UpdateDtcStatusCommandService>(
-    () => UpdateDtcStatusCommandService(
-      telemetryRepository: getIt<TelemetryRepository>(),
-    ),
+  getIt.registerLazySingleton<GetCustomerVehicles>(
+    () => GetCustomerVehicles(repository: getIt<IotRepository>()),
+  );
+
+  getIt.registerLazySingleton<UpdateVehicle>(
+    () => UpdateVehicle(repository: getIt<IotRepository>()),
+  );
+
+  getIt.registerLazySingleton<ManageObd2Devices>(
+    () => ManageObd2Devices(repository: getIt<IotRepository>()),
+  );
+
+  getIt.registerLazySingleton<ManageObd2Registrations>(
+    () => ManageObd2Registrations(repository: getIt<IotRepository>()),
+  );
+
+  getIt.registerLazySingleton<GetTelemetrySnapshots>(
+    () => GetTelemetrySnapshots(repository: getIt<IotRepository>()),
+  );
+
+  getIt.registerLazySingleton<GetDtcAlerts>(
+    () => GetDtcAlerts(repository: getIt<IotRepository>()),
+  );
+
+  getIt.registerLazySingleton<IngestTelemetryBatch>(
+    () => IngestTelemetryBatch(repository: getIt<IotRepository>()),
   );
 
   getIt.registerFactory<TelemetryViewModel>(
     () => TelemetryViewModel(
-      getDtcAlertsQuery: getIt<GetDtcAlertsQueryService>(),
-      getDtcDetailQuery: getIt<GetDtcDetailQueryService>(),
-      getLiveSensorsQuery: getIt<GetLiveSensorStreamQueryService>(),
-      updateDtcStatusCommand: getIt<UpdateDtcStatusCommandService>(),
+      getDtcAlerts: getIt<GetDtcAlerts>(),
+      getTelemetrySnapshots: getIt<GetTelemetrySnapshots>(),
     ),
   );
 
