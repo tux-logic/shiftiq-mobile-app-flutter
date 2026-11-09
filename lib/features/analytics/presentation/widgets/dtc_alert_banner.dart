@@ -50,82 +50,40 @@ class DtcAlertBanner extends StatelessWidget {
                   style: TextStyle(
                     color: ShiftIQColors.severityCrimson,
                     fontWeight: FontWeight.bold,
-                    fontSize: 12,
+                    fontSize: 13,
                     letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: ShiftIQColors.severityCrimson,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Text(
-                  'OBD-II LIVE',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(width: 0, height: 10),
-          Text(
-            'Se detectaron códigos de falla activa en vehículos asignados a esta sede:',
+          const SizedBox(height: 8),
+          const Text(
+            'Se detectaron códigos de diagnóstico críticos transmitidos por dongles OBD-II. Requiere inspección inmediata.',
             style: TextStyle(
+              color: Color(0xFF7F1D1D),
               fontSize: 12,
-              color: Colors.grey[800],
+              height: 1.3,
             ),
           ),
-          const SizedBox(height: 6),
-          _buildDtcRow('Toyota Hilux (BCX-892)', 'P0300 - Fallo de encendido múltiple'),
-          _buildDtcRow('Hyundai Tucson (AJ-4421)', 'P0171 - Mezcla de combustible pobre'),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Align(
             alignment: Alignment.centerRight,
             child: TextButton.icon(
               onPressed: onDetailsPressed,
               style: TextButton.styleFrom(
                 foregroundColor: ShiftIQColors.severityCrimson,
-                visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                  side: BorderSide(color: ShiftIQColors.severityCrimson.withAlpha(80)),
+                ),
               ),
-              icon: const Text(
-                'VER DETALLES DE TELEMETRÍA',
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-              ),
-              label: const Icon(Icons.arrow_forward, size: 14),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDtcRow(String vehicle, String dtcCode) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Row(
-        children: [
-          const Icon(Icons.circle, size: 6, color: ShiftIQColors.severityCrimson),
-          const SizedBox(width: 8),
-          Text(
-            vehicle,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
-          ),
-          const Text(' : ', style: TextStyle(fontSize: 12)),
-          Expanded(
-            child: Text(
-              dtcCode,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.grey[700],
-                fontFamily: 'monospace',
+              icon: const Icon(Icons.arrow_forward, size: 14),
+              label: const Text(
+                'Ver Vehículos Afectados',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -134,4 +92,3 @@ class DtcAlertBanner extends StatelessWidget {
     );
   }
 }
-

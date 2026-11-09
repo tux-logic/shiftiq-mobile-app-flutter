@@ -1,8 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
-import 'package:shiftiq_mobile_app_flutter/features/dashboard/application/get_branch_summary_use_case.dart';
-import 'package:shiftiq_mobile_app_flutter/features/dashboard/domain/branch_summary.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_branch_summary.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/analytics_domain.dart';
 
+/// Presentation controller managing dashboard state and daily branch KPIs.
 class DashboardViewModel extends ChangeNotifier {
   final GetBranchSummaryUseCase getBranchSummaryUseCase;
   final SessionStorage sessionStorage;
@@ -18,8 +19,8 @@ class DashboardViewModel extends ChangeNotifier {
   String? _error;
   String? get error => _error;
 
-  BranchSummary? _summary;
-  BranchSummary? get summary => _summary;
+  BranchAnalyticsSummary? _summary;
+  BranchAnalyticsSummary? get summary => _summary;
 
   String _activeBranchId = '';
   String get activeBranchId => _activeBranchId;
@@ -53,4 +54,3 @@ class DashboardViewModel extends ChangeNotifier {
 
   Future<void> refresh() => loadSummary();
 }
-
