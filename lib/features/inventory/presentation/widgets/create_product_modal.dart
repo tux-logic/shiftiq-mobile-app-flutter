@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
-import 'package:shiftiq_mobile_app_flutter/features/inventory/application/commandservices/create_product_command_service.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/presentation/controllers/inventory_view_model.dart';
 
 class CreateProductModal extends StatefulWidget {
@@ -67,20 +66,18 @@ class _CreateProductModalState extends State<CreateProductModal> {
 
     setState(() => _isLoading = true);
 
-    final command = CreateProductCommand(
+    final success = await widget.viewModel.createProduct(
       branchId: widget.branchId,
       sku: _skuCtrl.text,
       name: _nameCtrl.text,
       category: _selectedCategory,
       unitOfMeasure: _selectedUnit,
-      unitPrice: double.tryParse(_sellingPriceCtrl.text) ?? 0.0,
+      salePrice: double.tryParse(_sellingPriceCtrl.text) ?? 0.0,
       costPrice: double.tryParse(_costPriceCtrl.text) ?? 0.0,
       initialStock: int.tryParse(_stockCtrl.text) ?? 0,
       minimumStock: int.tryParse(_minStockCtrl.text) ?? 5,
       description: _descCtrl.text,
     );
-
-    final success = await widget.viewModel.createProduct(command, widget.branchId);
 
     if (!mounted) return;
     setState(() => _isLoading = false);

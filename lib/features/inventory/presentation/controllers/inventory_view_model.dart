@@ -1,22 +1,15 @@
 import 'package:flutter/foundation.dart';
-import 'package:shiftiq_mobile_app_flutter/features/inventory/application/commandservices/create_product_command_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/inventory/application/commandservices/register_batch_command_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/inventory/application/queryservices/get_product_detail_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/inventory/application/queryservices/get_products_by_branch_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/model/aggregates/product.dart';
-import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/model/valueobjects/stock_status.dart';
+import 'package:shiftiq_mobile_app_flutter/features/inventory/application/inventory_application.dart';
+import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/inventory_domain.dart';
 
+/// ViewModel managing state, search, category filtering, and product lifecycle for workshop inventory.
 class InventoryViewModel extends ChangeNotifier {
-  final GetProductsByBranchQueryService getProductsQuery;
-  final GetProductDetailQueryService getProductDetailQuery;
-  final CreateProductCommandService createProductCommand;
-  final RegisterBatchCommandService registerBatchCommand;
+  final ManageProducts manageProducts;
+  final ManageBatches manageBatches;
 
   InventoryViewModel({
-    required this.getProductsQuery,
-    required this.getProductDetailQuery,
-    required this.createProductCommand,
-    required this.registerBatchCommand,
+    required this.manageProducts,
+    required this.manageBatches,
   });
 
   bool _isLoading = false;
@@ -48,10 +41,10 @@ class InventoryViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _products = await getProductsQuery.execute(
+      _products = await manageProducts.getProducts(
         branchId: branchId,
         category: _selectedCategory == 'TODOS' ? null : _selectedCategory,
-        searchQuery: _searchQuery,
+        query: _searchQuery,
         status: _selectedStatusFilter,
       );
     } catch (e) {
@@ -83,7 +76,7 @@ class InventoryViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _selectedProduct = await getProductDetailQuery.execute(productId);
+      _selectedProduct = await manageProducts.getProductById(productId);
     } catch (e) {
       _errorMessage = 'Error al cargar detalle del repuesto: $e';
     } finally {
@@ -92,16 +85,36 @@ class InventoryViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> createProduct(
-    CreateProductCommand command,
-    String branchId,
-  ) async {
+  Future<bool> createProduct({
+    required String branchId,
+    required String sku,
+    required String name,
+    required String category,
+    required double salePrice,
+    double? unitPrice,
+    double costPrice = 0.0,
+    int initialStock = 0,
+    int minimumStock = 5,
+    String unitOfMeasure = 'UND',
+    String description = '',
+  }) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      await createProductCommand.execute(command);
+      await manageProducts.createProduct(
+        branchId: branchId,
+        sku: sku,
+        name: name,
+        category: category,
+        salePrice: salePrice > 0 ? salePrice : (unitPrice ?? 0.0),
+        costPrice: costPrice,
+        initialStock: initialStock,
+        minimumStock: minimumStock,
+        unitOfMeasure: unitOfMeasure,
+        description: description,
+      );
       await loadProducts(branchId);
       return true;
     } catch (e) {
@@ -112,23 +125,56 @@ class InventoryViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> registerBatch(
-    RegisterBatchCommand command,
-    String branchId,
-  ) async {
+  Future<bool> registerBatch({
+    required String branchId,
+    required String productId,
+    required int quantity,
+    double acquisitionCost = 0.0,
+    String? batchNumber,
+    String? supplierName,
+    DateTime? expirationDate,
+  }) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      await registerBatchCommand.execute(command);
-      if (_selectedProduct != null && _selectedProduct!.id == command.productId) {
-        await loadProductDetail(command.productId);
+      await manageBatches.registerBatch(
+        branchId: branchId,
+        productId: productId,
+        quantity: quantity,
+        acquisitionCost: acquisitionCost,
+        batchNumber: batchNumber,
+        supplierName: supplierName,
+        expirationDate: expirationDate,
+      );
+      if (_selectedProduct != null && _selectedProduct!.id == productId) {
+        await loadProductDetail(productId);
       }
       await loadProducts(branchId);
       return true;
     } catch (e) {
       _errorMessage = 'Error al registrar lote: $e';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteProduct({
+    required String productId,
+    required String branchId,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await manageProducts.deleteProduct(productId);
+      await loadProducts(branchId);
+      return true;
+    } catch (e) {
+      _errorMessage = 'Error al eliminar producto: $e';
       _isLoading = false;
       notifyListeners();
       return false;
