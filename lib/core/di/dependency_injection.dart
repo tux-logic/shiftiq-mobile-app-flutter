@@ -82,6 +82,12 @@ import 'package:shiftiq_mobile_app_flutter/features/billing/domain/repositories/
 import 'package:shiftiq_mobile_app_flutter/features/billing/infrastructure/remote/billing_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/infrastructure/repositories/billing_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/controllers/billing_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/shared/application/usecases/manage_identity_validations.dart';
+import 'package:shiftiq_mobile_app_flutter/features/shared/application/usecases/manage_media_uploads.dart';
+import 'package:shiftiq_mobile_app_flutter/features/shared/application/usecases/manage_system_health.dart';
+import 'package:shiftiq_mobile_app_flutter/features/shared/domain/repositories/shared_repository.dart';
+import 'package:shiftiq_mobile_app_flutter/features/shared/infrastructure/remote/shared_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/shared/infrastructure/repositories/shared_repository_impl.dart';
 
 final getIt = GetIt.instance;
 
@@ -510,5 +516,26 @@ void setupDependencies() {
       manageVouchers: getIt<ManageVouchers>(),
       manageCheckouts: getIt<ManageCheckouts>(),
     ),
+  );
+
+  // 10. Shared Kernel Context
+  getIt.registerLazySingleton<SharedApi>(
+    () => SharedApi(apiClient: getIt<ApiClient>()),
+  );
+
+  getIt.registerLazySingleton<SharedRepository>(
+    () => SharedRepositoryImpl(sharedApi: getIt<SharedApi>()),
+  );
+
+  getIt.registerLazySingleton<ManageSystemHealth>(
+    () => ManageSystemHealth(repository: getIt<SharedRepository>()),
+  );
+
+  getIt.registerLazySingleton<ManageMediaUploads>(
+    () => ManageMediaUploads(repository: getIt<SharedRepository>()),
+  );
+
+  getIt.registerLazySingleton<ManageIdentityValidations>(
+    () => ManageIdentityValidations(repository: getIt<SharedRepository>()),
   );
 }
