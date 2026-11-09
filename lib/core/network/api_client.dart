@@ -185,6 +185,53 @@ class ApiClient {
     }
   }
 
+  Future<dynamic> uploadMultipart(
+    String path, {
+    required List<int> fileBytes,
+    required String fileName,
+    String fieldName = 'file',
+    Map<String, String>? fields,
+    Map<String, dynamic>? queryParameters,
+    Map<String, String>? headers,
+  }) async {
+    try {
+      final uri = _buildUri(path, queryParameters);
+      final request = http.MultipartRequest('POST', uri);
+
+      final token = await sessionStorage.getAccessToken();
+      if (token != null && token.isNotEmpty) {
+        request.headers[HttpHeaders.authorizationHeader] = 'Bearer $token';
+      }
+      request.headers[HttpHeaders.acceptHeader] = 'application/json';
+      if (headers != null) {
+        request.headers.addAll(headers);
+      }
+
+      if (fields != null) {
+        request.fields.addAll(fields);
+      }
+
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          fieldName,
+          fileBytes,
+          filename: fileName,
+        ),
+      );
+
+      final streamedResponse =
+          await _client.send(request).timeout(ApiConstants.requestTimeout);
+      final response = await http.Response.fromStream(streamedResponse);
+      return _processResponse(response);
+    } on SocketException catch (e) {
+      throw NetworkException(details: e.message);
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw AppException(message: 'Connection error: $e');
+    }
+  }
+
   dynamic _processResponse(http.Response response) {
     final statusCode = response.statusCode;
     final bodyString = utf8.decode(response.bodyBytes);

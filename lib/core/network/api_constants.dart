@@ -179,7 +179,11 @@ class ApiConstants {
   static const String vouchers = '/api/v1/vouchers';
   static const String checkouts = '/api/v1/checkouts';
 
-  // Shared
-  static const String health = '/api/v1/health';
+  // Shared Context
+  static const String rootPing = '/';
+  static const String health = '/health';
+  static const String mediaUpload = '/api/v1/media/upload';
+  static const String identityValidationLookup =
+      '/api/v1/identity-validations/lookup';
 }
 
