@@ -9,6 +9,7 @@ import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/widgets
 class CheckoutVoucherPage extends StatefulWidget {
   final String branchId;
   final String? workOrderId;
+  final String? quoteId;
   final String? initialCustomerName;
   final String? initialPlate;
   final List<VoucherItem>? initialItems;
@@ -18,6 +19,7 @@ class CheckoutVoucherPage extends StatefulWidget {
     super.key,
     required this.branchId,
     this.workOrderId,
+    this.quoteId,
     this.initialCustomerName,
     this.initialPlate,
     this.initialItems,
@@ -137,6 +139,7 @@ class _CheckoutVoucherPageState extends State<CheckoutVoucherPage> {
       customerAddress: _addressController.text.trim(),
       paymentMethod: _selectedPaymentMethod,
       items: _items,
+      quoteId: widget.quoteId,
     );
 
     if (emitted != null && mounted) {

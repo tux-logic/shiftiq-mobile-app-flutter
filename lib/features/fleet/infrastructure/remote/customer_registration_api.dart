@@ -63,18 +63,14 @@ class CustomerRegistrationApi {
   Future<Map<String, dynamic>> updateCustomerRegistrationStatus({
     required String id,
     required String status,
-    String? reason,
   }) async {
-    final body = <String, dynamic>{
-      'status': status.toUpperCase(),
-    };
-    if (reason != null && reason.trim().isNotEmpty) {
-      body['reason'] = reason.trim();
-    }
-
     final response = await apiClient.put(
       ApiConstants.customerRegistrationById(id),
-      body: body,
+      body: {
+        'status': status.toUpperCase() == 'BLACKLISTED'
+            ? 'INACTIVE'
+            : status.toUpperCase(),
+      },
     );
     return response as Map<String, dynamic>;
   }

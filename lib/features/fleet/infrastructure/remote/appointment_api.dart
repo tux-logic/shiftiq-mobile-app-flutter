@@ -15,20 +15,19 @@ class AppointmentApi {
     required DateTime scheduledStart,
     DateTime? scheduledEnd,
     String? notes,
-    String? serviceType,
   }) async {
+    final body = <String, dynamic>{
+      'branchId': branchId,
+      'customerId': customerId,
+      'vehicleId': vehicleId,
+      'scheduledStart': scheduledStart.toIso8601String(),
+    };
+    if (scheduledEnd != null) body['scheduledEnd'] = scheduledEnd.toIso8601String();
+    if (notes != null && notes.isNotEmpty) body['notes'] = notes;
+
     final response = await apiClient.post(
       ApiConstants.appointments,
-      body: {
-        'branchId': branchId,
-        'customerId': customerId,
-        'vehicleId': vehicleId,
-        'scheduledStart': scheduledStart.toIso8601String(),
-        if (scheduledEnd != null) 'scheduledEnd': scheduledEnd.toIso8601String(),
-        if (notes != null && notes.isNotEmpty) 'notes': notes,
-        if (serviceType != null && serviceType.isNotEmpty)
-          'serviceType': serviceType,
-      },
+      body: body,
     );
     return response as Map<String, dynamic>;
   }
@@ -100,29 +99,20 @@ class AppointmentApi {
     await apiClient.delete(ApiConstants.appointmentById(id));
   }
 
-  /// PUT /api/v1/appointments/{id}/status - Fast status update.
+  /// Updates appointment status conforming to documented PUT /api/v1/appointments/{id}.
   Future<Map<String, dynamic>> updateAppointmentStatus({
     required String id,
     required String status,
   }) async {
-    try {
-      final response = await apiClient.put(
-        ApiConstants.appointmentStatus(id),
-        body: {'status': status.toUpperCase()},
-      );
-      return response as Map<String, dynamic>;
-    } catch (_) {
-      // Fallback to updating status via direct put
-      final current = await getAppointmentById(id);
-      return updateAppointment(
-        id: id,
-        branchId: current['branchId']?.toString() ?? '',
-        customerId: current['customerId']?.toString() ?? '',
-        vehicleId: current['vehicleId']?.toString() ?? '',
-        scheduledStart: DateTime.tryParse(current['scheduledStart']?.toString() ?? '') ?? DateTime.now(),
-        status: status,
-        notes: current['notes']?.toString(),
-      );
-    }
+    final current = await getAppointmentById(id);
+    return updateAppointment(
+      id: id,
+      branchId: current['branchId']?.toString() ?? '',
+      customerId: current['customerId']?.toString() ?? '',
+      vehicleId: current['vehicleId']?.toString() ?? '',
+      scheduledStart: DateTime.tryParse(current['scheduledStart']?.toString() ?? '') ?? DateTime.now(),
+      status: status.toUpperCase() == 'CONFIRMED' ? 'PENDING' : status.toUpperCase(),
+      notes: current['notes']?.toString(),
+    );
   }
 }

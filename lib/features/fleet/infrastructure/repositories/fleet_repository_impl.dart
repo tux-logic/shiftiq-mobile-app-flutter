@@ -41,7 +41,6 @@ class FleetRepositoryImpl implements FleetRepository {
       scheduledStart: scheduledStart,
       scheduledEnd: scheduledEnd,
       notes: notes,
-      serviceType: serviceType,
     );
     return AppointmentDto.fromJson(json).toDomain();
   }
@@ -169,7 +168,6 @@ class FleetRepositoryImpl implements FleetRepository {
     final json = await customerRegistrationApi.updateCustomerRegistrationStatus(
       id: registrationId,
       status: status,
-      reason: reason,
     );
     return CustomerRegistrationDto.fromJson(json).toDomain();
   }
@@ -237,8 +235,14 @@ class FleetRepositoryImpl implements FleetRepository {
   }
 
   @override
-  Future<void> rejectEmployeeRegistration(String registrationId) async {
-    await employeeRegistrationApi.rejectRegistration(registrationId);
+  Future<void> rejectEmployeeRegistration(
+    String registrationId, [
+    String? reason,
+  ]) async {
+    await employeeRegistrationApi.rejectRegistration(
+      registrationId,
+      reason: reason,
+    );
   }
 
   @override
@@ -270,9 +274,9 @@ class FleetRepositoryImpl implements FleetRepository {
   @override
   Future<EmployeeRegistration> updateEmployeeRegistration({
     required String registrationId,
-    String? speciality,
-    String? specialityName,
-    double? salary,
+    required String speciality,
+    required String specialityName,
+    required double salary,
   }) async {
     final json = await employeeRegistrationApi.updateEmployeeRegistration(
       id: registrationId,

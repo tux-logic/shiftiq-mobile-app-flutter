@@ -62,11 +62,15 @@ class EmployeeRegistrationApi {
     return response as Map<String, dynamic>;
   }
 
-  /// POST /api/v1/employee-registrations/{id}/reject - Reject pending application.
-  Future<void> rejectRegistration(String id) async {
+  /// POST /api/v1/employee-registrations/{id}/reject - Reject pending application with optional audit reason.
+  Future<void> rejectRegistration(String id, {String? reason}) async {
+    final body = <String, dynamic>{};
+    if (reason != null && reason.trim().isNotEmpty) {
+      body['reason'] = reason.trim();
+    }
     await apiClient.post(
       ApiConstants.employeeRegistrationReject(id),
-      body: {},
+      body: body,
     );
   }
 
@@ -107,17 +111,18 @@ class EmployeeRegistrationApi {
     return response as Map<String, dynamic>;
   }
 
-  /// PUT /api/v1/employee-registrations/{id} - Update contract specialty / salary.
+  /// PUT /api/v1/employee-registrations/{id} - Update contract specialty and salary terms.
   Future<Map<String, dynamic>> updateEmployeeRegistration({
     required String id,
-    String? speciality,
-    String? specialityName,
-    double? salary,
+    required String speciality,
+    required String specialityName,
+    required double salary,
   }) async {
-    final body = <String, dynamic>{};
-    if (speciality != null) body['speciality'] = speciality;
-    if (specialityName != null) body['specialityName'] = specialityName;
-    if (salary != null) body['salary'] = salary;
+    final body = <String, dynamic>{
+      'speciality': speciality,
+      'specialityName': specialityName,
+      'salary': salary,
+    };
 
     final response = await apiClient.put(
       ApiConstants.employeeRegistrationById(id),

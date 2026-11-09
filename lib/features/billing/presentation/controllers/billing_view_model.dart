@@ -109,8 +109,18 @@ class BillingViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final effectiveQuoteId =
-          (quoteId != null && quoteId.isNotEmpty) ? quoteId : 'quote-$workOrderId';
+      String effectiveQuoteId = (quoteId != null && quoteId.isNotEmpty) ? quoteId : '';
+      if (effectiveQuoteId.isEmpty && workOrderId.isNotEmpty) {
+        final existing = _quotes
+            .where((q) => q.workOrderId == workOrderId && q.status == QuoteStatus.approved)
+            .firstOrNull;
+        if (existing != null) {
+          effectiveQuoteId = existing.id;
+        }
+      }
+      if (effectiveQuoteId.isEmpty && quoteId != null) {
+        effectiveQuoteId = quoteId;
+      }
       final emitted = await manageVouchers.emitVoucher(
         quoteId: effectiveQuoteId,
         branchId: branchId,

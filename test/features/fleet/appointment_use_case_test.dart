@@ -283,7 +283,7 @@ class MockAppointmentRepository implements AppointmentRepository {
   }
 
   @override
-  Future<void> rejectEmployeeRegistration(String registrationId) async {}
+  Future<void> rejectEmployeeRegistration(String registrationId, [String? reason]) async {}
 
   @override
   Future<List<EmployeeRegistration>> getEmployeeRegistrations({
@@ -331,17 +331,17 @@ class MockAppointmentRepository implements AppointmentRepository {
   @override
   Future<EmployeeRegistration> updateEmployeeRegistration({
     required String registrationId,
-    String? speciality,
-    String? specialityName,
-    double? salary,
+    required String speciality,
+    required String specialityName,
+    required double salary,
   }) async {
     return EmployeeRegistration(
       id: registrationId,
       employeeId: 'emp-1',
       branchId: 'b-01',
-      speciality: speciality ?? 'General',
-      specialityName: specialityName ?? 'General Mechanic',
-      salary: salary ?? 1000.0,
+      speciality: speciality,
+      specialityName: specialityName,
+      salary: salary,
       role: 'ROLE_EMPLOYEE',
       status: 'ACTIVE',
     );

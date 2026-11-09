@@ -210,9 +210,8 @@ class ElectronicVoucher {
     final hash =
         sunatHash ?? 'HASH-SUNAT-SHA256-${id.length > 8 ? id.substring(0, 8).toUpperCase() : id}';
 
-    final sunatTypeCode = voucherType == VoucherType.invoice
-        ? 'FACTURA'
-        : (voucherType == VoucherType.salesNote ? 'NOTA_VENTA' : 'BOLETA');
+    final sunatTypeCode =
+        voucherType == VoucherType.invoice ? 'FACTURA' : 'BOLETA';
     final qr =
         '20601234567|$sunatTypeCode|$series|$number|$igvCalculated|$totalCalculated|${date.toIso8601String().split('T').first}|$customerDocumentType|$customerDocumentNumber|$hash';
 

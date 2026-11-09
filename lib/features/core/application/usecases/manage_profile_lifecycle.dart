@@ -16,21 +16,25 @@ class ManageProfileLifecycle {
     return repository.getOwnerById(ownerId.trim());
   }
 
-  /// Updates owner contact details.
+  /// Updates owner profile details.
   Future<Map<String, dynamic>> updateOwnerProfile({
     required String ownerId,
-    String? firstName,
-    String? lastName,
-    String? phone,
+    required String firstName,
+    required String lastName,
+    required String documentType,
+    required String documentNumber,
+    required String phone,
   }) {
     if (ownerId.trim().isEmpty) {
       throw ArgumentError('ownerId cannot be empty');
     }
     return repository.updateOwnerProfile(
       ownerId: ownerId.trim(),
-      firstName: firstName?.trim(),
-      lastName: lastName?.trim(),
-      phone: phone?.trim(),
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      documentType: documentType.trim(),
+      documentNumber: documentNumber.trim(),
+      phone: phone.trim(),
     );
   }
 
@@ -65,18 +69,22 @@ class ManageProfileLifecycle {
   /// Updates employee profile personal details.
   Future<Map<String, dynamic>> updateEmployeeProfile({
     required String employeeId,
-    String? firstName,
-    String? lastName,
-    String? phone,
+    required String firstName,
+    required String lastName,
+    required String documentType,
+    required String documentNumber,
+    required String phone,
   }) {
     if (employeeId.trim().isEmpty) {
       throw ArgumentError('employeeId cannot be empty');
     }
     return repository.updateEmployeeProfile(
       employeeId: employeeId.trim(),
-      firstName: firstName?.trim(),
-      lastName: lastName?.trim(),
-      phone: phone?.trim(),
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      documentType: documentType.trim(),
+      documentNumber: documentNumber.trim(),
+      phone: phone.trim(),
     );
   }
 
@@ -101,20 +109,24 @@ class ManageProfileLifecycle {
   /// Updates customer profile contact and business details.
   Future<Map<String, dynamic>> updateCustomerProfile({
     required String customerId,
+    required String documentType,
+    required String documentNumber,
+    required String phone,
     String? firstName,
     String? lastName,
     String? businessName,
-    String? phone,
   }) {
     if (customerId.trim().isEmpty) {
       throw ArgumentError('customerId cannot be empty');
     }
     return repository.updateCustomerProfile(
       customerId: customerId.trim(),
+      documentType: documentType.trim(),
+      documentNumber: documentNumber.trim(),
+      phone: phone.trim(),
       firstName: firstName?.trim(),
       lastName: lastName?.trim(),
       businessName: businessName?.trim(),
-      phone: phone?.trim(),
     );
   }
 

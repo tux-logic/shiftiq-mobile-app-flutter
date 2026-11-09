@@ -41,14 +41,17 @@ class DtcAlertDto {
       vehiclePlate: json['vehiclePlate']?.toString() ?? json['vehicle_plate']?.toString() ?? 'S/P',
       vehicleModel: json['vehicleModel']?.toString() ?? json['vehicle_model']?.toString() ?? 'Vehículo General',
       customerName: json['customerName']?.toString() ?? json['customer_name']?.toString() ?? 'Cliente General',
-      code: json['code']?.toString() ?? 'P0000',
+      code: json['dtcCode']?.toString() ?? json['code']?.toString() ?? 'P0000',
       description: json['description']?.toString() ?? 'Código DTC',
       systemCategory: json['systemCategory']?.toString() ?? json['system_category']?.toString() ?? 'Motor',
       severity: json['severity']?.toString() ?? 'MODERATE',
       aiDiagnosticRecommendation: json['aiDiagnosticRecommendation']?.toString() ??
           json['ai_diagnostic_recommendation']?.toString() ??
           'Inspección computarizada requerida',
-      detectedAt: json['detectedAt']?.toString() ?? json['detected_at']?.toString() ?? DateTime.now().toIso8601String(),
+      detectedAt: json['createdAt']?.toString() ??
+          json['detectedAt']?.toString() ??
+          json['detected_at']?.toString() ??
+          DateTime.now().toIso8601String(),
       status: json['status']?.toString() ?? 'ACTIVE',
       freezeFrame: json['freezeFrame'] as Map<String, dynamic>?,
     );

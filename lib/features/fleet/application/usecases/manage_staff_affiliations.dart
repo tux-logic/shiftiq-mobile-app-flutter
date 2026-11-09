@@ -17,26 +17,30 @@ class ManageStaffAffiliations {
     return repository.getEmployeeRegistrationById(trimmedId);
   }
 
-  /// Updates contract terms (assigned specialty and/or base monthly salary).
+  /// Updates contract terms (assigned specialty and base monthly salary).
   Future<EmployeeRegistration> updateContractTerms({
     required String registrationId,
-    String? speciality,
-    String? specialityName,
-    double? salary,
+    required String speciality,
+    required String specialityName,
+    required double salary,
   }) {
     final trimmedId = registrationId.trim();
     if (trimmedId.isEmpty) {
       throw ValidationException(message: 'Registration ID cannot be empty');
     }
 
-    if (salary != null && salary < 0) {
+    if (speciality.trim().isEmpty) {
+      throw ValidationException(message: 'Speciality cannot be empty');
+    }
+
+    if (salary < 0) {
       throw ValidationException(message: 'Salary cannot be negative');
     }
 
     return repository.updateEmployeeRegistration(
       registrationId: trimmedId,
-      speciality: speciality?.trim(),
-      specialityName: specialityName?.trim(),
+      speciality: speciality.trim(),
+      specialityName: specialityName.trim(),
       salary: salary,
     );
   }

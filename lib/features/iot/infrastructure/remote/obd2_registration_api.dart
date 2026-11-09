@@ -43,7 +43,7 @@ class Obd2RegistrationApi {
   /// GET /api/v1/obd2-device-registrations?branchId={branchId}&status={status}
   Future<List<dynamic>> getRegistrations({
     required String branchId,
-    String? status,
+    String status = 'ACTIVE',
   }) async {
     final response = await apiClient.get(
       ApiConstants.branchObd2DeviceRegistrations(branchId, status: status),

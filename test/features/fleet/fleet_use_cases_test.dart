@@ -235,7 +235,7 @@ class InMemoryFleetRepository implements FleetRepository {
   }
 
   @override
-  Future<void> rejectEmployeeRegistration(String registrationId) async {
+  Future<void> rejectEmployeeRegistration(String registrationId, [String? reason]) async {
     final index = employeeRegistrations.indexWhere((e) => e.id == registrationId);
     if (index != -1) {
       employeeRegistrations[index] = employeeRegistrations[index].copyWith(
@@ -289,17 +289,17 @@ class InMemoryFleetRepository implements FleetRepository {
   @override
   Future<EmployeeRegistration> updateEmployeeRegistration({
     required String registrationId,
-    String? speciality,
-    String? specialityName,
-    double? salary,
+    required String speciality,
+    required String specialityName,
+    required double salary,
   }) async {
     final index = employeeRegistrations.indexWhere((e) => e.id == registrationId);
     if (index == -1) throw StateError('Employee registration not found');
     final existing = employeeRegistrations[index];
     final updated = existing.copyWith(
-      speciality: speciality ?? existing.speciality,
-      specialityName: specialityName ?? existing.specialityName,
-      salary: salary ?? existing.salary,
+      speciality: speciality,
+      specialityName: specialityName,
+      salary: salary,
     );
     employeeRegistrations[index] = updated;
     return updated;

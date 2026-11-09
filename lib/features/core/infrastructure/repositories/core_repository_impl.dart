@@ -82,7 +82,7 @@ class CoreRepositoryImpl implements CoreRepository {
     required String code,
     required String name,
     required String address,
-    String? phone,
+    required String phone,
   }) async {
     final json = await branchApi.createBranch(
       workshopId: workshopId,
@@ -100,7 +100,7 @@ class CoreRepositoryImpl implements CoreRepository {
     required String code,
     required String name,
     required String address,
-    String? phone,
+    required String phone,
   }) async {
     final json = await branchApi.updateBranch(
       branchId: branchId,
@@ -298,14 +298,18 @@ class CoreRepositoryImpl implements CoreRepository {
   @override
   Future<Map<String, dynamic>> updateOwnerProfile({
     required String ownerId,
-    String? firstName,
-    String? lastName,
-    String? phone,
+    required String firstName,
+    required String lastName,
+    required String documentType,
+    required String documentNumber,
+    required String phone,
   }) {
     return profileApi.updateOwnerProfile(
       ownerId: ownerId,
       firstName: firstName,
       lastName: lastName,
+      documentType: documentType,
+      documentNumber: documentNumber,
       phone: phone,
     );
   }
@@ -330,14 +334,18 @@ class CoreRepositoryImpl implements CoreRepository {
   @override
   Future<Map<String, dynamic>> updateEmployeeProfile({
     required String employeeId,
-    String? firstName,
-    String? lastName,
-    String? phone,
+    required String firstName,
+    required String lastName,
+    required String documentType,
+    required String documentNumber,
+    required String phone,
   }) {
     return profileApi.updateEmployeeProfile(
       employeeId: employeeId,
       firstName: firstName,
       lastName: lastName,
+      documentType: documentType,
+      documentNumber: documentNumber,
       phone: phone,
     );
   }
@@ -355,17 +363,21 @@ class CoreRepositoryImpl implements CoreRepository {
   @override
   Future<Map<String, dynamic>> updateCustomerProfile({
     required String customerId,
+    required String documentType,
+    required String documentNumber,
+    required String phone,
     String? firstName,
     String? lastName,
     String? businessName,
-    String? phone,
   }) {
     return profileApi.updateCustomerProfile(
       customerId: customerId,
+      documentType: documentType,
+      documentNumber: documentNumber,
+      phone: phone,
       firstName: firstName,
       lastName: lastName,
       businessName: businessName,
-      phone: phone,
     );
   }
 

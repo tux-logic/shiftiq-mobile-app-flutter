@@ -58,18 +58,8 @@ class BillingApi {
   // Vouchers Endpoints
   Future<List<VoucherDto>> getVouchers({
     required String branchId,
-    String? voucherType,
-    String? status,
   }) async {
-    var url = '/api/v1/vouchers?branchId=$branchId';
-    if (voucherType != null && voucherType.isNotEmpty) {
-      url += '&voucherType=$voucherType';
-    }
-    if (status != null && status.isNotEmpty) {
-      url += '&status=$status';
-    }
-
-    final response = await apiClient.get(url);
+    final response = await apiClient.get('/api/v1/vouchers?branchId=$branchId');
     if (response is List) {
       return response
           .map((item) => VoucherDto.fromJson(item as Map<String, dynamic>))
@@ -103,15 +93,7 @@ class BillingApi {
     String voucherId,
     Map<String, dynamic> body,
   ) async {
-    try {
-      return await registerPayment(voucherId, body);
-    } catch (_) {
-      final response = await apiClient.post(
-        '/api/v1/vouchers/$voucherId/checkout',
-        body: body,
-      );
-      return VoucherDto.fromJson(response as Map<String, dynamic>);
-    }
+    return registerPayment(voucherId, body);
   }
 
   Future<void> deletePayment(String voucherId, String paymentId) async {

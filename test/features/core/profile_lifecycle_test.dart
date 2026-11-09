@@ -71,12 +71,17 @@ void main() {
         if (request.method == 'PUT' && request.url.path == '/api/v1/owners/owner-100') {
           final body = jsonDecode(request.body) as Map<String, dynamic>;
           expect(body['firstName'], 'Carlos Alberto');
+          expect(body['lastName'], 'Castro');
+          expect(body['documentType'], 'DNI');
+          expect(body['documentNumber'], '12345678');
           expect(body['phone'], '+51 999888777');
           return http.Response(
             jsonEncode({
               'id': 'owner-100',
               'firstName': 'Carlos Alberto',
               'lastName': 'Castro',
+              'documentType': 'DNI',
+              'documentNumber': '12345678',
               'phone': '+51 999888777',
             }),
             200,
@@ -89,6 +94,9 @@ void main() {
       final result = await useCase.updateOwnerProfile(
         ownerId: 'owner-100',
         firstName: 'Carlos Alberto',
+        lastName: 'Castro',
+        documentType: 'DNI',
+        documentNumber: '12345678',
         phone: '+51 999888777',
       );
 
@@ -114,7 +122,17 @@ void main() {
       setUpWithMockClient((request) async => http.Response('OK', 200));
 
       expect(() => useCase.getOwnerById('  '), throwsArgumentError);
-      expect(() => useCase.updateOwnerProfile(ownerId: ''), throwsArgumentError);
+      expect(
+        () => useCase.updateOwnerProfile(
+          ownerId: '',
+          firstName: 'Carlos',
+          lastName: 'Castro',
+          documentType: 'DNI',
+          documentNumber: '12345678',
+          phone: '+51 999',
+        ),
+        throwsArgumentError,
+      );
       expect(() => useCase.deleteOwnerProfile('   '), throwsArgumentError);
     });
   });
@@ -177,12 +195,18 @@ void main() {
       setUpWithMockClient((request) async {
         if (request.method == 'PUT' && request.url.path == '/api/v1/employees/emp-200') {
           final body = jsonDecode(request.body) as Map<String, dynamic>;
+          expect(body['firstName'], 'Miguel');
+          expect(body['lastName'], 'Grau');
+          expect(body['documentType'], 'DNI');
+          expect(body['documentNumber'], '45678912');
           expect(body['phone'], '+51 922333444');
           return http.Response(
             jsonEncode({
               'id': 'emp-200',
               'firstName': 'Miguel',
               'lastName': 'Grau',
+              'documentType': 'DNI',
+              'documentNumber': '45678912',
               'phone': '+51 922333444',
             }),
             200,
@@ -194,6 +218,10 @@ void main() {
 
       final result = await useCase.updateEmployeeProfile(
         employeeId: 'emp-200',
+        firstName: 'Miguel',
+        lastName: 'Grau',
+        documentType: 'DNI',
+        documentNumber: '45678912',
         phone: '+51 922333444',
       );
 
@@ -219,7 +247,17 @@ void main() {
 
       expect(() => useCase.getEmployeeById(' '), throwsArgumentError);
       expect(() => useCase.getEmployeesByDocumentNumber(''), throwsArgumentError);
-      expect(() => useCase.updateEmployeeProfile(employeeId: ''), throwsArgumentError);
+      expect(
+        () => useCase.updateEmployeeProfile(
+          employeeId: '',
+          firstName: 'Miguel',
+          lastName: 'Grau',
+          documentType: 'DNI',
+          documentNumber: '12345678',
+          phone: '+51 999',
+        ),
+        throwsArgumentError,
+      );
       expect(() => useCase.deleteEmployeeProfile(''), throwsArgumentError);
     });
   });
@@ -254,6 +292,9 @@ void main() {
       setUpWithMockClient((request) async {
         if (request.method == 'PUT' && request.url.path == '/api/v1/customers/cust-300') {
           final body = jsonDecode(request.body) as Map<String, dynamic>;
+          expect(body['documentType'], 'RUC');
+          expect(body['documentNumber'], '20556677889');
+          expect(body['phone'], '+51 944555666');
           expect(body['businessName'], 'Logística y Transportes Rojas S.A.C.');
           return http.Response(
             jsonEncode({
@@ -261,6 +302,8 @@ void main() {
               'firstName': 'Elena',
               'lastName': 'Rojas',
               'businessName': 'Logística y Transportes Rojas S.A.C.',
+              'documentType': 'RUC',
+              'documentNumber': '20556677889',
               'phone': '+51 944555666',
             }),
             200,
@@ -272,6 +315,9 @@ void main() {
 
       final result = await useCase.updateCustomerProfile(
         customerId: 'cust-300',
+        documentType: 'RUC',
+        documentNumber: '20556677889',
+        phone: '+51 944555666',
         businessName: 'Logística y Transportes Rojas S.A.C.',
       );
 
@@ -296,7 +342,15 @@ void main() {
       setUpWithMockClient((request) async => http.Response('OK', 200));
 
       expect(() => useCase.getCustomerById(''), throwsArgumentError);
-      expect(() => useCase.updateCustomerProfile(customerId: '  '), throwsArgumentError);
+      expect(
+        () => useCase.updateCustomerProfile(
+          customerId: '  ',
+          documentType: 'RUC',
+          documentNumber: '20556677889',
+          phone: '+51 944555666',
+        ),
+        throwsArgumentError,
+      );
       expect(() => useCase.deleteCustomerProfile(' '), throwsArgumentError);
     });
   });
