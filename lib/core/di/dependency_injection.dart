@@ -39,15 +39,12 @@ import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/repositorie
 import 'package:shiftiq_mobile_app_flutter/features/analytics/infrastructure/remote/analytics_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/infrastructure/repositories/analytics_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/controllers/dashboard_view_model.dart';
-import 'package:shiftiq_mobile_app_flutter/features/operations/application/add_task_to_work_order_use_case.dart';
-import 'package:shiftiq_mobile_app_flutter/features/operations/application/create_work_order_use_case.dart';
-import 'package:shiftiq_mobile_app_flutter/features/operations/application/finalize_operations_use_cases.dart';
-import 'package:shiftiq_mobile_app_flutter/features/operations/application/get_work_order_detail_use_case.dart';
-import 'package:shiftiq_mobile_app_flutter/features/operations/application/get_work_orders_use_case.dart';
-import 'package:shiftiq_mobile_app_flutter/features/operations/application/manage_task_status_use_cases.dart';
-import 'package:shiftiq_mobile_app_flutter/features/operations/domain/work_order_repository.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/application/operations_application.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/domain/repositories/operations_repository.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/infrastructure/remote/service_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/infrastructure/remote/work_order_api.dart';
-import 'package:shiftiq_mobile_app_flutter/features/operations/infrastructure/work_order_repository_impl.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/infrastructure/remote/work_order_task_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/infrastructure/repositories/operations_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_order_detail_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_orders_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/cancel_appointment.dart';
@@ -277,62 +274,55 @@ void setupDependencies() {
     ),
   );
 
-  // 5. Operations Context (Work Orders & Tasks)
+  // 5. Operations Bounded Context (Services Catalog, Work Orders, Tasks & Stock Reservations)
+  getIt.registerLazySingleton<ServiceApi>(
+    () => ServiceApi(apiClient: getIt<ApiClient>()),
+  );
+
   getIt.registerLazySingleton<WorkOrderApi>(
     () => WorkOrderApi(apiClient: getIt<ApiClient>()),
   );
 
-  getIt.registerLazySingleton<WorkOrderRepository>(
-    () => WorkOrderRepositoryImpl(workOrderApi: getIt<WorkOrderApi>()),
+  getIt.registerLazySingleton<WorkOrderTaskApi>(
+    () => WorkOrderTaskApi(apiClient: getIt<ApiClient>()),
   );
 
-  getIt.registerLazySingleton<GetWorkOrdersUseCase>(
-    () => GetWorkOrdersUseCase(repository: getIt<WorkOrderRepository>()),
+  getIt.registerLazySingleton<OperationsRepository>(
+    () => OperationsRepositoryImpl(
+      serviceApi: getIt<ServiceApi>(),
+      workOrderApi: getIt<WorkOrderApi>(),
+      workOrderTaskApi: getIt<WorkOrderTaskApi>(),
+    ),
   );
 
-  getIt.registerLazySingleton<GetWorkOrderDetailUseCase>(
-    () => GetWorkOrderDetailUseCase(repository: getIt<WorkOrderRepository>()),
+  getIt.registerLazySingleton<ManageServices>(
+    () => ManageServices(repository: getIt<OperationsRepository>()),
   );
 
-  getIt.registerLazySingleton<CreateWorkOrderUseCase>(
-    () => CreateWorkOrderUseCase(repository: getIt<WorkOrderRepository>()),
+  getIt.registerLazySingleton<ManageWorkOrders>(
+    () => ManageWorkOrders(repository: getIt<OperationsRepository>()),
   );
 
-  getIt.registerLazySingleton<AddTaskToWorkOrderUseCase>(
-    () => AddTaskToWorkOrderUseCase(repository: getIt<WorkOrderRepository>()),
+  getIt.registerLazySingleton<ManageWorkOrderTasks>(
+    () => ManageWorkOrderTasks(repository: getIt<OperationsRepository>()),
   );
 
-  getIt.registerLazySingleton<StartTaskUseCase>(
-    () => StartTaskUseCase(repository: getIt<WorkOrderRepository>()),
-  );
-
-  getIt.registerLazySingleton<CompleteTaskUseCase>(
-    () => CompleteTaskUseCase(repository: getIt<WorkOrderRepository>()),
-  );
-
-  getIt.registerLazySingleton<AddProductToTaskUseCase>(
-    () => AddProductToTaskUseCase(repository: getIt<WorkOrderRepository>()),
-  );
-
-  getIt.registerLazySingleton<CompleteWorkOrderUseCase>(
-    () => CompleteWorkOrderUseCase(repository: getIt<WorkOrderRepository>()),
+  getIt.registerLazySingleton<ManageTaskProducts>(
+    () => ManageTaskProducts(repository: getIt<OperationsRepository>()),
   );
 
   getIt.registerFactory<WorkOrdersViewModel>(
     () => WorkOrdersViewModel(
-      getWorkOrdersUseCase: getIt<GetWorkOrdersUseCase>(),
+      manageWorkOrders: getIt<ManageWorkOrders>(),
       sessionStorage: getIt<SessionStorage>(),
     ),
   );
 
   getIt.registerFactory<WorkOrderDetailViewModel>(
     () => WorkOrderDetailViewModel(
-      getWorkOrderDetailUseCase: getIt<GetWorkOrderDetailUseCase>(),
-      startTaskUseCase: getIt<StartTaskUseCase>(),
-      completeTaskUseCase: getIt<CompleteTaskUseCase>(),
-      addTaskUseCase: getIt<AddTaskToWorkOrderUseCase>(),
-      addProductUseCase: getIt<AddProductToTaskUseCase>(),
-      completeWorkOrderUseCase: getIt<CompleteWorkOrderUseCase>(),
+      manageWorkOrders: getIt<ManageWorkOrders>(),
+      manageWorkOrderTasks: getIt<ManageWorkOrderTasks>(),
+      manageTaskProducts: getIt<ManageTaskProducts>(),
     ),
   );
 
