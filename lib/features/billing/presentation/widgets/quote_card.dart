@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/aggregates/quote.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
 
 class QuoteCard extends StatelessWidget {
   final Quote quote;
