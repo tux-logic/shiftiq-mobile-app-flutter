@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/aggregates/electronic_voucher.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/valueobjects/voucher_status.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/valueobjects/voucher_type.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
 
 class VoucherCard extends StatelessWidget {
   final ElectronicVoucher voucher;

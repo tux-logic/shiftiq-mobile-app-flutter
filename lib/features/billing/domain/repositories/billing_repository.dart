@@ -1,11 +1,38 @@
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/aggregates/electronic_voucher.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/aggregates/quote.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/entities/voucher_item.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/valueobjects/payment_method.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/valueobjects/voucher_status.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/valueobjects/voucher_type.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/domain/models/electronic_voucher.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/domain/models/mercadopago_preference.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/domain/models/payment_method.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/domain/models/quote.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/domain/models/voucher_status.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/domain/models/voucher_type.dart';
 
 abstract class BillingRepository {
+  // Quotes Lifecycle
+  Future<List<Quote>> getQuotes({required String branchId});
+
+  Future<Quote> getQuoteById(String quoteId);
+
+  Future<Quote> createQuote({
+    required String branchId,
+    String? workOrderId,
+    double discountPercentage = 0.0,
+    String customerName = '',
+    String customerPhone = '',
+    String vehiclePlate = '',
+    String vehicleModel = '',
+    List<dynamic> items = const [],
+    DateTime? validUntil,
+  });
+
+  Future<Quote> updateQuoteDiscount({
+    required String quoteId,
+    required double discountPercentage,
+  });
+
+  Future<Quote> approveQuote(String quoteId);
+
+  Future<Quote> cancelQuote(String quoteId);
+
+  // Vouchers Lifecycle & SUNAT Emission
   Future<List<ElectronicVoucher>> getVouchers({
     required String branchId,
     VoucherType? voucherType,
@@ -15,15 +42,22 @@ abstract class BillingRepository {
   Future<ElectronicVoucher> getVoucherById(String id);
 
   Future<ElectronicVoucher> emitVoucher({
-    required String branchId,
-    required String workOrderId,
+    String quoteId = '',
+    String branchId = '',
+    String workOrderId = '',
     required VoucherType voucherType,
     required String customerDocumentType,
     required String customerDocumentNumber,
     required String customerName,
     String? customerAddress,
-    required PaymentMethod paymentMethod,
-    required List<VoucherItem> items,
+    PaymentMethod paymentMethod = PaymentMethod.cash,
+    List<VoucherItem> items = const [],
+  });
+
+  Future<ElectronicVoucher> registerPayment({
+    required String voucherId,
+    required double amount,
+    required PaymentMethod method,
   });
 
   Future<ElectronicVoucher> processPayment({
@@ -31,16 +65,37 @@ abstract class BillingRepository {
     required PaymentMethod paymentMethod,
   });
 
-  Future<List<Quote>> getQuotes({required String branchId});
+  Future<void> deletePayment({
+    required String voucherId,
+    required String paymentId,
+  });
 
-  Future<Quote> createQuote({
-    required String branchId,
-    String? workOrderId,
+  // Atomic POS & Gateway Checkouts
+  Future<ElectronicVoucher> checkoutDirect({
+    required String quoteId,
+    required VoucherType type,
+    required String customerDocumentType,
+    required String customerDocumentNumber,
     required String customerName,
-    required String customerPhone,
-    required String vehiclePlate,
-    required String vehicleModel,
-    required List<VoucherItem> items,
-    required DateTime validUntil,
+    required PaymentMethod method,
+    String? branchId,
+  });
+
+  Future<ElectronicVoucher> confirmMercadoPagoCheckout({
+    required String quoteId,
+    required VoucherType type,
+    required String customerDocumentType,
+    required String customerDocumentNumber,
+    required String customerName,
+    required String paymentId,
+    String? branchId,
+  });
+
+  Future<MercadoPagoPreference> createMercadoPagoPreference({
+    required String quoteId,
+    VoucherType? type,
+    String? customerDocumentType,
+    String? customerDocumentNumber,
+    String? customerName,
   });
 }

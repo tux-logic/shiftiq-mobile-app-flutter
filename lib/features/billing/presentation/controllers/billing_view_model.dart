@@ -1,32 +1,18 @@
 import 'package:flutter/foundation.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/application/commandservices/create_quote_command_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/application/commandservices/emit_voucher_command_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/application/commandservices/process_payment_command_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/application/queryservices/get_quotes_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/application/queryservices/get_voucher_detail_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/application/queryservices/get_vouchers_by_branch_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/aggregates/electronic_voucher.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/aggregates/quote.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/entities/voucher_item.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/valueobjects/payment_method.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/valueobjects/voucher_status.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/valueobjects/voucher_type.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/application/usecases/manage_checkouts.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/application/usecases/manage_quotes.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/application/usecases/manage_vouchers.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
 
 class BillingViewModel extends ChangeNotifier {
-  final GetVouchersByBranchQueryService getVouchersQuery;
-  final GetVoucherDetailQueryService getVoucherDetailQuery;
-  final GetQuotesQueryService getQuotesQuery;
-  final EmitVoucherCommandService emitVoucherCommand;
-  final ProcessPaymentCommandService processPaymentCommand;
-  final CreateQuoteCommandService createQuoteCommand;
+  final ManageQuotes manageQuotes;
+  final ManageVouchers manageVouchers;
+  final ManageCheckouts manageCheckouts;
 
   BillingViewModel({
-    required this.getVouchersQuery,
-    required this.getVoucherDetailQuery,
-    required this.getQuotesQuery,
-    required this.emitVoucherCommand,
-    required this.processPaymentCommand,
-    required this.createQuoteCommand,
+    required this.manageQuotes,
+    required this.manageVouchers,
+    required this.manageCheckouts,
   });
 
   bool _isLoading = false;
@@ -55,7 +41,7 @@ class BillingViewModel extends ChangeNotifier {
       .fold(0.0, (acc, v) => acc + v.total);
 
   int get pendingPaymentsCount =>
-      _vouchers.where((v) => v.status == VoucherStatus.issued).length;
+      _vouchers.where((v) => v.status == VoucherStatus.pending || v.status == VoucherStatus.emitted).length;
 
   Future<void> loadBillingData(String branchId) async {
     _isLoading = true;
@@ -64,12 +50,12 @@ class BillingViewModel extends ChangeNotifier {
 
     try {
       final results = await Future.wait([
-        getVouchersQuery.execute(
+        manageVouchers.getVouchers(
           branchId: branchId,
           voucherType: _selectedTypeFilter,
           status: _selectedStatusFilter,
         ),
-        getQuotesQuery.execute(branchId: branchId),
+        manageQuotes.getQuotes(branchId: branchId),
       ]);
       _vouchers = results[0] as List<ElectronicVoucher>;
       _quotes = results[1] as List<Quote>;
@@ -97,7 +83,7 @@ class BillingViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _selectedVoucher = await getVoucherDetailQuery.execute(voucherId);
+      _selectedVoucher = await manageVouchers.getVoucherById(voucherId);
     } catch (e) {
       _errorMessage = 'Error al cargar comprobante: $e';
     } finally {
@@ -116,13 +102,17 @@ class BillingViewModel extends ChangeNotifier {
     String? customerAddress,
     required PaymentMethod paymentMethod,
     required List<VoucherItem> items,
+    String? quoteId,
   }) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final emitted = await emitVoucherCommand.execute(
+      final effectiveQuoteId =
+          (quoteId != null && quoteId.isNotEmpty) ? quoteId : 'quote-$workOrderId';
+      final emitted = await manageVouchers.emitVoucher(
+        quoteId: effectiveQuoteId,
         branchId: branchId,
         workOrderId: workOrderId,
         voucherType: voucherType,
@@ -150,15 +140,20 @@ class BillingViewModel extends ChangeNotifier {
     required String voucherId,
     required PaymentMethod paymentMethod,
     required String branchId,
+    double? amount,
   }) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final updated = await processPaymentCommand.execute(
+      final voucher = _selectedVoucher ?? await manageVouchers.getVoucherById(voucherId);
+      final paymentAmount =
+          amount ?? (voucher.balance > 0 ? voucher.balance : voucher.totalAmount);
+      final updated = await manageVouchers.registerPayment(
         voucherId: voucherId,
-        paymentMethod: paymentMethod,
+        amount: paymentAmount,
+        method: paymentMethod,
       );
       _selectedVoucher = updated;
       await loadBillingData(branchId);
@@ -180,15 +175,16 @@ class BillingViewModel extends ChangeNotifier {
     required String customerPhone,
     required String vehiclePlate,
     required String vehicleModel,
-    required List<VoucherItem> items,
+    required List<dynamic> items,
     required DateTime validUntil,
+    double discountPercentage = 0.0,
   }) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final created = await createQuoteCommand.execute(
+      final created = await manageQuotes.createQuote(
         branchId: branchId,
         workOrderId: workOrderId,
         customerName: customerName,
@@ -197,12 +193,95 @@ class BillingViewModel extends ChangeNotifier {
         vehicleModel: vehicleModel,
         items: items,
         validUntil: validUntil,
+        discountPercentage: discountPercentage,
       );
       _selectedQuote = created;
       await loadBillingData(branchId);
       return created;
     } catch (e) {
       _errorMessage = 'Error al registrar cotización: $e';
+      notifyListeners();
+      return null;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<Quote?> approveQuote({
+    required String quoteId,
+    required String branchId,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final approved = await manageQuotes.approveQuote(quoteId);
+      _selectedQuote = approved;
+      await loadBillingData(branchId);
+      return approved;
+    } catch (e) {
+      _errorMessage = 'Error al aprobar cotización: $e';
+      notifyListeners();
+      return null;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<Quote?> cancelQuote({
+    required String quoteId,
+    required String branchId,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final canceled = await manageQuotes.cancelQuote(quoteId);
+      _selectedQuote = canceled;
+      await loadBillingData(branchId);
+      return canceled;
+    } catch (e) {
+      _errorMessage = 'Error al cancelar cotización: $e';
+      notifyListeners();
+      return null;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<ElectronicVoucher?> checkoutDirect({
+    required String quoteId,
+    required VoucherType type,
+    required String customerDocumentType,
+    required String customerDocumentNumber,
+    required String customerName,
+    required PaymentMethod method,
+    required String branchId,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final voucher = await manageCheckouts.checkoutDirect(
+        quoteId: quoteId,
+        type: type,
+        customerDocumentType: customerDocumentType,
+        customerDocumentNumber: customerDocumentNumber,
+        customerName: customerName,
+        method: method,
+        branchId: branchId,
+      );
+      _selectedVoucher = voucher;
+      await loadBillingData(branchId);
+      return voucher;
+    } catch (e) {
+      _errorMessage = 'Error en checkout directo: $e';
       notifyListeners();
       return null;
     } finally {
