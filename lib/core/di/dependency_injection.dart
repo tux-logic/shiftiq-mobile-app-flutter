@@ -82,7 +82,10 @@ void setupDependencies() {
   getIt.registerLazySingleton<DomainEventBus>(() => StreamDomainEventBus());
 
   getIt.registerLazySingleton<ApiClient>(
-    () => ApiClient(sessionStorage: getIt<SessionStorage>()),
+    () => ApiClient(
+      sessionStorage: getIt<SessionStorage>(),
+      eventBus: getIt<DomainEventBus>(),
+    ),
   );
 
   // 2. IAM Context (Authentication)
