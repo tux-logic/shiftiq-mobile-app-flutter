@@ -2,10 +2,7 @@ import 'package:shiftiq_mobile_app_flutter/features/billing/domain/models/electr
 
 enum QuoteStatus {
   draft('DRAFT', 'Borrador'),
-  sent('SENT', 'Enviado'),
   approved('APPROVED', 'Aprobado'),
-  rejected('REJECTED', 'Rechazado'),
-  converted('CONVERTED', 'Convertido'),
   canceled('CANCELED', 'Cancelado');
 
   final String code;
@@ -13,27 +10,27 @@ enum QuoteStatus {
 
   const QuoteStatus(this.code, this.label);
 
+  static QuoteStatus get sent => QuoteStatus.draft;
+  static QuoteStatus get rejected => QuoteStatus.canceled;
+  static QuoteStatus get converted => QuoteStatus.approved;
+
   static QuoteStatus fromCode(String code) {
     switch (code.toUpperCase()) {
       case 'APPROVED':
       case 'APROBADO':
+      case 'CONVERTED':
         return QuoteStatus.approved;
       case 'CANCELED':
       case 'CANCELLED':
       case 'CANCELADA':
       case 'ANULADO':
-        return QuoteStatus.canceled;
-      case 'SENT':
-      case 'ENVIADO':
-        return QuoteStatus.sent;
       case 'REJECTED':
       case 'RECHAZADO':
-        return QuoteStatus.rejected;
-      case 'CONVERTED':
-      case 'CONVERTIDO':
-        return QuoteStatus.converted;
+        return QuoteStatus.canceled;
       case 'DRAFT':
       case 'BORRADOR':
+      case 'SENT':
+      case 'ENVIADO':
       default:
         return QuoteStatus.draft;
     }

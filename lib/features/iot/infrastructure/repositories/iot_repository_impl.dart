@@ -262,7 +262,7 @@ class IotRepositoryImpl implements IotRepository {
   }) async {
     final rawList = await obd2RegistrationApi.getRegistrations(
       branchId: branchId,
-      status: status,
+      status: status ?? 'ACTIVE',
     );
     return IotDto.obd2RegistrationListFromJson(rawList);
   }
@@ -341,19 +341,48 @@ class IotRepositoryImpl implements IotRepository {
     int page = 0,
     int size = 20,
   }) async {
-    if (telemetryApi != null) {
-      try {
-        final remoteDtos = await telemetryApi!.getDtcAlerts(
+    try {
+      if (branchId.isNotEmpty) {
+        final registrations = await obd2RegistrationApi.getRegistrations(
           branchId: branchId,
-          severity: severity?.value,
-          status: status?.value,
+          status: 'ACTIVE',
         );
-        if (remoteDtos.isNotEmpty) {
-          return remoteDtos.map((d) => d.toDomain()).toList();
+
+        final List<DtcAlert> remoteAlerts = [];
+        for (final reg in registrations) {
+          if (reg is Map<String, dynamic> && reg['id'] != null) {
+            final regId = reg['id'].toString();
+            final rawDtcList = await obd2RegistrationApi.getRegistrationDtcAlerts(
+              registrationId: regId,
+            );
+            final alerts = IotDto.dtcAlertListFromJson(rawDtcList);
+            remoteAlerts.addAll(alerts);
+          }
         }
-      } catch (_) {
-        // Fallback to local alerts
+
+        if (remoteAlerts.isNotEmpty) {
+          for (final alert in remoteAlerts) {
+            final index = _localAlerts.indexWhere((a) => a.id == alert.id);
+            if (index == -1) {
+              _localAlerts.add(alert);
+            } else {
+              _localAlerts[index] = alert;
+            }
+          }
+
+          var list = remoteAlerts;
+          if (severity != null) {
+            list = list.where((a) => a.severity == severity).toList();
+          }
+          if (status != null) {
+            list = list.where((a) => a.status == status).toList();
+          }
+          list.sort((a, b) => b.detectedAt.compareTo(a.detectedAt));
+          return list;
+        }
       }
+    } catch (_) {
+      // Fallback to local alerts
     }
 
     var list = _localAlerts
@@ -374,18 +403,11 @@ class IotRepositoryImpl implements IotRepository {
 
   @override
   Future<DtcAlert> getDtcAlertById(String id) async {
-    if (telemetryApi != null) {
-      try {
-        final dto = await telemetryApi!.getDtcAlertById(id);
-        return dto.toDomain();
-      } catch (_) {
-        // Fallback
-      }
-    }
-
     return _localAlerts.firstWhere(
       (a) => a.id == id,
-      orElse: () => _localAlerts.first,
+      orElse: () => _localAlerts.isNotEmpty
+          ? _localAlerts.first
+          : throw Exception('DtcAlert with id $id not found'),
     );
   }
 
@@ -394,18 +416,6 @@ class IotRepositoryImpl implements IotRepository {
     required String alertId,
     required DtcStatus newStatus,
   }) async {
-    if (telemetryApi != null) {
-      try {
-        final dto = await telemetryApi!.updateDtcStatus(
-          id: alertId,
-          status: newStatus.value,
-        );
-        return dto.toDomain();
-      } catch (_) {
-        // Fallback
-      }
-    }
-
     final index = _localAlerts.indexWhere((a) => a.id == alertId);
     if (index != -1) {
       final updated = _localAlerts[index].copyWith(status: newStatus);

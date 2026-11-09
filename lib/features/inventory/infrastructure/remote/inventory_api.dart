@@ -168,6 +168,10 @@ class InventoryApi {
     return ProductDto.fromJson(raw);
   }
 
+  /// Registers a product inventory batch.
+  /// Note: The backend contract for POST /api/v1/inventory/products/{id}/batches
+  /// expects quantity and acquisitionCost; metadata fields (batchNumber, supplierName, expirationDate)
+  /// are preserved for offline traceability.
   Future<ProductBatchDto> registerBatch({
     required String branchId,
     required String productId,

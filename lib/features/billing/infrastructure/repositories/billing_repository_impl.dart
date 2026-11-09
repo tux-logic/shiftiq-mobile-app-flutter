@@ -201,13 +201,16 @@ class BillingRepositoryImpl implements BillingRepository {
     VoucherStatus? status,
   }) async {
     try {
-      final dtos = await billingApi.getVouchers(
-        branchId: branchId,
-        voucherType: voucherType?.code,
-        status: status?.code,
-      );
+      final dtos = await billingApi.getVouchers(branchId: branchId);
       if (dtos.isNotEmpty) {
-        return dtos.map((d) => d.toDomain()).toList();
+        var domainList = dtos.map((d) => d.toDomain()).toList();
+        if (voucherType != null) {
+          domainList = domainList.where((v) => v.voucherType == voucherType).toList();
+        }
+        if (status != null) {
+          domainList = domainList.where((v) => v.status == status).toList();
+        }
+        return domainList;
       }
     } catch (_) {
       // Local fallback
@@ -280,15 +283,21 @@ class BillingRepositoryImpl implements BillingRepository {
       paidAt: paymentMethod == PaymentMethod.cash ? DateTime.now() : null,
     );
 
+    final payload = <String, dynamic>{
+      'quoteId': quoteId,
+      'type': voucherType == VoucherType.invoice ? 'INVOICE' : 'RECEIPT',
+      'customerDocumentType': customerDocumentType.toUpperCase(),
+      'customerDocumentNumber': customerDocumentNumber.trim(),
+      'customerName': customerName.trim(),
+    };
+
     try {
-      final dto = await billingApi.emitVoucher(
-        VoucherDto.fromDomain(voucher).toJson(),
-      );
+      final dto = await billingApi.emitVoucher(payload);
       final remoteDomain = dto.toDomain();
       _localVouchers.insert(0, remoteDomain);
       return remoteDomain;
     } catch (_) {
-      // Local fallback
+      // Offline fallback
       _localVouchers.insert(0, voucher);
       return voucher;
     }
@@ -299,17 +308,23 @@ class BillingRepositoryImpl implements BillingRepository {
     required String voucherId,
     required PaymentMethod paymentMethod,
   }) async {
+    final current = _localVouchers.where((v) => v.id == voucherId).firstOrNull;
+    final amount = current?.balance ?? current?.totalAmount ?? 0.0;
+
     try {
-      final dto = await billingApi.processPayment(
+      final dto = await billingApi.registerPayment(
         voucherId,
-        {'paymentMethod': paymentMethod.code},
+        {
+          'amount': amount,
+          'method': paymentMethod.code,
+        },
       );
       final updated = dto.toDomain();
       final idx = _localVouchers.indexWhere((v) => v.id == voucherId);
       if (idx != -1) _localVouchers[idx] = updated;
       return updated;
     } catch (_) {
-      // Local fallback
+      // Offline fallback
     }
 
     final index = _localVouchers.indexWhere((v) => v.id == voucherId);
@@ -371,13 +386,23 @@ class BillingRepositoryImpl implements BillingRepository {
       status: QuoteStatus.draft,
     );
 
+    final quotePayload = <String, dynamic>{
+      'branchId': branchId,
+    };
+    if (workOrderId != null && workOrderId.isNotEmpty) {
+      quotePayload['workOrderId'] = workOrderId;
+    }
+    if (discountPercentage > 0.0) {
+      quotePayload['discountPercentage'] = discountPercentage;
+    }
+
     try {
-      final dto = await billingApi.createQuote(QuoteDto.fromDomain(quote).toJson());
+      final dto = await billingApi.createQuote(quotePayload);
       final domain = dto.toDomain();
       _localQuotes.insert(0, domain);
       return domain;
     } catch (_) {
-      // Local fallback
+      // Offline fallback
       _localQuotes.insert(0, quote);
       return quote;
     }

@@ -2,8 +2,11 @@
 class ApiConstants {
   ApiConstants._();
 
-  /// Production Base URL deployed on Render
-  static const String baseUrl = 'https://shiftiq-platform.onrender.com';
+  /// Configurable Base URL (defaults to production deployed on Render)
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://shiftiq-platform.onrender.com',
+  );
 
   /// Timeout duration for HTTP requests (15 seconds)
   static const Duration requestTimeout = Duration(seconds: 15);
@@ -62,14 +65,10 @@ class ApiConstants {
   static String branchById(String id) => '/api/v1/branches/$id';
   static String workshopBranches(String workshopId) =>
       '/api/v1/branches?workshopId=$workshopId';
-  static String branchesByWorkshop(String workshopId) =>
-      '/api/v1/branches?workshopId=$workshopId';
   static String branchSubscriptions(String branchId) =>
       '/api/v1/branches/$branchId/subscriptions';
   static String branchSubscription(String branchId) =>
       '/api/v1/branches/$branchId/subscription';
-  static String branchEmployees(String branchId) =>
-      '/api/v1/branches/$branchId/employees';
 
   // Analytics Context
   static String branchAnalyticsSummary(String branchId) =>
@@ -86,9 +85,7 @@ class ApiConstants {
 
   static const String workOrders = '/api/v1/work-orders';
   static String workOrderById(String id) => '/api/v1/work-orders/$id';
-  static String workOrderDetails(String id) => '/api/v1/work-orders/$id';
   static String workOrderComplete(String id) => '/api/v1/work-orders/$id/complete';
-  static String completeWorkOrder(String id) => '/api/v1/work-orders/$id/complete';
 
   static String workOrderTasks(String workOrderId) => '/api/v1/work-orders/$workOrderId/tasks';
   static String workOrderTaskById(String workOrderId, String taskId) =>
@@ -106,22 +103,14 @@ class ApiConstants {
       '/api/v1/work-order-tasks/$taskId/products';
   static String workOrderTaskProductById(String taskId, String productId) =>
       '/api/v1/work-order-tasks/$taskId/products/$productId';
-  static String workOrderTaskStatus(String taskId) =>
-      '/api/v1/work-order-tasks/$taskId/status';
 
   // Fleet Context
   static const String appointments = '/api/v1/appointments';
   static String appointmentById(String id) => '/api/v1/appointments/$id';
-  static String appointmentStatus(String id) =>
-      '/api/v1/appointments/$id/status';
-  static String branchAppointments(String branchId) =>
-      '/api/v1/branches/$branchId/appointments';
   static const String customerRegistrations =
       '/api/v1/customer-registrations';
   static String customerRegistrationById(String id) =>
       '/api/v1/customer-registrations/$id';
-  static String branchCustomerRegistrations(String branchId) =>
-      '/api/v1/branches/$branchId/customer-registrations';
   static const String employeeRegistrations =
       '/api/v1/employee-registrations';
   static String employeeRegistrationById(String id) =>
@@ -141,7 +130,6 @@ class ApiConstants {
   static String inventoryBranchCatalog(String branchId) => '/api/v1/inventory/products/branch/$branchId';
   static String inventoryProductBatches(String productId) => '/api/v1/inventory/products/$productId/batches';
   static String branchProducts(String branchId) => '/api/v1/inventory/products?branchId=$branchId';
-  static String productBatches(String productId) => '/api/v1/inventory/products/$productId/batches';
 
   // IoT Context
   static const String vehicles = '/api/v1/vehicles';

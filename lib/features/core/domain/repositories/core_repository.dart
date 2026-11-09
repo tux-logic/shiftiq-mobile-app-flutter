@@ -34,7 +34,7 @@ abstract class CoreRepository {
     required String code,
     required String name,
     required String address,
-    String? phone,
+    required String phone,
   });
 
   Future<Branch> updateBranch({
@@ -42,7 +42,7 @@ abstract class CoreRepository {
     required String code,
     required String name,
     required String address,
-    String? phone,
+    required String phone,
   });
 
   Future<Branch> getBranchById(String branchId);
@@ -115,9 +115,11 @@ abstract class CoreRepository {
 
   Future<Map<String, dynamic>> updateOwnerProfile({
     required String ownerId,
-    String? firstName,
-    String? lastName,
-    String? phone,
+    required String firstName,
+    required String lastName,
+    required String documentType,
+    required String documentNumber,
+    required String phone,
   });
 
   Future<void> deleteOwnerProfile(String ownerId);
@@ -130,9 +132,11 @@ abstract class CoreRepository {
 
   Future<Map<String, dynamic>> updateEmployeeProfile({
     required String employeeId,
-    String? firstName,
-    String? lastName,
-    String? phone,
+    required String firstName,
+    required String lastName,
+    required String documentType,
+    required String documentNumber,
+    required String phone,
   });
 
   Future<void> deleteEmployeeProfile(String employeeId);
@@ -141,10 +145,12 @@ abstract class CoreRepository {
 
   Future<Map<String, dynamic>> updateCustomerProfile({
     required String customerId,
+    required String documentType,
+    required String documentNumber,
+    required String phone,
     String? firstName,
     String? lastName,
     String? businessName,
-    String? phone,
   });
 
   Future<void> deleteCustomerProfile(String customerId);

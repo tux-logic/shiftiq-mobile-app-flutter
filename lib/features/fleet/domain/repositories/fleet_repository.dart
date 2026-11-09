@@ -90,7 +90,7 @@ abstract class FleetRepository {
 
   Future<EmployeeRegistration> approveEmployeeRegistration(String registrationId);
 
-  Future<void> rejectEmployeeRegistration(String registrationId);
+  Future<void> rejectEmployeeRegistration(String registrationId, [String? reason]);
 
   Future<List<EmployeeRegistration>> getEmployeeRegistrations({
     String? branchId,
@@ -104,9 +104,9 @@ abstract class FleetRepository {
 
   Future<EmployeeRegistration> updateEmployeeRegistration({
     required String registrationId,
-    String? speciality,
-    String? specialityName,
-    double? salary,
+    required String speciality,
+    required String specialityName,
+    required double salary,
   });
 
   Future<void> deleteEmployeeRegistration(String registrationId);

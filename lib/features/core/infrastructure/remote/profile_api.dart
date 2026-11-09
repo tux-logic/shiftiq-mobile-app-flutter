@@ -1,5 +1,6 @@
 import 'package:shiftiq_mobile_app_flutter/core/network/api_client.dart';
 import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
+import 'package:shiftiq_mobile_app_flutter/core/network/app_exception.dart';
 
 /// Remote HTTP API client for unified profiles, role discovery, and document search.
 class ProfileApi {
@@ -34,7 +35,7 @@ class ProfileApi {
         return response;
       }
       return null;
-    } catch (_) {
+    } on NotFoundException {
       return null;
     }
   }
@@ -83,14 +84,19 @@ class ProfileApi {
   /// PUT /api/v1/owners/{ownerId}
   Future<Map<String, dynamic>> updateOwnerProfile({
     required String ownerId,
-    String? firstName,
-    String? lastName,
-    String? phone,
+    required String firstName,
+    required String lastName,
+    required String documentType,
+    required String documentNumber,
+    required String phone,
   }) async {
-    final body = <String, dynamic>{};
-    if (firstName != null) body['firstName'] = firstName;
-    if (lastName != null) body['lastName'] = lastName;
-    if (phone != null) body['phone'] = phone;
+    final body = <String, dynamic>{
+      'firstName': firstName,
+      'lastName': lastName,
+      'documentType': documentType,
+      'documentNumber': documentNumber,
+      'phone': phone,
+    };
 
     final response = await apiClient.put(
       ApiConstants.ownerById(ownerId),
@@ -164,14 +170,19 @@ class ProfileApi {
   /// PUT /api/v1/employees/{employeeId}
   Future<Map<String, dynamic>> updateEmployeeProfile({
     required String employeeId,
-    String? firstName,
-    String? lastName,
-    String? phone,
+    required String firstName,
+    required String lastName,
+    required String documentType,
+    required String documentNumber,
+    required String phone,
   }) async {
-    final body = <String, dynamic>{};
-    if (firstName != null) body['firstName'] = firstName;
-    if (lastName != null) body['lastName'] = lastName;
-    if (phone != null) body['phone'] = phone;
+    final body = <String, dynamic>{
+      'firstName': firstName,
+      'lastName': lastName,
+      'documentType': documentType,
+      'documentNumber': documentNumber,
+      'phone': phone,
+    };
 
     final response = await apiClient.put(
       ApiConstants.employeeById(employeeId),
@@ -233,16 +244,21 @@ class ProfileApi {
   /// PUT /api/v1/customers/{customerId}
   Future<Map<String, dynamic>> updateCustomerProfile({
     required String customerId,
+    required String documentType,
+    required String documentNumber,
+    required String phone,
     String? firstName,
     String? lastName,
     String? businessName,
-    String? phone,
   }) async {
-    final body = <String, dynamic>{};
+    final body = <String, dynamic>{
+      'documentType': documentType,
+      'documentNumber': documentNumber,
+      'phone': phone,
+    };
     if (firstName != null) body['firstName'] = firstName;
     if (lastName != null) body['lastName'] = lastName;
     if (businessName != null) body['businessName'] = businessName;
-    if (phone != null) body['phone'] = phone;
 
     final response = await apiClient.put(
       ApiConstants.customerById(customerId),

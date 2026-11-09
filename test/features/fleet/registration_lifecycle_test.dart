@@ -69,13 +69,12 @@ void main() {
       expect(result.isActive, isTrue);
     });
 
-    test('blacklistCustomer sends BLACKLISTED status with reason', () async {
+    test('blacklistCustomer sends INACTIVE status to remote endpoint', () async {
       setUpWithMockClient((request) async {
         if (request.method == 'PUT' &&
             request.url.path == '/api/v1/customer-registrations/reg-001') {
           final body = jsonDecode(request.body) as Map<String, dynamic>;
-          expect(body['status'], 'BLACKLISTED');
-          expect(body['reason'], 'Frequent payment delays and no-shows');
+          expect(body['status'], 'INACTIVE');
           return http.Response(
             jsonEncode({
               'id': 'reg-001',
@@ -85,7 +84,7 @@ void main() {
               'phone': '+51 987654321',
               'vehiclePlate': 'ABC-123',
               'vehicleModel': 'Toyota Hilux 2021',
-              'status': 'BLACKLISTED',
+              'status': 'INACTIVE',
             }),
             200,
             headers: {'content-type': 'application/json'},
@@ -99,7 +98,7 @@ void main() {
         reason: 'Frequent payment delays and no-shows',
       );
 
-      expect(result.status, 'BLACKLISTED');
+      expect(result.status, 'INACTIVE');
       expect(result.isActive, isFalse);
     });
 
@@ -316,6 +315,8 @@ void main() {
       expect(
         () => staffAffiliationsUseCase.updateContractTerms(
           registrationId: '',
+          speciality: 'GENERAL',
+          specialityName: 'General',
           salary: 1000,
         ),
         throwsA(isA<ValidationException>()),
@@ -324,6 +325,8 @@ void main() {
       expect(
         () => staffAffiliationsUseCase.updateContractTerms(
           registrationId: 'emp-reg-10',
+          speciality: 'GENERAL',
+          specialityName: 'General',
           salary: -500.0,
         ),
         throwsA(isA<ValidationException>()),

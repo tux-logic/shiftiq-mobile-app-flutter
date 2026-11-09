@@ -50,6 +50,15 @@ class NotFoundException extends AppException {
   });
 }
 
+/// Thrown when an HTTP 409 Conflict occurs (e.g. duplicate resource or invalid state transition)
+class ConflictException extends AppException {
+  ConflictException({
+    super.message = 'The operation conflicted with the current state of the resource.',
+    super.statusCode = 409,
+    super.details,
+  });
+}
+
 /// Thrown when an HTTP 500+ Internal Server Error occurs
 class ServerException extends AppException {
   ServerException({

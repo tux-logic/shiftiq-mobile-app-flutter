@@ -281,6 +281,11 @@ class ApiClient {
           message: message.toString(),
           details: decodedJson,
         );
+      case 409:
+        throw ConflictException(
+          message: message.toString(),
+          details: decodedJson,
+        );
       case 500:
       default:
         throw ServerException(

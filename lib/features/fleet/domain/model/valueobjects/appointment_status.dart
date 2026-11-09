@@ -1,7 +1,7 @@
 /// Value Object representing the lifecycle status of a workshop appointment.
 enum AppointmentStatus {
   pending('PENDING', 'Pendiente'),
-  confirmed('CONFIRMED', 'Confirmada'),
+  confirmed('PENDING', 'Confirmada'),
   completed('COMPLETED', 'Atendida'),
   canceled('CANCELED', 'Cancelada');
 
@@ -16,9 +16,9 @@ enum AppointmentStatus {
     if (normalized == 'CANCELLED' || normalized == 'CANCELED') {
       return AppointmentStatus.canceled;
     }
-    return AppointmentStatus.values.firstWhere(
-      (s) => s.value == normalized,
-      orElse: () => AppointmentStatus.pending,
-    );
+    if (normalized == 'COMPLETED' || normalized == 'ATENDIDA') {
+      return AppointmentStatus.completed;
+    }
+    return AppointmentStatus.pending;
   }
 }
