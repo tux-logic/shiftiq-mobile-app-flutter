@@ -652,13 +652,12 @@ class BillingRepositoryImpl implements BillingRepository {
     String? customerName,
   }) async {
     try {
-      final res = await billingApi.createMercadoPagoPreference({
-        'quoteId': quoteId,
-        'type'?: type?.code,
-        'customerDocumentType'?: customerDocumentType,
-        'customerDocumentNumber'?: customerDocumentNumber,
-        'customerName'?: customerName,
-      });
+      final Map<String, dynamic> body = {'quoteId': quoteId};
+      if (type != null) body['type'] = type.code;
+      if (customerDocumentType != null) body['customerDocumentType'] = customerDocumentType;
+      if (customerDocumentNumber != null) body['customerDocumentNumber'] = customerDocumentNumber;
+      if (customerName != null) body['customerName'] = customerName;
+      final res = await billingApi.createMercadoPagoPreference(body);
       return MercadoPagoPreferenceDto.fromJson(res).toDomain();
     } catch (_) {
       // Local fallback
