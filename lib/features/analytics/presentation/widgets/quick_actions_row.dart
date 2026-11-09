@@ -49,7 +49,7 @@ class QuickActionsRow extends StatelessWidget {
               _buildActionButton(
                 label: 'Ingreso Lote',
                 icon: Icons.inventory_2_outlined,
-                color: ShiftIQColors.preventiveGreen,
+                color: ShiftIQColors.warningAmber,
                 onTap: onNewBatch,
               ),
             ],
@@ -69,23 +69,30 @@ class QuickActionsRow extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: color.withAlpha(15),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withAlpha(80)),
+          border: Border.all(color: ShiftIQColors.borderSlate),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(5),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 18, color: color),
+            Icon(icon, size: 16, color: color),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: color,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: ShiftIQColors.deepSlate,
               ),
             ),
           ],
@@ -94,4 +101,3 @@ class QuickActionsRow extends StatelessWidget {
     );
   }
 }
-

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
-import 'package:shiftiq_mobile_app_flutter/features/dashboard/presentation/dashboard_page.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/views/dashboard_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/views/appointments_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/presentation/views/inventory_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/views/telemetry_dashboard_page.dart';

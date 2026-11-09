@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
-import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_page.dart';
-import 'package:shiftiq_mobile_app_flutter/features/dashboard/presentation/dashboard_view_model.dart';
-import 'package:shiftiq_mobile_app_flutter/features/dashboard/presentation/widgets/dtc_alert_banner.dart';
-import 'package:shiftiq_mobile_app_flutter/features/dashboard/presentation/widgets/kpi_metric_card.dart';
-import 'package:shiftiq_mobile_app_flutter/features/dashboard/presentation/widgets/quick_actions_row.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/controllers/dashboard_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/dtc_alert_banner.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/kpi_metric_card.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/quick_actions_row.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/billing_dashboard_page.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_page.dart';
 
 class DashboardPage extends StatefulWidget {
   final DashboardViewModel? viewModel;

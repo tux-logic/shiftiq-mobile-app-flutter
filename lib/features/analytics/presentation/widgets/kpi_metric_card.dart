@@ -48,47 +48,59 @@ class KpiMetricCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title.toUpperCase(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.5,
-                      color: Colors.grey[600],
+                      color: Color(0xFF64748B),
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.all(6),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: accentColor.withAlpha(25),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(icon, color: accentColor, size: 18),
+                  child: Icon(icon, color: accentColor, size: 20),
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             Text(
               value,
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: accentColor == ShiftIQColors.preventiveGreen
-                    ? ShiftIQColors.preventiveGreen
-                    : ShiftIQColors.graphiteText,
-                letterSpacing: -0.5,
+                color: ShiftIQColors.deepSlate,
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              subtitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.grey[500],
-              ),
+            Row(
+              children: [
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF94A3B8),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -96,4 +108,3 @@ class KpiMetricCard extends StatelessWidget {
     );
   }
 }
-
