@@ -10,9 +10,20 @@ class ApiConstants {
 
   // IAM Context
   static const String authSessions = '/api/v1/authentication/sessions';
+  static const String authLogin = '/api/v1/authentication/login';
+  static const String authGoogle = '/api/v1/authentication/sessions/google';
   static const String authRefresh = '/api/v1/authentication/sessions/refresh';
-  static const String passwordRecoveries = '/api/v1/authentication/password-recoveries';
+  static const String passwordRecoveries =
+      '/api/v1/authentication/password-recoveries';
+  static const String passwordResets =
+      '/api/v1/authentication/password-resets';
+  static const String otpSend = '/api/v1/authentication/otp/send';
+  static const String otpVerify = '/api/v1/authentication/otp/verify';
   static const String users = '/api/v1/users';
+  static String userById(String userId) => '/api/v1/users/$userId';
+  static String userEmail(String userId) => '/api/v1/users/$userId/email';
+  static String userPassword(String userId) =>
+      '/api/v1/users/$userId/password';
   static const String profilesMe = '/api/v1/profiles/me';
 
   // Core Context
