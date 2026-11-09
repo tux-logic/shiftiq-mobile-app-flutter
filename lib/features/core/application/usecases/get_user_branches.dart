@@ -1,0 +1,49 @@
+import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/domain/repositories/core_repository.dart';
+
+/// Use case retrieving and managing physical workshop branches.
+class GetUserBranchesUseCase {
+  final CoreRepository repository;
+
+  GetUserBranchesUseCase({required this.repository});
+
+  Future<List<Branch>> execute(String workshopId) {
+    return repository.getBranchesByWorkshop(workshopId);
+  }
+
+  Future<Branch> getBranchById(String branchId) {
+    return repository.getBranchById(branchId);
+  }
+
+  Future<Branch> createBranch({
+    required String workshopId,
+    required String code,
+    required String name,
+    required String address,
+    String? phone,
+  }) {
+    return repository.createBranch(
+      workshopId: workshopId,
+      code: code,
+      name: name,
+      address: address,
+      phone: phone,
+    );
+  }
+
+  Future<Branch> updateBranch({
+    required String branchId,
+    required String code,
+    required String name,
+    required String address,
+    String? phone,
+  }) {
+    return repository.updateBranch(
+      branchId: branchId,
+      code: code,
+      name: name,
+      address: address,
+      phone: phone,
+    );
+  }
+}
