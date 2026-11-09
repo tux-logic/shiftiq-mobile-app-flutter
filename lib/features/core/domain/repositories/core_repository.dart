@@ -109,6 +109,45 @@ abstract class CoreRepository {
   Future<List<String>> getProfileRoles(String userId);
 
   Future<UserProfileContext?> lookupProfileByDocument(String documentNumber);
+
+  // --- Profile Lifecycle Operations ---
+  Future<Map<String, dynamic>> getOwnerById(String ownerId);
+
+  Future<Map<String, dynamic>> updateOwnerProfile({
+    required String ownerId,
+    String? firstName,
+    String? lastName,
+    String? phone,
+  });
+
+  Future<void> deleteOwnerProfile(String ownerId);
+
+  Future<Map<String, dynamic>> getEmployeeById(String employeeId);
+
+  Future<List<Map<String, dynamic>>> getEmployeesByDocumentNumber(
+    String documentNumber,
+  );
+
+  Future<Map<String, dynamic>> updateEmployeeProfile({
+    required String employeeId,
+    String? firstName,
+    String? lastName,
+    String? phone,
+  });
+
+  Future<void> deleteEmployeeProfile(String employeeId);
+
+  Future<Map<String, dynamic>> getCustomerById(String customerId);
+
+  Future<Map<String, dynamic>> updateCustomerProfile({
+    required String customerId,
+    String? firstName,
+    String? lastName,
+    String? businessName,
+    String? phone,
+  });
+
+  Future<void> deleteCustomerProfile(String customerId);
 }
 
 /// Backward compatibility alias.

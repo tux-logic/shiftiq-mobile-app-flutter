@@ -287,6 +287,92 @@ class CoreRepositoryImpl implements CoreRepository {
     }
     return null;
   }
+
+  // --- Profile Lifecycle Operations ---
+
+  @override
+  Future<Map<String, dynamic>> getOwnerById(String ownerId) {
+    return profileApi.getOwnerById(ownerId);
+  }
+
+  @override
+  Future<Map<String, dynamic>> updateOwnerProfile({
+    required String ownerId,
+    String? firstName,
+    String? lastName,
+    String? phone,
+  }) {
+    return profileApi.updateOwnerProfile(
+      ownerId: ownerId,
+      firstName: firstName,
+      lastName: lastName,
+      phone: phone,
+    );
+  }
+
+  @override
+  Future<void> deleteOwnerProfile(String ownerId) {
+    return profileApi.deleteOwnerProfile(ownerId);
+  }
+
+  @override
+  Future<Map<String, dynamic>> getEmployeeById(String employeeId) {
+    return profileApi.getEmployeeById(employeeId);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getEmployeesByDocumentNumber(
+    String documentNumber,
+  ) {
+    return profileApi.getEmployeesByDocumentNumber(documentNumber);
+  }
+
+  @override
+  Future<Map<String, dynamic>> updateEmployeeProfile({
+    required String employeeId,
+    String? firstName,
+    String? lastName,
+    String? phone,
+  }) {
+    return profileApi.updateEmployeeProfile(
+      employeeId: employeeId,
+      firstName: firstName,
+      lastName: lastName,
+      phone: phone,
+    );
+  }
+
+  @override
+  Future<void> deleteEmployeeProfile(String employeeId) {
+    return profileApi.deleteEmployeeProfile(employeeId);
+  }
+
+  @override
+  Future<Map<String, dynamic>> getCustomerById(String customerId) {
+    return profileApi.getCustomerById(customerId);
+  }
+
+  @override
+  Future<Map<String, dynamic>> updateCustomerProfile({
+    required String customerId,
+    String? firstName,
+    String? lastName,
+    String? businessName,
+    String? phone,
+  }) {
+    return profileApi.updateCustomerProfile(
+      customerId: customerId,
+      firstName: firstName,
+      lastName: lastName,
+      businessName: businessName,
+      phone: phone,
+    );
+  }
+
+  @override
+  Future<void> deleteCustomerProfile(String customerId) {
+    return profileApi.deleteCustomerProfile(customerId);
+  }
 }
 
 /// Backward compatibility alias.
