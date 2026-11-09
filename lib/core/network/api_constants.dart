@@ -74,6 +74,8 @@ class ApiConstants {
       '/api/v1/analytics/branches/$branchId/summary';
   static String branchAnalyticsFinancial(String branchId) =>
       '/api/v1/analytics/branches/$branchId/financial';
+  static const String networkAnalyticsSummary =
+      '/api/v1/analytics/network/summary';
 
   // Operations Context
   static const String workOrders = '/api/v1/work-orders';
