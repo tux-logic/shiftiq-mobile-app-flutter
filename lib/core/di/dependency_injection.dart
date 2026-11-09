@@ -4,11 +4,19 @@ import 'package:shiftiq_mobile_app_flutter/core/domain/event/domain_event_bus.da
 import 'package:shiftiq_mobile_app_flutter/core/infrastructure/event/stream_domain_event_bus.dart';
 import 'package:shiftiq_mobile_app_flutter/core/network/api_client.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
+import 'package:shiftiq_mobile_app_flutter/features/auth/application/get_user_profile_use_case.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/application/login_use_case.dart';
+import 'package:shiftiq_mobile_app_flutter/features/auth/application/login_with_google_use_case.dart';
+import 'package:shiftiq_mobile_app_flutter/features/auth/application/logout_use_case.dart';
+import 'package:shiftiq_mobile_app_flutter/features/auth/application/otp_use_cases.dart';
+import 'package:shiftiq_mobile_app_flutter/features/auth/application/password_recovery_use_cases.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/application/refresh_token_use_case.dart';
+import 'package:shiftiq_mobile_app_flutter/features/auth/application/sign_up_user_use_case.dart';
+import 'package:shiftiq_mobile_app_flutter/features/auth/application/update_user_credentials_use_cases.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/domain/auth_repository.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/infrastructure/auth_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/infrastructure/remote/auth_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/auth/infrastructure/remote/user_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/branch/application/get_user_branches_use_case.dart';
 import 'package:shiftiq_mobile_app_flutter/features/branch/application/select_active_branch_use_case.dart';
@@ -88,20 +96,30 @@ void setupDependencies() {
     ),
   );
 
-  // 2. IAM Context (Authentication)
+  // 2. IAM Context (Authentication & User Management)
   getIt.registerLazySingleton<AuthApi>(
     () => AuthApi(apiClient: getIt<ApiClient>()),
+  );
+
+  getIt.registerLazySingleton<UserApi>(
+    () => UserApi(apiClient: getIt<ApiClient>()),
   );
 
   getIt.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(
       authApi: getIt<AuthApi>(),
+      userApi: getIt<UserApi>(),
       sessionStorage: getIt<SessionStorage>(),
+      eventBus: getIt<DomainEventBus>(),
     ),
   );
 
-  getIt.registerLazySingleton<LoginUseCase>(
-    () => LoginUseCase(repository: getIt<AuthRepository>()),
+  getIt.registerLazySingleton<LoginWithPasswordUseCase>(
+    () => LoginWithPasswordUseCase(repository: getIt<AuthRepository>()),
+  );
+
+  getIt.registerLazySingleton<LoginWithGoogleUseCase>(
+    () => LoginWithGoogleUseCase(repository: getIt<AuthRepository>()),
   );
 
   getIt.registerLazySingleton<RefreshTokenUseCase>(
@@ -112,8 +130,40 @@ void setupDependencies() {
     () => LogoutUseCase(repository: getIt<AuthRepository>()),
   );
 
+  getIt.registerLazySingleton<RequestPasswordRecoveryUseCase>(
+    () => RequestPasswordRecoveryUseCase(repository: getIt<AuthRepository>()),
+  );
+
+  getIt.registerLazySingleton<ResetPasswordUseCase>(
+    () => ResetPasswordUseCase(repository: getIt<AuthRepository>()),
+  );
+
+  getIt.registerLazySingleton<SendOtpUseCase>(
+    () => SendOtpUseCase(repository: getIt<AuthRepository>()),
+  );
+
+  getIt.registerLazySingleton<VerifyOtpUseCase>(
+    () => VerifyOtpUseCase(repository: getIt<AuthRepository>()),
+  );
+
+  getIt.registerLazySingleton<SignUpUserUseCase>(
+    () => SignUpUserUseCase(repository: getIt<AuthRepository>()),
+  );
+
+  getIt.registerLazySingleton<GetUserProfileUseCase>(
+    () => GetUserProfileUseCase(repository: getIt<AuthRepository>()),
+  );
+
+  getIt.registerLazySingleton<UpdateUserEmailUseCase>(
+    () => UpdateUserEmailUseCase(repository: getIt<AuthRepository>()),
+  );
+
+  getIt.registerLazySingleton<UpdateUserPasswordUseCase>(
+    () => UpdateUserPasswordUseCase(repository: getIt<AuthRepository>()),
+  );
+
   getIt.registerFactory<LoginViewModel>(
-    () => LoginViewModel(loginUseCase: getIt<LoginUseCase>()),
+    () => LoginViewModel(loginUseCase: getIt<LoginWithPasswordUseCase>()),
   );
 
   // 3. Core Context (Workshops & Branches)
