@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
-import 'package:shiftiq_mobile_app_flutter/features/operations/application/create_work_order_use_case.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/application/operations_application.dart';
 
 class CreateWorkOrderPage extends StatefulWidget {
   final String branchId;
-  final CreateWorkOrderUseCase? createWorkOrderUseCase;
+  final ManageWorkOrders? manageWorkOrders;
   final String? initialPlate;
   final String? initialCustomerName;
   final String? initialPhone;
@@ -15,7 +15,7 @@ class CreateWorkOrderPage extends StatefulWidget {
   const CreateWorkOrderPage({
     super.key,
     required this.branchId,
-    this.createWorkOrderUseCase,
+    this.manageWorkOrders,
     this.initialPlate,
     this.initialCustomerName,
     this.initialPhone,
@@ -70,15 +70,13 @@ class _CreateWorkOrderPageState extends State<CreateWorkOrderPage> {
 
     try {
       final useCase =
-          widget.createWorkOrderUseCase ?? getIt<CreateWorkOrderUseCase>();
+          widget.manageWorkOrders ?? getIt<ManageWorkOrders>();
 
-      await useCase.execute(
+      await useCase.createWorkOrder(
+        appointmentId: 'appt-${DateTime.now().millisecondsSinceEpoch}',
         branchId: widget.branchId,
         vehicleId: 'veh-${DateTime.now().millisecondsSinceEpoch}',
         customerId: 'cust-${DateTime.now().millisecondsSinceEpoch}',
-        vehiclePlate: _plateController.text.trim().toUpperCase(),
-        vehicleModel: _modelController.text.trim(),
-        customerName: _customerController.text.trim(),
         mileageIn: int.tryParse(_mileageController.text) ?? 0,
         diagnosticSummary: _diagnosticController.text.trim(),
       );

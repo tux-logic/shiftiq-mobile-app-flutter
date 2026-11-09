@@ -1,15 +1,15 @@
 import 'package:flutter/foundation.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
-import 'package:shiftiq_mobile_app_flutter/features/operations/application/get_work_orders_use_case.dart';
-import 'package:shiftiq_mobile_app_flutter/features/operations/domain/work_order.dart';
-import 'package:shiftiq_mobile_app_flutter/features/operations/domain/work_order_status.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/application/operations_application.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
 
+/// ViewModel managing state and filtering for the workshop Work Orders dashboard.
 class WorkOrdersViewModel extends ChangeNotifier {
-  final GetWorkOrdersUseCase getWorkOrdersUseCase;
+  final ManageWorkOrders manageWorkOrders;
   final SessionStorage sessionStorage;
 
   WorkOrdersViewModel({
-    required this.getWorkOrdersUseCase,
+    required this.manageWorkOrders,
     required this.sessionStorage,
   });
 
@@ -46,25 +46,29 @@ class WorkOrdersViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _orders = await getWorkOrdersUseCase.execute(
+      final fetchedOrders = await manageWorkOrders.getWorkOrders(
         branchId: _activeBranchId,
-        status: _statusFilter,
       );
+
+      if (_statusFilter != null) {
+        _orders = fetchedOrders.where((o) => o.status == _statusFilter).toList();
+      } else {
+        _orders = fetchedOrders;
+      }
     } catch (e) {
-      _error = 'Error al cargar órdenes de trabajo: ${e.toString()}';
+      _error = 'Error loading work orders: ${e.toString()}';
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  void setFilter(WorkOrderStatus? filter) {
+  Future<void> setFilter(WorkOrderStatus? filter) async {
     if (_statusFilter == filter) return;
     _statusFilter = filter;
     notifyListeners();
-    loadOrders();
+    await loadOrders();
   }
 
   Future<void> refresh() => loadOrders();
 }
-

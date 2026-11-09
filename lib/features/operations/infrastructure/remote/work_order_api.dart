@@ -1,109 +1,88 @@
 import 'package:shiftiq_mobile_app_flutter/core/network/api_client.dart';
 import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
-import 'package:shiftiq_mobile_app_flutter/features/operations/infrastructure/remote/work_order_dto.dart';
 
+/// Remote HTTP client consuming the Work Orders endpoints of the Operations Bounded Context.
 class WorkOrderApi {
   final ApiClient apiClient;
 
-  WorkOrderApi({required this.apiClient});
+  const WorkOrderApi({required this.apiClient});
 
-  Future<List<WorkOrderDto>> getWorkOrders({
-    required String branchId,
-    String? status,
-  }) async {
-    var url = '${ApiConstants.workOrders}?branchId=$branchId';
-    if (status != null && status.isNotEmpty) {
-      url += '&status=$status';
-    }
-
-    final response = await apiClient.get(url);
-    if (response is List) {
-      return response
-          .map((item) => WorkOrderDto.fromJson(item as Map<String, dynamic>))
-          .toList();
-    }
-    return [];
-  }
-
-  Future<WorkOrderDto> getWorkOrderById(String id) async {
-    final response = await apiClient.get(ApiConstants.workOrderDetails(id));
-    return WorkOrderDto.fromJson(response as Map<String, dynamic>);
-  }
-
-  Future<WorkOrderDto> createWorkOrder({
+  /// POST /api/v1/work-orders
+  /// Opens a work order from a scheduled appointment.
+  Future<Map<String, dynamic>> createWorkOrder({
+    required String appointmentId,
     required String branchId,
     required String vehicleId,
     required String customerId,
     required String diagnosticSummary,
     required int mileageIn,
-    String? appointmentId,
+    List<String> entryInspectionImages = const [],
   }) async {
     final response = await apiClient.post(
       ApiConstants.workOrders,
       body: {
+        'appointmentId': appointmentId,
         'branchId': branchId,
         'vehicleId': vehicleId,
         'customerId': customerId,
         'diagnosticSummary': diagnosticSummary,
         'mileageIn': mileageIn,
-        'appointmentId': appointmentId,
-        'entryInspectionImages': <String>[],
+        'entryInspectionImages': entryInspectionImages,
       },
     );
-    return WorkOrderDto.fromJson(response as Map<String, dynamic>);
+    return response as Map<String, dynamic>;
   }
 
-  Future<WorkOrderDto> addTask({
-    required String workOrderId,
-    required String description,
-    required double price,
-    String? serviceId,
-    String? mechanicId,
+  /// GET /api/v1/work-orders?branchId={branchId} OR ?vehicleId={vehicleId}
+  Future<List<dynamic>> getWorkOrders({
+    String? branchId,
+    String? vehicleId,
   }) async {
-    final response = await apiClient.post(
-      ApiConstants.workOrderTasks(workOrderId),
-      body: {
-        'description': description,
-        'price': price,
-        'serviceId': serviceId,
-        'assignedMechanicId': mechanicId,
-      },
-    );
-    return WorkOrderDto.fromJson(response as Map<String, dynamic>);
+    var query = '';
+    if (branchId != null && branchId.isNotEmpty) {
+      query = '?branchId=$branchId';
+    } else if (vehicleId != null && vehicleId.isNotEmpty) {
+      query = '?vehicleId=$vehicleId';
+    } else {
+      throw ArgumentError('Either branchId or vehicleId must be provided to query work orders.');
+    }
+
+    final response = await apiClient.get('${ApiConstants.workOrders}$query');
+    return response as List<dynamic>;
   }
 
-  Future<WorkOrderDto> startTask(String taskId) async {
-    final response = await apiClient.post('/api/v1/work-order-tasks/$taskId/start');
-    return WorkOrderDto.fromJson(response as Map<String, dynamic>);
+  /// GET /api/v1/work-orders/{id}
+  Future<Map<String, dynamic>> getWorkOrderById(String id) async {
+    final response = await apiClient.get(ApiConstants.workOrderById(id));
+    return response as Map<String, dynamic>;
   }
 
-  Future<WorkOrderDto> completeTask(String taskId) async {
-    final response =
-        await apiClient.post('/api/v1/work-order-tasks/$taskId/complete');
-    return WorkOrderDto.fromJson(response as Map<String, dynamic>);
-  }
-
-  Future<WorkOrderDto> addProductToTask({
-    required String taskId,
-    required String productId,
-    required int quantity,
-    required double unitPrice,
+  /// PUT /api/v1/work-orders/{id}
+  Future<Map<String, dynamic>> updateWorkOrderIntake({
+    required String id,
+    required String diagnosticSummary,
+    required int mileageIn,
+    List<String>? entryInspectionImages,
   }) async {
-    final response = await apiClient.post(
-      ApiConstants.workOrderTaskProducts(taskId),
+    final response = await apiClient.put(
+      ApiConstants.workOrderById(id),
       body: {
-        'productId': productId,
-        'quantity': quantity,
-        'unitPrice': unitPrice,
+        'diagnosticSummary': diagnosticSummary,
+        'mileageIn': mileageIn,
+        'entryInspectionImages': ?entryInspectionImages,
       },
     );
-    return WorkOrderDto.fromJson(response as Map<String, dynamic>);
+    return response as Map<String, dynamic>;
   }
 
-  Future<WorkOrderDto> completeWorkOrder(String workOrderId) async {
-    final response =
-        await apiClient.post(ApiConstants.completeWorkOrder(workOrderId));
-    return WorkOrderDto.fromJson(response as Map<String, dynamic>);
+  /// POST /api/v1/work-orders/{id}/complete
+  Future<Map<String, dynamic>> completeWorkOrder(String id) async {
+    final response = await apiClient.post(ApiConstants.workOrderComplete(id));
+    return response as Map<String, dynamic>;
+  }
+
+  /// DELETE /api/v1/work-orders/{id}
+  Future<void> deleteWorkOrder(String id) async {
+    await apiClient.delete(ApiConstants.workOrderById(id));
   }
 }
-

@@ -1,9 +1,10 @@
-import 'package:shiftiq_mobile_app_flutter/features/operations/domain/model/entities/work_order_task.dart';
-import 'package:shiftiq_mobile_app_flutter/features/operations/domain/model/valueobjects/work_order_status.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/domain/models/work_order_status.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/domain/models/work_order_task.dart';
 
+/// Aggregate root representing an automotive repair Work Order (OT) from check-in to invoicing.
 class WorkOrder {
   final String id;
-  final String? appointmentId;
+  final String appointmentId;
   final String branchId;
   final String vehicleId;
   final String vehiclePlate;
@@ -19,11 +20,12 @@ class WorkOrder {
   final double totalAmount;
   final List<WorkOrderTask> tasks;
   final List<String> entryInspectionImages;
-  final DateTime? createdAt;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
 
   const WorkOrder({
     required this.id,
-    this.appointmentId,
+    required this.appointmentId,
     required this.branchId,
     required this.vehicleId,
     this.vehiclePlate = 'S/P',
@@ -33,27 +35,36 @@ class WorkOrder {
     this.customerPhone = '',
     required this.internalNumber,
     required this.formattedNumber,
-    required this.status,
+    this.status = WorkOrderStatus.pending,
     required this.diagnosticSummary,
     required this.mileageIn,
     required this.totalAmount,
     this.tasks = const [],
     this.entryInspectionImages = const [],
-    this.createdAt,
+    required this.createdAt,
+    this.updatedAt,
   });
 
+  bool get isPending => status == WorkOrderStatus.pending;
+  bool get isInProgress => status == WorkOrderStatus.inProgress;
   bool get isCompleted =>
       status == WorkOrderStatus.completed || status == WorkOrderStatus.paid;
-  bool get isInProgress => status == WorkOrderStatus.inProgress;
-  bool get isPending => status == WorkOrderStatus.pending;
+  bool get isPaid => status == WorkOrderStatus.paid;
+  bool get isDeleted =>
+      status == WorkOrderStatus.deleted || status == WorkOrderStatus.cancelled;
 
   int get totalTasksCount => tasks.length;
   int get completedTasksCount => tasks.where((t) => t.isCompleted).length;
+
+  /// Invariant: All mechanical tasks must be finished to transition the order to COMPLETED.
   bool get allTasksCompleted =>
       tasks.isNotEmpty && completedTasksCount == totalTasksCount;
 
+  bool get canBeCompleted =>
+      allTasksCompleted && status != WorkOrderStatus.completed;
+
   String get formattedAmount => 'S/ ${totalAmount.toStringAsFixed(2)}';
-  String get formattedMileage => '${mileageIn.toString()} km';
+  String get formattedMileage => '$mileageIn km';
 
   WorkOrder copyWith({
     String? id,
@@ -74,6 +85,7 @@ class WorkOrder {
     List<WorkOrderTask>? tasks,
     List<String>? entryInspectionImages,
     DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return WorkOrder(
       id: id ?? this.id,
@@ -92,10 +104,21 @@ class WorkOrder {
       mileageIn: mileageIn ?? this.mileageIn,
       totalAmount: totalAmount ?? this.totalAmount,
       tasks: tasks ?? this.tasks,
-      entryInspectionImages:
-          entryInspectionImages ?? this.entryInspectionImages,
+      entryInspectionImages: entryInspectionImages ?? this.entryInspectionImages,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
-}
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WorkOrder &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          formattedNumber == other.formattedNumber &&
+          status == other.status;
+
+  @override
+  int get hashCode => id.hashCode ^ formattedNumber.hashCode ^ status.hashCode;
+}

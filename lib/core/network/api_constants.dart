@@ -77,14 +77,35 @@ class ApiConstants {
   static const String networkAnalyticsSummary =
       '/api/v1/analytics/network/summary';
 
-  // Operations Context
+  // Operations Bounded Context
+  static const String services = '/api/v1/services';
+  static String branchServices(String branchId) => '/api/v1/services?branchId=$branchId';
+  static String serviceById(String id) => '/api/v1/services/$id';
+
   static const String workOrders = '/api/v1/work-orders';
+  static String workOrderById(String id) => '/api/v1/work-orders/$id';
   static String workOrderDetails(String id) => '/api/v1/work-orders/$id';
-  static String workOrderTasks(String id) => '/api/v1/work-orders/$id/tasks';
-  static String workOrderTaskStatus(String taskId) => '/api/v1/work-order-tasks/$taskId/status';
+  static String workOrderComplete(String id) => '/api/v1/work-orders/$id/complete';
+  static String completeWorkOrder(String id) => '/api/v1/work-orders/$id/complete';
+
+  static String workOrderTasks(String workOrderId) => '/api/v1/work-orders/$workOrderId/tasks';
+  static String workOrderTaskById(String workOrderId, String taskId) =>
+      '/api/v1/work-orders/$workOrderId/tasks/$taskId';
+
+  static String workOrderTaskAssignMechanic(String taskId, String mechanicId) =>
+      '/api/v1/work-order-tasks/$taskId/assign-mechanic?mechanicId=$mechanicId';
+  static String workOrderTaskStart(String taskId) =>
+      '/api/v1/work-order-tasks/$taskId/start';
+  static String workOrderTaskComplete(String taskId) =>
+      '/api/v1/work-order-tasks/$taskId/complete';
+  static String workOrderTaskReopen(String taskId) =>
+      '/api/v1/work-order-tasks/$taskId/reopen';
   static String workOrderTaskProducts(String taskId) =>
       '/api/v1/work-order-tasks/$taskId/products';
-  static String completeWorkOrder(String id) => '/api/v1/work-orders/$id/complete';
+  static String workOrderTaskProductById(String taskId, String productId) =>
+      '/api/v1/work-order-tasks/$taskId/products/$productId';
+  static String workOrderTaskStatus(String taskId) =>
+      '/api/v1/work-order-tasks/$taskId/status';
 
   // Fleet Context
   static const String appointments = '/api/v1/appointments';

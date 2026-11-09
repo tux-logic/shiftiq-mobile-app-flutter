@@ -1,25 +1,17 @@
 import 'package:flutter/foundation.dart';
-import 'package:shiftiq_mobile_app_flutter/features/operations/application/add_task_to_work_order_use_case.dart';
-import 'package:shiftiq_mobile_app_flutter/features/operations/application/finalize_operations_use_cases.dart';
-import 'package:shiftiq_mobile_app_flutter/features/operations/application/get_work_order_detail_use_case.dart';
-import 'package:shiftiq_mobile_app_flutter/features/operations/application/manage_task_status_use_cases.dart';
-import 'package:shiftiq_mobile_app_flutter/features/operations/domain/work_order.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/application/operations_application.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
 
+/// ViewModel managing state for work order inspection, task progression, and product allocation.
 class WorkOrderDetailViewModel extends ChangeNotifier {
-  final GetWorkOrderDetailUseCase getWorkOrderDetailUseCase;
-  final StartTaskUseCase startTaskUseCase;
-  final CompleteTaskUseCase completeTaskUseCase;
-  final AddTaskToWorkOrderUseCase addTaskUseCase;
-  final AddProductToTaskUseCase addProductUseCase;
-  final CompleteWorkOrderUseCase completeWorkOrderUseCase;
+  final ManageWorkOrders manageWorkOrders;
+  final ManageWorkOrderTasks manageWorkOrderTasks;
+  final ManageTaskProducts manageTaskProducts;
 
   WorkOrderDetailViewModel({
-    required this.getWorkOrderDetailUseCase,
-    required this.startTaskUseCase,
-    required this.completeTaskUseCase,
-    required this.addTaskUseCase,
-    required this.addProductUseCase,
-    required this.completeWorkOrderUseCase,
+    required this.manageWorkOrders,
+    required this.manageWorkOrderTasks,
+    required this.manageTaskProducts,
   });
 
   bool _isLoading = false;
@@ -37,9 +29,9 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _order = await getWorkOrderDetailUseCase.execute(id);
+      _order = await manageWorkOrders.getWorkOrderById(id);
     } catch (e) {
-      _error = 'Error al cargar detalle de la orden: ${e.toString()}';
+      _error = 'Error loading work order detail: ${e.toString()}';
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -48,11 +40,11 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
 
   Future<bool> startTask(String taskId) async {
     try {
-      _order = await startTaskUseCase.execute(taskId);
+      _order = await manageWorkOrderTasks.startTask(taskId);
       notifyListeners();
       return true;
     } catch (e) {
-      _error = 'Error al iniciar tarea: ${e.toString()}';
+      _error = 'Error starting task: ${e.toString()}';
       notifyListeners();
       return false;
     }
@@ -60,11 +52,23 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
 
   Future<bool> completeTask(String taskId) async {
     try {
-      _order = await completeTaskUseCase.execute(taskId);
+      _order = await manageWorkOrderTasks.completeTask(taskId);
       notifyListeners();
       return true;
     } catch (e) {
-      _error = 'Error al completar tarea: ${e.toString()}';
+      _error = 'Error completing task: ${e.toString()}';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> reopenTask(String taskId) async {
+    try {
+      _order = await manageWorkOrderTasks.reopenTask(taskId);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = 'Error reopening task: ${e.toString()}';
       notifyListeners();
       return false;
     }
@@ -73,23 +77,23 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
   Future<bool> addTask({
     required String description,
     required double price,
+    String? serviceId,
     String? mechanicId,
     String mechanicName = 'Sin asignar',
   }) async {
     if (_order == null) return false;
 
     try {
-      _order = await addTaskUseCase.execute(
+      _order = await manageWorkOrderTasks.addTask(
         workOrderId: _order!.id,
+        serviceId: serviceId ?? 'srv-default',
+        assignedMechanicId: mechanicId ?? 'ereg-unassigned',
         description: description,
-        price: price,
-        mechanicId: mechanicId,
-        mechanicName: mechanicName,
       );
       notifyListeners();
       return true;
     } catch (e) {
-      _error = 'Error al agregar tarea: ${e.toString()}';
+      _error = 'Error adding task: ${e.toString()}';
       notifyListeners();
       return false;
     }
@@ -103,17 +107,15 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
     required double unitPrice,
   }) async {
     try {
-      _order = await addProductUseCase.execute(
+      _order = await manageTaskProducts.addProductToTask(
         taskId: taskId,
         productId: productId,
-        productName: productName,
         quantity: quantity,
-        unitPrice: unitPrice,
       );
       notifyListeners();
       return true;
     } catch (e) {
-      _error = 'Error al despachar repuesto: ${e.toString()}';
+      _error = 'Error dispatching replacement part: ${e.toString()}';
       notifyListeners();
       return false;
     }
@@ -126,10 +128,10 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _order = await completeWorkOrderUseCase.execute(_order!.id);
+      _order = await manageWorkOrders.completeWorkOrder(_order!.id);
       return true;
     } catch (e) {
-      _error = 'Error al liquidar orden: ${e.toString()}';
+      _error = 'Error closing work order: ${e.toString()}';
       return false;
     } finally {
       _isLoading = false;
@@ -137,4 +139,3 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
     }
   }
 }
-

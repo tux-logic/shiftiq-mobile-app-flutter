@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
-import 'package:shiftiq_mobile_app_flutter/features/operations/domain/work_order.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
 
 class WorkOrderCard extends StatelessWidget {
   final WorkOrder workOrder;
