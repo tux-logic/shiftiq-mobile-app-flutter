@@ -24,7 +24,6 @@ class ApiConstants {
   static String userEmail(String userId) => '/api/v1/users/$userId/email';
   static String userPassword(String userId) =>
       '/api/v1/users/$userId/password';
-  static const String profilesMe = '/api/v1/profiles/me';
 
   // Core Context
   static const String owners = '/api/v1/owners';
@@ -86,11 +85,26 @@ class ApiConstants {
   static String completeWorkOrder(String id) => '/api/v1/work-orders/$id/complete';
 
   // Fleet Context
-  static String branchAppointments(String branchId) => '/api/v1/branches/$branchId/appointments';
   static const String appointments = '/api/v1/appointments';
-  static String appointmentStatus(String id) => '/api/v1/appointments/$id/status';
+  static String appointmentById(String id) => '/api/v1/appointments/$id';
+  static String appointmentStatus(String id) =>
+      '/api/v1/appointments/$id/status';
+  static String branchAppointments(String branchId) =>
+      '/api/v1/branches/$branchId/appointments';
+  static const String customerRegistrations =
+      '/api/v1/customer-registrations';
+  static String customerRegistrationById(String id) =>
+      '/api/v1/customer-registrations/$id';
   static String branchCustomerRegistrations(String branchId) =>
       '/api/v1/branches/$branchId/customer-registrations';
+  static const String employeeRegistrations =
+      '/api/v1/employee-registrations';
+  static const String employeeRegistrationRequestJoin =
+      '/api/v1/employee-registrations/request-join';
+  static String employeeRegistrationApprove(String id) =>
+      '/api/v1/employee-registrations/$id/approve';
+  static String employeeRegistrationReject(String id) =>
+      '/api/v1/employee-registrations/$id/reject';
 
   // Inventory Context
   static String branchProducts(String branchId) => '/api/v1/branches/$branchId/products';

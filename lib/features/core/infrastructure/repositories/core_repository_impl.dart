@@ -132,7 +132,7 @@ class CoreRepositoryImpl implements CoreRepository {
     );
     await sessionStorage.setActiveWorkshop(branch.workshopId);
 
-    eventBus.publish(
+    eventBus.emit(
       ActiveBranchChangedEvent(
         branchId: branch.id,
         branchName: branch.name,

@@ -1,5 +1,6 @@
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/valueobjects/appointment_status.dart';
 
+/// Aggregate Root representing an automotive workshop appointment in the Fleet context.
 class Appointment {
   final String id;
   final String branchId;
@@ -10,6 +11,7 @@ class Appointment {
   final String vehiclePlate;
   final String vehicleModel;
   final DateTime scheduledStart;
+  final DateTime? scheduledEnd;
   final String serviceType;
   final String notes;
   final AppointmentStatus status;
@@ -26,6 +28,7 @@ class Appointment {
     this.vehiclePlate = 'S/P',
     this.vehicleModel = 'Vehículo General',
     required this.scheduledStart,
+    this.scheduledEnd,
     this.serviceType = 'Mantenimiento General',
     this.notes = '',
     required this.status,
@@ -53,8 +56,6 @@ class Appointment {
     return '$day/$month/$year';
   }
 
-  String get formattedBay => 'Bahía $bayNumber';
-
   Appointment copyWith({
     String? id,
     String? branchId,
@@ -65,6 +66,7 @@ class Appointment {
     String? vehiclePlate,
     String? vehicleModel,
     DateTime? scheduledStart,
+    DateTime? scheduledEnd,
     String? serviceType,
     String? notes,
     AppointmentStatus? status,
@@ -81,6 +83,7 @@ class Appointment {
       vehiclePlate: vehiclePlate ?? this.vehiclePlate,
       vehicleModel: vehicleModel ?? this.vehicleModel,
       scheduledStart: scheduledStart ?? this.scheduledStart,
+      scheduledEnd: scheduledEnd ?? this.scheduledEnd,
       serviceType: serviceType ?? this.serviceType,
       notes: notes ?? this.notes,
       status: status ?? this.status,

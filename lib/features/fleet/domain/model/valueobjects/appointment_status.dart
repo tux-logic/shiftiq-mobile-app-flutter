@@ -1,17 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
-
+/// Value Object representing the lifecycle status of a workshop appointment.
 enum AppointmentStatus {
-  pending('PENDING', 'Pendiente', ShiftIQColors.severityAmber),
-  confirmed('CONFIRMED', 'Confirmada', ShiftIQColors.preventiveGreen),
-  completed('COMPLETED', 'Atendida', ShiftIQColors.primaryBlue),
-  canceled('CANCELED', 'Cancelada', ShiftIQColors.severityCrimson);
+  pending('PENDING', 'Pendiente'),
+  confirmed('CONFIRMED', 'Confirmada'),
+  completed('COMPLETED', 'Atendida'),
+  canceled('CANCELED', 'Cancelada');
 
   final String value;
   final String label;
-  final Color color;
 
-  const AppointmentStatus(this.value, this.label, this.color);
+  const AppointmentStatus(this.value, this.label);
 
   static AppointmentStatus fromString(String? value) {
     if (value == null) return AppointmentStatus.pending;
@@ -25,4 +22,3 @@ enum AppointmentStatus {
     );
   }
 }
-

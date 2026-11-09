@@ -1,12 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/application/commandservices/create_appointment_command_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/application/commandservices/update_appointment_status_command_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/application/queryservices/get_appointments_by_branch_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/application/queryservices/get_customer_directory_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/aggregates/appointment.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/entities/customer_registration.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/valueobjects/appointment_status.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/repositories/appointment_repository.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/create_appointment.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/get_appointments.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/get_customer_registrations.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/update_appointment.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/fleet_domain.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/repositories/fleet_repository.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/controllers/appointments_view_model.dart';
 
 class MockAppointmentRepository implements AppointmentRepository {
@@ -80,12 +78,16 @@ class MockAppointmentRepository implements AppointmentRepository {
 
   @override
   Future<List<Appointment>> getAppointments({
-    required String branchId,
-    DateTime? date,
+    String? branchId,
     AppointmentStatus? status,
+    String? customerId,
+    String? vehicleId,
+    DateTime? date,
   }) async {
     return _appointments.where((a) {
-      if (a.branchId != branchId) return false;
+      if (branchId != null && a.branchId != branchId) return false;
+      if (customerId != null && a.customerId != customerId) return false;
+      if (vehicleId != null && a.vehicleId != vehicleId) return false;
       if (date != null) {
         final sameDay = a.scheduledStart.year == date.year &&
             a.scheduledStart.month == date.month &&
@@ -111,6 +113,7 @@ class MockAppointmentRepository implements AppointmentRepository {
     required String customerId,
     required String vehicleId,
     required DateTime scheduledStart,
+    DateTime? scheduledEnd,
     String serviceType = 'Mantenimiento General',
     String notes = '',
     String customerName = 'Cliente del Taller',
@@ -129,6 +132,7 @@ class MockAppointmentRepository implements AppointmentRepository {
       vehiclePlate: vehiclePlate,
       vehicleModel: vehicleModel,
       scheduledStart: scheduledStart,
+      scheduledEnd: scheduledEnd,
       serviceType: serviceType,
       notes: notes,
       status: AppointmentStatus.confirmed,
@@ -136,6 +140,38 @@ class MockAppointmentRepository implements AppointmentRepository {
     );
     _appointments.add(appointment);
     return appointment;
+  }
+
+  @override
+  Future<Appointment> updateAppointment({
+    required String id,
+    required String branchId,
+    required String customerId,
+    required String vehicleId,
+    required DateTime scheduledStart,
+    required AppointmentStatus status,
+    String? notes,
+  }) async {
+    final index = _appointments.indexWhere((a) => a.id == id);
+    if (index == -1) throw Exception('Appointment not found');
+    final updated = _appointments[index].copyWith(
+      branchId: branchId,
+      customerId: customerId,
+      vehicleId: vehicleId,
+      scheduledStart: scheduledStart,
+      status: status,
+      notes: notes ?? _appointments[index].notes,
+    );
+    _appointments[index] = updated;
+    return updated;
+  }
+
+  @override
+  Future<void> cancelAppointment(String id) async {
+    final index = _appointments.indexWhere((a) => a.id == id);
+    if (index != -1) {
+      _appointments[index] = _appointments[index].copyWith(status: AppointmentStatus.canceled);
+    }
   }
 
   @override
@@ -153,6 +189,109 @@ class MockAppointmentRepository implements AppointmentRepository {
   @override
   Future<List<CustomerRegistration>> getCustomerDirectory(String branchId) async {
     return _customers.where((c) => c.branchId == branchId).toList();
+  }
+
+  @override
+  Future<CustomerRegistration> registerCustomerToBranch({
+    required String branchId,
+    required String customerId,
+  }) async {
+    final reg = CustomerRegistration(
+      id: 'reg-${_customers.length + 1}',
+      branchId: branchId,
+      customerId: customerId,
+      customerName: 'Nuevo Cliente',
+      phone: '+51 900 000 000',
+      vehiclePlate: 'ABC-123',
+      vehicleModel: 'Toyota Corolla',
+    );
+    _customers.add(reg);
+    return reg;
+  }
+
+  @override
+  Future<List<CustomerRegistration>> getCustomerRegistrations({
+    String? branchId,
+    String? status,
+    String? customerId,
+  }) async {
+    return _customers.where((c) {
+      if (branchId != null && c.branchId != branchId) return false;
+      if (customerId != null && c.customerId != customerId) return false;
+      return true;
+    }).toList();
+  }
+
+  @override
+  Future<CustomerRegistration> getCustomerRegistrationById(String registrationId) async {
+    return _customers.firstWhere((c) => c.id == registrationId);
+  }
+
+  @override
+  Future<EmployeeRegistration> onboardEmployee({
+    required String employeeId,
+    required String branchId,
+    required String speciality,
+    required String specialityName,
+    required double salary,
+    String role = 'ROLE_EMPLOYEE',
+  }) async {
+    return EmployeeRegistration(
+      id: 'emp-reg-1',
+      employeeId: employeeId,
+      branchId: branchId,
+      speciality: speciality,
+      specialityName: specialityName,
+      salary: salary,
+      role: role,
+      status: 'ACTIVE',
+    );
+  }
+
+  @override
+  Future<EmployeeRegistration> requestJoinBranch({
+    required String employeeId,
+    required String branchId,
+    String? speciality,
+    String? specialityName,
+    double? salary,
+  }) async {
+    return EmployeeRegistration(
+      id: 'emp-reg-2',
+      employeeId: employeeId,
+      branchId: branchId,
+      speciality: speciality ?? 'General',
+      specialityName: specialityName ?? 'General Mechanic',
+      salary: salary ?? 0.0,
+      role: 'ROLE_EMPLOYEE',
+      status: 'PENDING_APPROVAL',
+    );
+  }
+
+  @override
+  Future<EmployeeRegistration> approveEmployeeRegistration(String registrationId) async {
+    return EmployeeRegistration(
+      id: registrationId,
+      employeeId: 'emp-1',
+      branchId: 'b-01',
+      speciality: 'General',
+      specialityName: 'General Mechanic',
+      salary: 1000.0,
+      role: 'ROLE_EMPLOYEE',
+      status: 'ACTIVE',
+    );
+  }
+
+  @override
+  Future<void> rejectEmployeeRegistration(String registrationId) async {}
+
+  @override
+  Future<List<EmployeeRegistration>> getEmployeeRegistrations({
+    String? branchId,
+    String? status,
+    String? employeeId,
+  }) async {
+    return [];
   }
 }
 
@@ -261,7 +400,7 @@ void main() {
         updateStatusCommand: updateStatusCommand,
       );
 
-      await viewModel.loadAppointments('b-01-smp');
+      await viewModel.selectDate(DateTime(2026, 11, 8), 'b-01-smp');
       expect(viewModel.isLoading, isFalse);
       expect(viewModel.errorMessage, isNull);
 
