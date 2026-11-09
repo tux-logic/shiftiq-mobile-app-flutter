@@ -5,14 +5,7 @@ import 'package:shiftiq_mobile_app_flutter/features/billing/application/commands
 import 'package:shiftiq_mobile_app_flutter/features/billing/application/queryservices/get_quotes_query_service.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/application/queryservices/get_voucher_detail_query_service.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/application/queryservices/get_vouchers_by_branch_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/aggregates/electronic_voucher.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/aggregates/quote.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/entities/voucher_item.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/valueobjects/payment_method.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/valueobjects/tax_document.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/valueobjects/voucher_status.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/model/valueobjects/voucher_type.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/repositories/billing_repository.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/controllers/billing_view_model.dart';
 
 class MockBillingRepository implements BillingRepository {
@@ -122,19 +115,21 @@ class MockBillingRepository implements BillingRepository {
 
   @override
   Future<ElectronicVoucher> emitVoucher({
-    required String branchId,
-    required String workOrderId,
+    String quoteId = '',
+    String branchId = '',
+    String workOrderId = '',
     required VoucherType voucherType,
     required String customerDocumentType,
     required String customerDocumentNumber,
     required String customerName,
     String? customerAddress,
-    required PaymentMethod paymentMethod,
-    required List<VoucherItem> items,
+    PaymentMethod paymentMethod = PaymentMethod.cash,
+    List<VoucherItem> items = const [],
   }) async {
     final nextNumber = (_vouchers.length + 483).toString().padLeft(7, '0');
     final voucher = ElectronicVoucher.calculateAndCreate(
       id: 'vouch-${DateTime.now().millisecondsSinceEpoch}',
+      quoteId: quoteId.isNotEmpty ? quoteId : null,
       branchId: branchId,
       workOrderId: workOrderId,
       series: voucherType.defaultSeries,
@@ -179,12 +174,13 @@ class MockBillingRepository implements BillingRepository {
   Future<Quote> createQuote({
     required String branchId,
     String? workOrderId,
-    required String customerName,
-    required String customerPhone,
-    required String vehiclePlate,
-    required String vehicleModel,
-    required List<VoucherItem> items,
-    required DateTime validUntil,
+    double discountPercentage = 0.0,
+    String customerName = '',
+    String customerPhone = '',
+    String vehiclePlate = '',
+    String vehicleModel = '',
+    List<dynamic> items = const [],
+    DateTime? validUntil,
   }) async {
     final quoteNumber = 'COT-2026-${(_quotes.length + 43).toString().padLeft(4, '0')}';
     final quote = Quote.calculateAndCreate(
@@ -197,10 +193,198 @@ class MockBillingRepository implements BillingRepository {
       vehiclePlate: vehiclePlate,
       vehicleModel: vehicleModel,
       items: items,
+      discountPercentage: discountPercentage,
       validUntil: validUntil,
     );
     _quotes.insert(0, quote);
     return quote;
+  }
+
+  @override
+  Future<Quote> getQuoteById(String quoteId) async {
+    return _quotes.firstWhere(
+      (q) => q.id == quoteId,
+      orElse: () => throw Exception('Quote not found: $quoteId'),
+    );
+  }
+
+  @override
+  Future<Quote> updateQuoteDiscount({
+    required String quoteId,
+    required double discountPercentage,
+  }) async {
+    final idx = _quotes.indexWhere((q) => q.id == quoteId);
+    if (idx != -1) {
+      final current = _quotes[idx];
+      final subtotal = current.subtotalAmount;
+      final discount = subtotal * (discountPercentage / 100.0);
+      final updated = current.copyWith(
+        discountPercentage: discountPercentage,
+        totalAmount: double.parse((subtotal - discount).toStringAsFixed(2)),
+      );
+      _quotes[idx] = updated;
+      return updated;
+    }
+    throw Exception('Quote not found: $quoteId');
+  }
+
+  @override
+  Future<Quote> approveQuote(String quoteId) async {
+    final idx = _quotes.indexWhere((q) => q.id == quoteId);
+    if (idx != -1) {
+      final updated = _quotes[idx].copyWith(
+        status: QuoteStatus.approved,
+        approvedAt: DateTime.now(),
+      );
+      _quotes[idx] = updated;
+      return updated;
+    }
+    throw Exception('Quote not found: $quoteId');
+  }
+
+  @override
+  Future<Quote> cancelQuote(String quoteId) async {
+    final idx = _quotes.indexWhere((q) => q.id == quoteId);
+    if (idx != -1) {
+      final updated = _quotes[idx].copyWith(status: QuoteStatus.canceled);
+      _quotes[idx] = updated;
+      return updated;
+    }
+    throw Exception('Quote not found: $quoteId');
+  }
+
+  @override
+  Future<ElectronicVoucher> registerPayment({
+    required String voucherId,
+    required double amount,
+    required PaymentMethod method,
+  }) async {
+    final idx = _vouchers.indexWhere((v) => v.id == voucherId);
+    if (idx != -1) {
+      final current = _vouchers[idx];
+      final newTotalPaid = current.totalPaid + amount;
+      final newBalance = (current.totalAmount - newTotalPaid).clamp(0.0, current.totalAmount);
+      final isFullyPaid = newTotalPaid >= current.totalAmount;
+      final updated = current.copyWith(
+        payments: [
+          ...current.payments,
+          VoucherPayment(
+            id: 'pay-${DateTime.now().millisecondsSinceEpoch}',
+            amount: amount,
+            method: method,
+            paidAt: DateTime.now(),
+          ),
+        ],
+        totalPaid: newTotalPaid,
+        balance: newBalance,
+        status: isFullyPaid ? VoucherStatus.paid : VoucherStatus.partiallyPaid,
+        paidAt: isFullyPaid ? DateTime.now() : null,
+      );
+      _vouchers[idx] = updated;
+      return updated;
+    }
+    throw Exception('Voucher not found: $voucherId');
+  }
+
+  @override
+  Future<void> deletePayment({
+    required String voucherId,
+    required String paymentId,
+  }) async {
+    final idx = _vouchers.indexWhere((v) => v.id == voucherId);
+    if (idx != -1) {
+      final current = _vouchers[idx];
+      final updatedPayments = current.payments.where((p) => p.id != paymentId).toList();
+      final newTotalPaid = updatedPayments.fold(0.0, (acc, p) => acc + p.amount);
+      final newBalance = (current.totalAmount - newTotalPaid).clamp(0.0, current.totalAmount);
+      _vouchers[idx] = current.copyWith(
+        payments: updatedPayments,
+        totalPaid: newTotalPaid,
+        balance: newBalance,
+        status: newTotalPaid == 0 ? VoucherStatus.pending : VoucherStatus.partiallyPaid,
+      );
+    }
+  }
+
+  @override
+  Future<ElectronicVoucher> checkoutDirect({
+    required String quoteId,
+    required VoucherType type,
+    required String customerDocumentType,
+    required String customerDocumentNumber,
+    required String customerName,
+    required PaymentMethod method,
+    String? branchId,
+  }) async {
+    final quote = await getQuoteById(quoteId);
+    final voucher = ElectronicVoucher.calculateAndCreate(
+      id: 'vouch-${DateTime.now().millisecondsSinceEpoch}',
+      quoteId: quoteId,
+      branchId: branchId ?? quote.branchId,
+      workOrderId: quote.workOrderId,
+      series: type.defaultSeries,
+      number: (_vouchers.length + 500).toString().padLeft(7, '0'),
+      voucherType: type,
+      customerDocumentType: customerDocumentType,
+      customerDocumentNumber: customerDocumentNumber,
+      customerName: customerName,
+      items: quote.items.map((i) {
+        if (i is VoucherItem) return i;
+        final q = i as QuoteItem;
+        return VoucherItem.create(
+          id: q.id ?? 'it-${DateTime.now().millisecondsSinceEpoch}',
+          description: q.name,
+          itemType: VoucherItemType.fromCode(q.type),
+          quantity: q.quantity,
+          unitPrice: q.unitPrice,
+        );
+      }).toList(),
+      paymentMethod: method,
+      status: VoucherStatus.paid,
+      paidAt: DateTime.now(),
+    );
+    _vouchers.insert(0, voucher);
+    return voucher;
+  }
+
+  @override
+  Future<ElectronicVoucher> confirmMercadoPagoCheckout({
+    required String quoteId,
+    required VoucherType type,
+    required String customerDocumentType,
+    required String customerDocumentNumber,
+    required String customerName,
+    required String paymentId,
+    String? branchId,
+  }) async {
+    return checkoutDirect(
+      quoteId: quoteId,
+      type: type,
+      customerDocumentType: customerDocumentType,
+      customerDocumentNumber: customerDocumentNumber,
+      customerName: customerName,
+      method: PaymentMethod.creditCard,
+      branchId: branchId,
+    );
+  }
+
+  @override
+  Future<MercadoPagoPreference> createMercadoPagoPreference({
+    required String quoteId,
+    VoucherType? type,
+    String? customerDocumentType,
+    String? customerDocumentNumber,
+    String? customerName,
+  }) async {
+    final quote = await getQuoteById(quoteId);
+    return MercadoPagoPreference(
+      preferenceId: 'pref-${DateTime.now().millisecondsSinceEpoch}',
+      initPoint: 'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=pref-$quoteId',
+      sandboxInitPoint: 'https://sandbox.mercadopago.com.pe/checkout/v1/redirect?pref_id=pref-$quoteId',
+      amount: quote.totalAmount,
+      currency: 'PEN',
+      externalReference: quoteId,
+    );
   }
 }
 
