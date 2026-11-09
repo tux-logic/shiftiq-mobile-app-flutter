@@ -14,7 +14,7 @@ import 'package:shiftiq_mobile_app_flutter/features/auth/application/usecases/re
 import 'package:shiftiq_mobile_app_flutter/features/auth/application/usecases/sign_up_user.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/application/usecases/update_user_credentials.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/domain/model/value_objects/user_role.dart';
-import 'package:shiftiq_mobile_app_flutter/features/auth/infrastructure/auth_repository_impl.dart';
+import 'package:shiftiq_mobile_app_flutter/features/auth/infrastructure/repositories/auth_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/infrastructure/remote/auth_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/infrastructure/remote/user_api.dart';
 
