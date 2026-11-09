@@ -74,7 +74,7 @@ class KpiMetricCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: ShiftIQColors.deepSlate,
+                color: ShiftIQColors.graphiteText,
               ),
             ),
             const SizedBox(height: 4),

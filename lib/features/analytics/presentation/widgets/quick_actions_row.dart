@@ -49,7 +49,7 @@ class QuickActionsRow extends StatelessWidget {
               _buildActionButton(
                 label: 'Ingreso Lote',
                 icon: Icons.inventory_2_outlined,
-                color: ShiftIQColors.warningAmber,
+                color: ShiftIQColors.severityAmber,
                 onTap: onNewBatch,
               ),
             ],
@@ -92,7 +92,7 @@ class QuickActionsRow extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: ShiftIQColors.deepSlate,
+                color: ShiftIQColors.graphiteText,
               ),
             ),
           ],

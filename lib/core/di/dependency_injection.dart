@@ -32,11 +32,13 @@ import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/p
 import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/workshop_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/repositories/core_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_view_model.dart';
-import 'package:shiftiq_mobile_app_flutter/features/dashboard/application/get_branch_summary_use_case.dart';
-import 'package:shiftiq_mobile_app_flutter/features/dashboard/domain/analytics_repository.dart';
-import 'package:shiftiq_mobile_app_flutter/features/dashboard/infrastructure/analytics_repository_impl.dart';
-import 'package:shiftiq_mobile_app_flutter/features/dashboard/infrastructure/remote/analytics_api.dart';
-import 'package:shiftiq_mobile_app_flutter/features/dashboard/presentation/dashboard_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_branch_financial_analytics.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_branch_summary.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_network_analytics_summary.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/repositories/analytics_repository.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/infrastructure/remote/analytics_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/infrastructure/repositories/analytics_repository_impl.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/controllers/dashboard_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/application/add_task_to_work_order_use_case.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/application/create_work_order_use_case.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/application/finalize_operations_use_cases.dart';
@@ -253,6 +255,18 @@ void setupDependencies() {
 
   getIt.registerLazySingleton<GetBranchSummaryUseCase>(
     () => GetBranchSummaryUseCase(repository: getIt<AnalyticsRepository>()),
+  );
+
+  getIt.registerLazySingleton<GetBranchFinancialAnalyticsUseCase>(
+    () => GetBranchFinancialAnalyticsUseCase(
+      repository: getIt<AnalyticsRepository>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<GetNetworkAnalyticsSummaryUseCase>(
+    () => GetNetworkAnalyticsSummaryUseCase(
+      repository: getIt<AnalyticsRepository>(),
+    ),
   );
 
   getIt.registerFactory<DashboardViewModel>(
