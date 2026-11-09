@@ -61,12 +61,8 @@ import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/remote/
 import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/remote/employee_registration_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/repositories/fleet_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/controllers/appointments_view_model.dart';
-import 'package:shiftiq_mobile_app_flutter/features/inventory/application/commandservices/create_product_command_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/inventory/application/commandservices/register_batch_command_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/inventory/application/queryservices/get_low_stock_alerts_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/inventory/application/queryservices/get_product_detail_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/inventory/application/queryservices/get_products_by_branch_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/repositories/inventory_repository.dart';
+import 'package:shiftiq_mobile_app_flutter/features/inventory/application/inventory_application.dart';
+import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/inventory_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/infrastructure/remote/inventory_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/infrastructure/repositories/inventory_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/presentation/controllers/inventory_view_model.dart';
@@ -401,42 +397,18 @@ void setupDependencies() {
     () => InventoryRepositoryImpl(inventoryApi: getIt<InventoryApi>()),
   );
 
-  getIt.registerLazySingleton<GetProductsByBranchQueryService>(
-    () => GetProductsByBranchQueryService(
-      inventoryRepository: getIt<InventoryRepository>(),
-    ),
+  getIt.registerLazySingleton<ManageProducts>(
+    () => ManageProducts(repository: getIt<InventoryRepository>()),
   );
 
-  getIt.registerLazySingleton<GetProductDetailQueryService>(
-    () => GetProductDetailQueryService(
-      inventoryRepository: getIt<InventoryRepository>(),
-    ),
-  );
-
-  getIt.registerLazySingleton<GetLowStockAlertsQueryService>(
-    () => GetLowStockAlertsQueryService(
-      inventoryRepository: getIt<InventoryRepository>(),
-    ),
-  );
-
-  getIt.registerLazySingleton<CreateProductCommandService>(
-    () => CreateProductCommandService(
-      inventoryRepository: getIt<InventoryRepository>(),
-    ),
-  );
-
-  getIt.registerLazySingleton<RegisterBatchCommandService>(
-    () => RegisterBatchCommandService(
-      inventoryRepository: getIt<InventoryRepository>(),
-    ),
+  getIt.registerLazySingleton<ManageBatches>(
+    () => ManageBatches(repository: getIt<InventoryRepository>()),
   );
 
   getIt.registerFactory<InventoryViewModel>(
     () => InventoryViewModel(
-      getProductsQuery: getIt<GetProductsByBranchQueryService>(),
-      getProductDetailQuery: getIt<GetProductDetailQueryService>(),
-      createProductCommand: getIt<CreateProductCommandService>(),
-      registerBatchCommand: getIt<RegisterBatchCommandService>(),
+      manageProducts: getIt<ManageProducts>(),
+      manageBatches: getIt<ManageBatches>(),
     ),
   );
 
