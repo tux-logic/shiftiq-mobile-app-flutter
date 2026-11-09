@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:shiftiq_mobile_app_flutter/features/branch/application/get_user_branches_use_case.dart';
-import 'package:shiftiq_mobile_app_flutter/features/branch/application/select_active_branch_use_case.dart';
-import 'package:shiftiq_mobile_app_flutter/features/branch/domain/branch.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_user_branches.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/select_active_branch.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart';
 
 class BranchSelectionViewModel extends ChangeNotifier {
   final GetUserBranchesUseCase getUserBranchesUseCase;
@@ -46,4 +46,3 @@ class BranchSelectionViewModel extends ChangeNotifier {
     }
   }
 }
-

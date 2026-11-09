@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
-import 'package:shiftiq_mobile_app_flutter/features/branch/domain/branch.dart';
-import 'package:shiftiq_mobile_app_flutter/features/branch/presentation/branch_selection_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/main/presentation/main_page.dart';
 
 class BranchSelectionPage extends StatefulWidget {

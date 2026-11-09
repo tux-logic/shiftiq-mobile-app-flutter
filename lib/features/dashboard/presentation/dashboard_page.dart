@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
-import 'package:shiftiq_mobile_app_flutter/features/branch/presentation/branch_selection_page.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/dashboard/presentation/dashboard_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/dashboard/presentation/widgets/dtc_alert_banner.dart';
 import 'package:shiftiq_mobile_app_flutter/features/dashboard/presentation/widgets/kpi_metric_card.dart';
