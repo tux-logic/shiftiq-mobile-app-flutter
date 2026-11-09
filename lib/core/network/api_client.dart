@@ -2,18 +2,24 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:shiftiq_mobile_app_flutter/core/domain/event/domain_event.dart';
+import 'package:shiftiq_mobile_app_flutter/core/domain/event/domain_event_bus.dart';
 import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/network/app_exception.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 
-/// Central HTTP Client for ShiftIQ Mobile
-/// Injects Bearer Token, standard headers and maps HTTP error status codes
+/// Central HTTP Client for ShiftIQ Mobile.
+/// Injects Bearer Token, standard headers and maps HTTP error status codes.
 class ApiClient {
   final SessionStorage sessionStorage;
+  final DomainEventBus? eventBus;
   final http.Client _client;
 
-  ApiClient({required this.sessionStorage, http.Client? client})
-    : _client = client ?? http.Client();
+  ApiClient({
+    required this.sessionStorage,
+    this.eventBus,
+    http.Client? client,
+  }) : _client = client ?? http.Client();
 
   Future<Map<String, String>> _buildHeaders([
     Map<String, String>? extraHeaders,
@@ -71,7 +77,7 @@ class ApiClient {
     } on AppException {
       rethrow;
     } catch (e) {
-      throw AppException(message: 'Error de conexión: $e');
+      throw AppException(message: 'Connection error: $e');
     }
   }
 
@@ -97,7 +103,7 @@ class ApiClient {
     } on AppException {
       rethrow;
     } catch (e) {
-      throw AppException(message: 'Error de conexión: $e');
+      throw AppException(message: 'Connection error: $e');
     }
   }
 
@@ -123,7 +129,7 @@ class ApiClient {
     } on AppException {
       rethrow;
     } catch (e) {
-      throw AppException(message: 'Error de conexión: $e');
+      throw AppException(message: 'Connection error: $e');
     }
   }
 
@@ -149,7 +155,7 @@ class ApiClient {
     } on AppException {
       rethrow;
     } catch (e) {
-      throw AppException(message: 'Error de conexión: $e');
+      throw AppException(message: 'Connection error: $e');
     }
   }
 
@@ -170,7 +176,7 @@ class ApiClient {
     } on AppException {
       rethrow;
     } catch (e) {
-      throw AppException(message: 'Error de conexión: $e');
+      throw AppException(message: 'Connection error: $e');
     }
   }
 
@@ -194,8 +200,8 @@ class ApiClient {
     final message = decodedJson is Map<String, dynamic>
         ? (decodedJson['message'] ??
               decodedJson['error'] ??
-              'Error del servidor')
-        : 'Error del servidor ($statusCode)';
+              'Server error')
+        : 'Server error ($statusCode)';
 
     switch (statusCode) {
       case 400:
@@ -204,6 +210,11 @@ class ApiClient {
           details: decodedJson,
         );
       case 401:
+        eventBus?.emit(
+          SessionExpiredEvent(
+            reason: message.toString(),
+          ),
+        );
         throw AuthenticationException(
           message: message.toString(),
           details: decodedJson,

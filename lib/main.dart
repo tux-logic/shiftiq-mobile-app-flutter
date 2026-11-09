@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
+import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
@@ -7,6 +8,7 @@ import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   setupDependencies();
+  await getIt<SessionStorage>().initialize();
   runApp(const ShiftIqApp());
 }
 
