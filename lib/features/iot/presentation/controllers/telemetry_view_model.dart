@@ -1,24 +1,16 @@
 import 'package:flutter/foundation.dart';
-import 'package:shiftiq_mobile_app_flutter/features/iot/application/commandservices/update_dtc_status_command_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/iot/application/queryservices/get_dtc_alerts_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/iot/application/queryservices/get_dtc_detail_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/iot/application/queryservices/get_live_sensor_stream_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/iot/domain/model/aggregates/dtc_alert.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/application/iot_application.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/domain/iot_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/domain/model/entities/live_sensor_reading.dart';
-import 'package:shiftiq_mobile_app_flutter/features/iot/domain/model/valueobjects/dtc_severity.dart';
-import 'package:shiftiq_mobile_app_flutter/features/iot/domain/model/valueobjects/dtc_status.dart';
 
+/// ViewModel managing state for vehicular telemetry diagnostics and sensor streaming.
 class TelemetryViewModel extends ChangeNotifier {
-  final GetDtcAlertsQueryService getDtcAlertsQuery;
-  final GetDtcDetailQueryService getDtcDetailQuery;
-  final GetLiveSensorStreamQueryService getLiveSensorsQuery;
-  final UpdateDtcStatusCommandService updateDtcStatusCommand;
+  final GetDtcAlerts getDtcAlerts;
+  final GetTelemetrySnapshots getTelemetrySnapshots;
 
   TelemetryViewModel({
-    required this.getDtcAlertsQuery,
-    required this.getDtcDetailQuery,
-    required this.getLiveSensorsQuery,
-    required this.updateDtcStatusCommand,
+    required this.getDtcAlerts,
+    required this.getTelemetrySnapshots,
   });
 
   bool _isLoading = false;
@@ -51,13 +43,13 @@ class TelemetryViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _alerts = await getDtcAlertsQuery.execute(
+      _alerts = await getDtcAlerts.execute(
         branchId: branchId,
         severity: _selectedSeverity,
         status: _selectedStatus,
       );
     } catch (e) {
-      _errorMessage = 'Error al cargar alertas DTC de telemetría: $e';
+      _errorMessage = 'Error loading DTC telemetry alerts: $e';
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -80,9 +72,9 @@ class TelemetryViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _selectedAlert = await getDtcDetailQuery.execute(alertId);
+      _selectedAlert = await getDtcAlerts.getById(alertId);
     } catch (e) {
-      _errorMessage = 'Error al cargar detalle del código DTC: $e';
+      _errorMessage = 'Error loading DTC code detail: $e';
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -91,7 +83,7 @@ class TelemetryViewModel extends ChangeNotifier {
 
   Future<void> loadLiveSensors(String vehicleId) async {
     try {
-      _liveSensors = await getLiveSensorsQuery.execute(vehicleId);
+      _liveSensors = await getTelemetrySnapshots.getLiveSensors(vehicleId);
       notifyListeners();
     } catch (_) {}
   }
@@ -102,16 +94,16 @@ class TelemetryViewModel extends ChangeNotifier {
     String branchId,
   ) async {
     try {
-      await updateDtcStatusCommand.execute(
+      await getDtcAlerts.updateStatus(
         alertId: alertId,
-        status: newStatus,
+        newStatus: newStatus,
       );
       if (_selectedAlert != null && _selectedAlert!.id == alertId) {
         await loadDtcDetail(alertId);
       }
       await loadDtcAlerts(branchId);
     } catch (e) {
-      _errorMessage = 'Error al actualizar estado DTC: $e';
+      _errorMessage = 'Error updating DTC status: $e';
       notifyListeners();
     }
   }
