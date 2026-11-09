@@ -5,7 +5,10 @@ import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/repositories/fl
 class GetAppointmentsUseCase {
   final FleetRepository repository;
 
-  GetAppointmentsUseCase({required this.repository});
+  GetAppointmentsUseCase({
+    FleetRepository? repository,
+    FleetRepository? appointmentRepository,
+  }) : repository = (repository ?? appointmentRepository)!;
 
   Future<List<Appointment>> execute({
     String? branchId,

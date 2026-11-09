@@ -24,7 +24,6 @@ class ApiConstants {
   static String userEmail(String userId) => '/api/v1/users/$userId/email';
   static String userPassword(String userId) =>
       '/api/v1/users/$userId/password';
-  static const String profilesMe = '/api/v1/profiles/me';
 
   // Core Context
   static const String owners = '/api/v1/owners';

@@ -48,13 +48,19 @@ import 'package:shiftiq_mobile_app_flutter/features/operations/infrastructure/re
 import 'package:shiftiq_mobile_app_flutter/features/operations/infrastructure/work_order_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_order_detail_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_orders_view_model.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/application/commandservices/create_appointment_command_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/application/commandservices/update_appointment_status_command_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/application/queryservices/get_appointments_by_branch_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/application/queryservices/get_customer_directory_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/repositories/appointment_repository.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/cancel_appointment.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/create_appointment.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/get_appointments.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/get_customer_registrations.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/manage_employee_applications.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/onboard_employee.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/register_customer_to_branch.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/update_appointment.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/repositories/fleet_repository.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/remote/appointment_api.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/repositories/appointment_repository_impl.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/remote/customer_registration_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/remote/employee_registration_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/repositories/fleet_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/controllers/appointments_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/application/commandservices/create_product_command_service.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/application/commandservices/register_batch_command_service.dart';
@@ -315,45 +321,69 @@ void setupDependencies() {
     ),
   );
 
-  // 6. Fleet & CRM Context (Appointments, Bays & Customer Directory)
+  // 6. Fleet Context (Appointments, Customer Registrations & Employee Onboarding)
   getIt.registerLazySingleton<AppointmentApi>(
     () => AppointmentApi(apiClient: getIt<ApiClient>()),
   );
 
-  getIt.registerLazySingleton<AppointmentRepository>(
-    () => AppointmentRepositoryImpl(appointmentApi: getIt<AppointmentApi>()),
+  getIt.registerLazySingleton<CustomerRegistrationApi>(
+    () => CustomerRegistrationApi(apiClient: getIt<ApiClient>()),
   );
 
-  getIt.registerLazySingleton<GetAppointmentsByBranchQueryService>(
-    () => GetAppointmentsByBranchQueryService(
-      appointmentRepository: getIt<AppointmentRepository>(),
+  getIt.registerLazySingleton<EmployeeRegistrationApi>(
+    () => EmployeeRegistrationApi(apiClient: getIt<ApiClient>()),
+  );
+
+  getIt.registerLazySingleton<FleetRepository>(
+    () => FleetRepositoryImpl(
+      appointmentApi: getIt<AppointmentApi>(),
+      customerRegistrationApi: getIt<CustomerRegistrationApi>(),
+      employeeRegistrationApi: getIt<EmployeeRegistrationApi>(),
     ),
   );
 
-  getIt.registerLazySingleton<GetCustomerDirectoryQueryService>(
-    () => GetCustomerDirectoryQueryService(
-      appointmentRepository: getIt<AppointmentRepository>(),
-    ),
+  getIt.registerLazySingleton<CreateAppointmentUseCase>(
+    () => CreateAppointmentUseCase(repository: getIt<FleetRepository>()),
   );
 
   getIt.registerLazySingleton<CreateAppointmentCommandService>(
-    () => CreateAppointmentCommandService(
-      appointmentRepository: getIt<AppointmentRepository>(),
-    ),
+    () => CreateAppointmentCommandService(useCase: getIt<CreateAppointmentUseCase>()),
   );
 
-  getIt.registerLazySingleton<UpdateAppointmentStatusCommandService>(
-    () => UpdateAppointmentStatusCommandService(
-      appointmentRepository: getIt<AppointmentRepository>(),
-    ),
+  getIt.registerLazySingleton<GetAppointmentsUseCase>(
+    () => GetAppointmentsUseCase(repository: getIt<FleetRepository>()),
+  );
+
+  getIt.registerLazySingleton<UpdateAppointmentUseCase>(
+    () => UpdateAppointmentUseCase(repository: getIt<FleetRepository>()),
+  );
+
+  getIt.registerLazySingleton<CancelAppointmentUseCase>(
+    () => CancelAppointmentUseCase(repository: getIt<FleetRepository>()),
+  );
+
+  getIt.registerLazySingleton<RegisterCustomerToBranchUseCase>(
+    () => RegisterCustomerToBranchUseCase(repository: getIt<FleetRepository>()),
+  );
+
+  getIt.registerLazySingleton<GetCustomerRegistrationsUseCase>(
+    () => GetCustomerRegistrationsUseCase(repository: getIt<FleetRepository>()),
+  );
+
+  getIt.registerLazySingleton<OnboardEmployeeUseCase>(
+    () => OnboardEmployeeUseCase(repository: getIt<FleetRepository>()),
+  );
+
+  getIt.registerLazySingleton<ManageEmployeeApplicationsUseCase>(
+    () => ManageEmployeeApplicationsUseCase(repository: getIt<FleetRepository>()),
   );
 
   getIt.registerFactory<AppointmentsViewModel>(
     () => AppointmentsViewModel(
-      getAppointmentsQuery: getIt<GetAppointmentsByBranchQueryService>(),
-      getCustomerDirectoryQuery: getIt<GetCustomerDirectoryQueryService>(),
+      getAppointmentsQuery: getIt<GetAppointmentsUseCase>(),
+      getCustomerDirectoryQuery: getIt<GetCustomerRegistrationsUseCase>(),
       createAppointmentCommand: getIt<CreateAppointmentCommandService>(),
-      updateStatusCommand: getIt<UpdateAppointmentStatusCommandService>(),
+      updateStatusCommand: getIt<UpdateAppointmentUseCase>(),
     ),
   );
 

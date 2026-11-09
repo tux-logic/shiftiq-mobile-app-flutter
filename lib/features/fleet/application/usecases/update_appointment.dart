@@ -5,24 +5,49 @@ import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/repositories/fl
 class UpdateAppointmentUseCase {
   final FleetRepository repository;
 
-  UpdateAppointmentUseCase({required this.repository});
+  UpdateAppointmentUseCase({
+    FleetRepository? repository,
+    FleetRepository? appointmentRepository,
+  }) : repository = (repository ?? appointmentRepository)!;
 
   Future<Appointment> execute({
-    required String id,
-    required String branchId,
-    required String customerId,
-    required String vehicleId,
-    required DateTime scheduledStart,
-    required AppointmentStatus status,
+    String? id,
+    String? appointmentId,
+    String? branchId,
+    String? customerId,
+    String? vehicleId,
+    DateTime? scheduledStart,
+    AppointmentStatus? status,
+    AppointmentStatus? newStatus,
     String? notes,
   }) {
+    final effectiveId = id ?? appointmentId;
+    if (effectiveId == null || effectiveId.trim().isEmpty) {
+      throw ArgumentError('El ID de la cita es obligatorio.');
+    }
+
+    final effectiveStatus = status ?? newStatus;
+
+    if (branchId == null &&
+        customerId == null &&
+        vehicleId == null &&
+        scheduledStart == null) {
+      if (effectiveStatus == null) {
+        throw ArgumentError('El estado de la cita es obligatorio.');
+      }
+      return repository.updateAppointmentStatus(
+        id: effectiveId,
+        status: effectiveStatus,
+      );
+    }
+
     return repository.updateAppointment(
-      id: id,
-      branchId: branchId,
-      customerId: customerId,
-      vehicleId: vehicleId,
-      scheduledStart: scheduledStart,
-      status: status,
+      id: effectiveId,
+      branchId: branchId ?? '',
+      customerId: customerId ?? '',
+      vehicleId: vehicleId ?? '',
+      scheduledStart: scheduledStart ?? DateTime.now(),
+      status: effectiveStatus ?? AppointmentStatus.pending,
       notes: notes,
     );
   }

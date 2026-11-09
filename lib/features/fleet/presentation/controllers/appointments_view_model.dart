@@ -1,11 +1,9 @@
 import 'package:flutter/foundation.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/application/commandservices/create_appointment_command_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/application/commandservices/update_appointment_status_command_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/application/queryservices/get_appointments_by_branch_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/application/queryservices/get_customer_directory_query_service.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/aggregates/appointment.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/entities/customer_registration.dart';
-import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/valueobjects/appointment_status.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/create_appointment.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/get_appointments.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/get_customer_registrations.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/update_appointment.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/fleet_domain.dart';
 
 class AppointmentsViewModel extends ChangeNotifier {
   final GetAppointmentsByBranchQueryService getAppointmentsQuery;

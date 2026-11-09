@@ -5,18 +5,33 @@ import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/repositories/fl
 class GetCustomerRegistrationsUseCase {
   final FleetRepository repository;
 
-  GetCustomerRegistrationsUseCase({required this.repository});
+  GetCustomerRegistrationsUseCase({
+    FleetRepository? repository,
+    FleetRepository? appointmentRepository,
+  }) : repository = (repository ?? appointmentRepository)!;
 
   Future<List<CustomerRegistration>> execute({
     String? branchId,
     String? status,
     String? customerId,
-  }) {
-    return repository.getCustomerRegistrations(
+    String? searchQuery,
+  }) async {
+    final results = await repository.getCustomerRegistrations(
       branchId: branchId,
       status: status,
       customerId: customerId,
     );
+
+    if (searchQuery != null && searchQuery.trim().isNotEmpty) {
+      final q = searchQuery.trim().toLowerCase();
+      return results.where((c) {
+        return c.customerName.toLowerCase().contains(q) ||
+            c.vehiclePlate.toLowerCase().contains(q) ||
+            c.phone.contains(q);
+      }).toList();
+    }
+
+    return results;
   }
 
   Future<CustomerRegistration> getById(String registrationId) {
