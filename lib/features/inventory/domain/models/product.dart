@@ -78,6 +78,10 @@ class Product {
     List<ProductBatch>? batches,
     DateTime? createdAt,
   }) {
+    final effectiveStock = currentStock ?? this.currentStock;
+    final effectiveMin = minimumStock ?? this.minimumStock;
+    final bool computedLowStock = lowStockAlert ?? (effectiveStock <= effectiveMin);
+
     return Product(
       id: id ?? this.id,
       branchId: branchId ?? this.branchId,
@@ -88,9 +92,9 @@ class Product {
       unitOfMeasure: unitOfMeasure ?? this.unitOfMeasure,
       salePrice: salePrice ?? unitPrice ?? this.salePrice,
       costPrice: costPrice ?? this.costPrice,
-      currentStock: currentStock ?? this.currentStock,
-      minimumStock: minimumStock ?? this.minimumStock,
-      lowStockAlert: lowStockAlert ?? this.lowStockAlert,
+      currentStock: effectiveStock,
+      minimumStock: effectiveMin,
+      lowStockAlert: computedLowStock,
       batches: batches ?? this.batches,
       createdAt: createdAt ?? this.createdAt,
     );
