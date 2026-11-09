@@ -2,6 +2,7 @@
 class WorkOrderTaskProduct {
   final String id;
   final String productId;
+  final String productName;
   final String branchId;
   final int quantity;
   final double unitPrice;
@@ -11,6 +12,7 @@ class WorkOrderTaskProduct {
   const WorkOrderTaskProduct({
     required this.id,
     required this.productId,
+    this.productName = 'Repuesto',
     required this.branchId,
     required this.quantity,
     required this.unitPrice,
@@ -18,9 +20,13 @@ class WorkOrderTaskProduct {
     this.createdAt,
   });
 
+  String get formattedUnitPrice => 'S/ ${unitPrice.toStringAsFixed(2)}';
+  String get formattedTotal => 'S/ ${totalAmount.toStringAsFixed(2)}';
+
   WorkOrderTaskProduct copyWith({
     String? id,
     String? productId,
+    String? productName,
     String? branchId,
     int? quantity,
     double? unitPrice,
@@ -30,6 +36,7 @@ class WorkOrderTaskProduct {
     return WorkOrderTaskProduct(
       id: id ?? this.id,
       productId: productId ?? this.productId,
+      productName: productName ?? this.productName,
       branchId: branchId ?? this.branchId,
       quantity: quantity ?? this.quantity,
       unitPrice: unitPrice ?? this.unitPrice,
@@ -51,3 +58,6 @@ class WorkOrderTaskProduct {
   @override
   int get hashCode => id.hashCode ^ productId.hashCode ^ quantity.hashCode ^ unitPrice.hashCode;
 }
+
+/// Backward compatibility alias.
+typedef TaskProduct = WorkOrderTaskProduct;

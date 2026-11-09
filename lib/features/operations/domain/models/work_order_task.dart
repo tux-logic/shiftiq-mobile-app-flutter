@@ -7,6 +7,7 @@ class WorkOrderTask {
   final String serviceId;
   final String branchId;
   final String assignedMechanicId;
+  final String assignedMechanicName;
   final TaskStatus status;
   final String description;
   final double price;
@@ -21,6 +22,7 @@ class WorkOrderTask {
     required this.serviceId,
     required this.branchId,
     required this.assignedMechanicId,
+    this.assignedMechanicName = 'Sin asignar',
     this.status = TaskStatus.pending,
     required this.description,
     required this.price,
@@ -33,18 +35,25 @@ class WorkOrderTask {
 
   bool get isCompleted => status == TaskStatus.completed;
   bool get isDoing => status == TaskStatus.doing;
+  bool get isInProgress => status == TaskStatus.doing;
   bool get isPending => status == TaskStatus.pending;
 
-  double get productsTotalAmount =>
+  String get formattedPrice => 'S/ ${price.toStringAsFixed(2)}';
+
+  double get productsTotal =>
       products.fold(0.0, (sum, item) => sum + item.totalAmount);
 
-  double get combinedTaskTotal => price + productsTotalAmount;
+  double get productsTotalAmount => productsTotal;
+
+  double get grandTotal => price + productsTotal;
+  double get combinedTaskTotal => grandTotal;
 
   WorkOrderTask copyWith({
     String? id,
     String? serviceId,
     String? branchId,
     String? assignedMechanicId,
+    String? assignedMechanicName,
     TaskStatus? status,
     String? description,
     double? price,
@@ -59,6 +68,7 @@ class WorkOrderTask {
       serviceId: serviceId ?? this.serviceId,
       branchId: branchId ?? this.branchId,
       assignedMechanicId: assignedMechanicId ?? this.assignedMechanicId,
+      assignedMechanicName: assignedMechanicName ?? this.assignedMechanicName,
       status: status ?? this.status,
       description: description ?? this.description,
       price: price ?? this.price,

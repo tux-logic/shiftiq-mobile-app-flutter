@@ -7,7 +7,11 @@ class WorkOrder {
   final String appointmentId;
   final String branchId;
   final String vehicleId;
+  final String vehiclePlate;
+  final String vehicleModel;
   final String customerId;
+  final String customerName;
+  final String customerPhone;
   final int internalNumber;
   final String formattedNumber;
   final WorkOrderStatus status;
@@ -24,7 +28,11 @@ class WorkOrder {
     required this.appointmentId,
     required this.branchId,
     required this.vehicleId,
+    this.vehiclePlate = 'S/P',
+    this.vehicleModel = 'Vehículo General',
     required this.customerId,
+    this.customerName = 'Cliente General',
+    this.customerPhone = '',
     required this.internalNumber,
     required this.formattedNumber,
     this.status = WorkOrderStatus.pending,
@@ -39,23 +47,35 @@ class WorkOrder {
 
   bool get isPending => status == WorkOrderStatus.pending;
   bool get isInProgress => status == WorkOrderStatus.inProgress;
-  bool get isCompleted => status == WorkOrderStatus.completed;
+  bool get isCompleted =>
+      status == WorkOrderStatus.completed || status == WorkOrderStatus.paid;
   bool get isPaid => status == WorkOrderStatus.paid;
-  bool get isDeleted => status == WorkOrderStatus.deleted;
+  bool get isDeleted =>
+      status == WorkOrderStatus.deleted || status == WorkOrderStatus.cancelled;
+
+  int get totalTasksCount => tasks.length;
+  int get completedTasksCount => tasks.where((t) => t.isCompleted).length;
 
   /// Invariant: All mechanical tasks must be finished to transition the order to COMPLETED.
   bool get allTasksCompleted =>
-      tasks.isNotEmpty && tasks.every((task) => task.isCompleted);
+      tasks.isNotEmpty && completedTasksCount == totalTasksCount;
 
   bool get canBeCompleted =>
       allTasksCompleted && status != WorkOrderStatus.completed;
+
+  String get formattedAmount => 'S/ ${totalAmount.toStringAsFixed(2)}';
+  String get formattedMileage => '$mileageIn km';
 
   WorkOrder copyWith({
     String? id,
     String? appointmentId,
     String? branchId,
     String? vehicleId,
+    String? vehiclePlate,
+    String? vehicleModel,
     String? customerId,
+    String? customerName,
+    String? customerPhone,
     int? internalNumber,
     String? formattedNumber,
     WorkOrderStatus? status,
@@ -72,7 +92,11 @@ class WorkOrder {
       appointmentId: appointmentId ?? this.appointmentId,
       branchId: branchId ?? this.branchId,
       vehicleId: vehicleId ?? this.vehicleId,
+      vehiclePlate: vehiclePlate ?? this.vehiclePlate,
+      vehicleModel: vehicleModel ?? this.vehicleModel,
       customerId: customerId ?? this.customerId,
+      customerName: customerName ?? this.customerName,
+      customerPhone: customerPhone ?? this.customerPhone,
       internalNumber: internalNumber ?? this.internalNumber,
       formattedNumber: formattedNumber ?? this.formattedNumber,
       status: status ?? this.status,
