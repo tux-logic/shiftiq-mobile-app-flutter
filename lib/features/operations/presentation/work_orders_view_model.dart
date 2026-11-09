@@ -63,11 +63,11 @@ class WorkOrdersViewModel extends ChangeNotifier {
     }
   }
 
-  void setFilter(WorkOrderStatus? filter) {
+  Future<void> setFilter(WorkOrderStatus? filter) async {
     if (_statusFilter == filter) return;
     _statusFilter = filter;
     notifyListeners();
-    loadOrders();
+    await loadOrders();
   }
 
   Future<void> refresh() => loadOrders();
