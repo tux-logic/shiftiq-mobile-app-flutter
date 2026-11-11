@@ -21,7 +21,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
     _localProducts.addAll([
       Product(
         id: 'prod-01',
-        branchId: 'b-01-smp',
+        branchId: 'f130ca7c-5492-43ed-8d83-e98e2e69ece4',
         sku: 'OIL-SYN-5W30',
         name: 'Aceite Sintético Castrol Edge 5W-30',
         description:
@@ -56,7 +56,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
       ),
       Product(
         id: 'prod-02',
-        branchId: 'b-01-smp',
+        branchId: 'f130ca7c-5492-43ed-8d83-e98e2e69ece4',
         sku: 'FLT-OIL-P3300',
         name: 'Filtro de Aceite Bosch P3300',
         description: 'Filtro de aceite blindado de alta eficiencia para vehículos asiáticos',
@@ -81,7 +81,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
       ),
       Product(
         id: 'prod-03',
-        branchId: 'b-01-smp',
+        branchId: 'f130ca7c-5492-43ed-8d83-e98e2e69ece4',
         sku: 'SUS-AMR-MNR77',
         name: 'Amortiguador Delantero Monroe Gas-Magnum',
         description: 'Amortiguador presurizado con gas nitrógeno para trabajo pesado',

@@ -190,6 +190,7 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'fab_customer_directory',
         onPressed: () => _openCreateAppointment(),
         icon: const Icon(Icons.add),
         label: const Text('Nueva Cita'),

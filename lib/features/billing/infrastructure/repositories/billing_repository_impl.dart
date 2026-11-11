@@ -16,7 +16,7 @@ class BillingRepositoryImpl implements BillingRepository {
     _localVouchers.addAll([
       ElectronicVoucher.calculateAndCreate(
         id: 'vouch-01-boleta',
-        branchId: 'b-01-smp',
+        branchId: 'f130ca7c-5492-43ed-8d83-e98e2e69ece4',
         workOrderId: 'w1w2w3w4-1111-2222-3333-444455556666',
         series: 'B001',
         number: '0000482',
@@ -66,7 +66,7 @@ class BillingRepositoryImpl implements BillingRepository {
       ),
       ElectronicVoucher.calculateAndCreate(
         id: 'vouch-02-factura',
-        branchId: 'b-01-smp',
+        branchId: 'f130ca7c-5492-43ed-8d83-e98e2e69ece4',
         workOrderId: 'w2w3w4w5-2222-3333-4444-555566667777',
         series: 'F001',
         number: '0000128',
@@ -118,7 +118,7 @@ class BillingRepositoryImpl implements BillingRepository {
     _localQuotes.addAll([
       Quote.calculateAndCreate(
         id: 'quote-01',
-        branchId: 'b-01-smp',
+        branchId: 'f130ca7c-5492-43ed-8d83-e98e2e69ece4',
         workOrderId: 'w1w2w3w4-1111-2222-3333-444455556666',
         quoteNumber: 'COT-2026-0042',
         customerName: 'Carlos Mendoza',
@@ -164,7 +164,7 @@ class BillingRepositoryImpl implements BillingRepository {
       ),
       Quote.calculateAndCreate(
         id: 'quote-02',
-        branchId: 'b-01-smp',
+        branchId: 'f130ca7c-5492-43ed-8d83-e98e2e69ece4',
         quoteNumber: 'COT-2026-0043',
         customerName: 'Andrea Benavente',
         customerPhone: '+51 912 345 678',

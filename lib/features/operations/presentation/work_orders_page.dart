@@ -163,6 +163,7 @@ class _WorkOrdersPageState extends State<WorkOrdersPage> {
             ],
           ),
           floatingActionButton: FloatingActionButton.extended(
+            heroTag: 'fab_work_orders',
             onPressed: () async {
               final created = await Navigator.of(context).push<bool>(
                 MaterialPageRoute(

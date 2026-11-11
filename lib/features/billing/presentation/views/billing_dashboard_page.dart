@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
+import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
@@ -35,7 +36,7 @@ class _BillingDashboardPageState extends State<BillingDashboardPage>
     _tabController = TabController(length: 2, vsync: this);
     _viewModel = widget.viewModel ?? getIt<BillingViewModel>();
     final session = getIt.isRegistered<SessionStorage>() ? getIt<SessionStorage>() : null;
-    _activeBranchId = widget.branchId ?? session?.activeBranchId ?? 'b-01-smp';
+    _activeBranchId = widget.branchId ?? session?.activeBranchId ?? ApiConstants.defaultBranchId;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _viewModel.loadBillingData(_activeBranchId);
@@ -303,6 +304,7 @@ class _BillingDashboardPageState extends State<BillingDashboardPage>
             ],
           ),
           floatingActionButton: FloatingActionButton.extended(
+            heroTag: 'fab_billing_dashboard',
             onPressed: () {
               Navigator.push(
                 context,

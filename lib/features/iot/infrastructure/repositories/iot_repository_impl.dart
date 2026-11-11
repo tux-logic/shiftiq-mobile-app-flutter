@@ -38,7 +38,7 @@ class IotRepositoryImpl implements IotRepository {
     _localAlerts.addAll([
       DtcAlert(
         id: 'dtc-01',
-        branchId: 'b-01-smp',
+        branchId: 'f130ca7c-5492-43ed-8d83-e98e2e69ece4',
         vehicleId: 'veh-01',
         vehiclePlate: 'BCX-892',
         vehicleModel: 'Toyota Hilux 2021',
@@ -60,7 +60,7 @@ class IotRepositoryImpl implements IotRepository {
       ),
       DtcAlert(
         id: 'dtc-02',
-        branchId: 'b-01-smp',
+        branchId: 'f130ca7c-5492-43ed-8d83-e98e2e69ece4',
         vehicleId: 'veh-02',
         vehiclePlate: 'F1G-789',
         vehicleModel: 'Kia Sportage 2022',
@@ -81,7 +81,7 @@ class IotRepositoryImpl implements IotRepository {
       ),
       DtcAlert(
         id: 'dtc-03',
-        branchId: 'b-01-smp',
+        branchId: 'f130ca7c-5492-43ed-8d83-e98e2e69ece4',
         vehicleId: 'veh-03',
         vehiclePlate: 'D2A-789',
         vehicleModel: 'Toyota Yaris 2022',

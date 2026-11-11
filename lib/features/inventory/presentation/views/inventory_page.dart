@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
+import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/model/aggregates/product.dart';
@@ -45,8 +46,8 @@ class _InventoryPageState extends State<InventoryPage> {
     super.initState();
     _viewModel = widget.viewModel ?? getIt<InventoryViewModel>();
     final session = getIt.isRegistered<SessionStorage>() ? getIt<SessionStorage>() : null;
-    _effectiveBranchId = widget.branchId ?? session?.activeBranchId ?? 'b-01-smp';
-    _branchName = session?.activeBranchName ?? 'Sede San Martín de Porres';
+    _effectiveBranchId = widget.branchId ?? session?.activeBranchId ?? ApiConstants.defaultBranchId;
+    _branchName = session?.activeBranchName ?? ApiConstants.defaultBranchName;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _viewModel.loadProducts(_effectiveBranchId);
@@ -336,6 +337,7 @@ class _InventoryPageState extends State<InventoryPage> {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'fab_inventory',
         onPressed: _openCreateProduct,
         icon: const Icon(Icons.add),
         label: const Text('Nuevo Repuesto'),

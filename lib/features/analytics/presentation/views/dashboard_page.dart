@@ -7,6 +7,7 @@ import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widge
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/quick_actions_row.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/billing_dashboard_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_page.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
 
 class DashboardPage extends StatefulWidget {
   final DashboardViewModel? viewModel;
@@ -122,6 +123,21 @@ class _DashboardPageState extends State<DashboardPage> {
                 tooltip: 'Refrescar KPIs',
                 icon: const Icon(Icons.refresh),
                 onPressed: viewModel.isLoading ? null : viewModel.refresh,
+              ),
+              IconButton(
+                tooltip: 'Mi Perfil de Taller / Cerrar Sesión',
+                icon: const CircleAvatar(
+                  radius: 14,
+                  backgroundColor: Colors.white24,
+                  child: Icon(Icons.person, size: 18, color: Colors.white),
+                ),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ProfilePage(),
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -291,22 +307,36 @@ class _DashboardPageState extends State<DashboardPage> {
                                   ),
                                 ],
                               ),
-                              const Divider(height: 12),
-                              _buildOrderPreviewItem(
-                                code: 'OT-2026-0042',
-                                vehicle: 'Toyota Hilux (BCX-892)',
-                                service: 'Mantenimiento 10,000 km',
-                                status: 'En Diagnóstico',
-                                statusColor: ShiftIQColors.secondaryTeal,
-                              ),
-                              const Divider(height: 12),
-                              _buildOrderPreviewItem(
-                                code: 'OT-2026-0041',
-                                vehicle: 'Hyundai Tucson (AJ-4421)',
-                                service: 'Cambio de Frenos y Sensores',
-                                status: 'En Proceso',
-                                statusColor: ShiftIQColors.primaryBlue,
-                              ),
+                              if (_viewModel.recentWorkOrders.isEmpty) ...[
+                                const Divider(height: 12),
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 14),
+                                  child: Center(
+                                    child: Text(
+                                      'No hay órdenes de trabajo activas en esta sede.',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFF64748B),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ] else ...[
+                                for (var i = 0; i < _viewModel.recentWorkOrders.length; i++) ...[
+                                  const Divider(height: 12),
+                                  _buildOrderPreviewItem(
+                                    code: _viewModel.recentWorkOrders[i].formattedNumber.isNotEmpty
+                                        ? _viewModel.recentWorkOrders[i].formattedNumber
+                                        : 'OT-${_viewModel.recentWorkOrders[i].internalNumber}',
+                                    vehicle: '${_viewModel.recentWorkOrders[i].vehicleModel} (${_viewModel.recentWorkOrders[i].vehiclePlate})',
+                                    service: _viewModel.recentWorkOrders[i].diagnosticSummary.isNotEmpty
+                                        ? _viewModel.recentWorkOrders[i].diagnosticSummary
+                                        : 'Revisión General',
+                                    status: _viewModel.recentWorkOrders[i].status.label,
+                                    statusColor: _viewModel.recentWorkOrders[i].status.color,
+                                  ),
+                                ],
+                              ],
                             ],
                           ),
                         ),

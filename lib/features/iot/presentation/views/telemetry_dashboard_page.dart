@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
+import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/domain/iot_domain.dart';
@@ -33,8 +34,8 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> {
     super.initState();
     _viewModel = widget.viewModel ?? getIt<TelemetryViewModel>();
     final session = getIt.isRegistered<SessionStorage>() ? getIt<SessionStorage>() : null;
-    _effectiveBranchId = widget.branchId ?? session?.activeBranchId ?? 'b-01-smp';
-    _branchName = session?.activeBranchName ?? 'Sede San Martín de Porres';
+    _effectiveBranchId = widget.branchId ?? session?.activeBranchId ?? ApiConstants.defaultBranchId;
+    _branchName = session?.activeBranchName ?? ApiConstants.defaultBranchName;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _viewModel.loadDtcAlerts(_effectiveBranchId);

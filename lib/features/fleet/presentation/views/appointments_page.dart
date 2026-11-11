@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
+import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/aggregates/appointment.dart';
@@ -35,8 +36,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     super.initState();
     _viewModel = widget.viewModel ?? getIt<AppointmentsViewModel>();
     final session = getIt.isRegistered<SessionStorage>() ? getIt<SessionStorage>() : null;
-    _effectiveBranchId = widget.branchId ?? session?.activeBranchId ?? 'b-01-smp';
-    _branchName = session?.activeBranchName ?? 'Sede San Martín de Porres';
+    _effectiveBranchId = widget.branchId ?? session?.activeBranchId ?? ApiConstants.defaultBranchId;
+    _branchName = session?.activeBranchName ?? ApiConstants.defaultBranchName;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _viewModel.loadAppointments(_effectiveBranchId);
@@ -324,6 +325,7 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'fab_appointments',
         onPressed: _openCreateAppointment,
         icon: const Icon(Icons.add),
         label: const Text('Nueva Cita'),

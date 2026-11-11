@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/application/operations_application.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
@@ -28,14 +29,14 @@ class WorkOrdersViewModel extends ChangeNotifier {
   String _activeBranchId = '';
   String get activeBranchId => _activeBranchId;
 
-  String _activeBranchName = 'Sede Principal';
+  String _activeBranchName = ApiConstants.defaultBranchName;
   String get activeBranchName => _activeBranchName;
 
   Future<void> init() async {
-    _activeBranchId = await sessionStorage.getActiveBranchId() ?? 'b-01-smp';
+    _activeBranchId = await sessionStorage.getActiveBranchId() ?? ApiConstants.defaultBranchId;
     _activeBranchName =
         await sessionStorage.getActiveBranchName() ??
-        'Sede Central - San Martín de Porres';
+        ApiConstants.defaultBranchName;
     notifyListeners();
     await loadOrders();
   }
