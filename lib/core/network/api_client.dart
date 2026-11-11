@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -74,6 +75,10 @@ class ApiClient {
       return _processResponse(response);
     } on SocketException catch (e) {
       throw NetworkException(details: e.message);
+    } on TimeoutException {
+      throw NetworkException(
+        message: 'Tiempo de espera agotado: el servidor en Render está iniciando. Por favor reintenta.',
+      );
     } on AppException {
       rethrow;
     } catch (e) {
@@ -100,6 +105,10 @@ class ApiClient {
       return _processResponse(response);
     } on SocketException catch (e) {
       throw NetworkException(details: e.message);
+    } on TimeoutException {
+      throw NetworkException(
+        message: 'Tiempo de espera agotado: el servidor en Render está iniciando. Por favor reintenta.',
+      );
     } on AppException {
       rethrow;
     } catch (e) {
@@ -126,6 +135,10 @@ class ApiClient {
       return _processResponse(response);
     } on SocketException catch (e) {
       throw NetworkException(details: e.message);
+    } on TimeoutException {
+      throw NetworkException(
+        message: 'Tiempo de espera agotado: el servidor en Render está iniciando. Por favor reintenta.',
+      );
     } on AppException {
       rethrow;
     } catch (e) {
@@ -152,6 +165,10 @@ class ApiClient {
       return _processResponse(response);
     } on SocketException catch (e) {
       throw NetworkException(details: e.message);
+    } on TimeoutException {
+      throw NetworkException(
+        message: 'Tiempo de espera agotado: el servidor en Render está iniciando. Por favor reintenta.',
+      );
     } on AppException {
       rethrow;
     } catch (e) {
@@ -178,6 +195,10 @@ class ApiClient {
       return _processResponse(response);
     } on SocketException catch (e) {
       throw NetworkException(details: e.message);
+    } on TimeoutException {
+      throw NetworkException(
+        message: 'Tiempo de espera agotado: el servidor en Render está iniciando. Por favor reintenta.',
+      );
     } on AppException {
       rethrow;
     } catch (e) {
@@ -225,6 +246,10 @@ class ApiClient {
       return _processResponse(response);
     } on SocketException catch (e) {
       throw NetworkException(details: e.message);
+    } on TimeoutException {
+      throw NetworkException(
+        message: 'Tiempo de espera agotado: el servidor en Render está iniciando. Por favor reintenta.',
+      );
     } on AppException {
       rethrow;
     } catch (e) {

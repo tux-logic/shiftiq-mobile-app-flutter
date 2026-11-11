@@ -33,6 +33,7 @@ import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/p
 import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/workshop_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/repositories/core_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_branch_financial_analytics.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_branch_summary.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_network_analytics_summary.dart';
@@ -248,6 +249,14 @@ void setupDependencies() {
     ),
   );
 
+  getIt.registerFactory<ProfileViewModel>(
+    () => ProfileViewModel(
+      profileApi: getIt<ProfileApi>(),
+      employeeRegistrationApi: getIt<EmployeeRegistrationApi>(),
+      sessionStorage: getIt<SessionStorage>(),
+    ),
+  );
+
   // 4. Analytics Context (KPIs & Executive Dashboard)
   getIt.registerLazySingleton<AnalyticsApi>(
     () => AnalyticsApi(apiClient: getIt<ApiClient>()),
@@ -276,6 +285,7 @@ void setupDependencies() {
   getIt.registerFactory<DashboardViewModel>(
     () => DashboardViewModel(
       getBranchSummaryUseCase: getIt<GetBranchSummaryUseCase>(),
+      manageWorkOrders: getIt<ManageWorkOrders>(),
       sessionStorage: getIt<SessionStorage>(),
     ),
   );

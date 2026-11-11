@@ -8,8 +8,14 @@ class ApiConstants {
     defaultValue: 'https://shiftiq-platform.onrender.com',
   );
 
-  /// Timeout duration for HTTP requests (15 seconds)
-  static const Duration requestTimeout = Duration(seconds: 15);
+  /// Timeout duration for HTTP requests (extended for Render free-tier cold starts)
+  static const Duration requestTimeout = Duration(seconds: 45);
+
+  /// Default active branch UUIDs on Render production
+  static const String defaultBranchId = 'f130ca7c-5492-43ed-8d83-e98e2e69ece4';
+  static const String defaultBranchName = 'Sede Principal Wagner Motors';
+  static const String surquilloBranchId = 'acf71fc5-4be0-4aed-b82d-55b7faf901f8';
+  static const String surquilloBranchName = 'Sede Principal Surquillo';
 
   // IAM Context
   static const String authSessions = '/api/v1/authentication/sessions';
