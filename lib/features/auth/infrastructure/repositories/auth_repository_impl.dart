@@ -36,61 +36,26 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
   }) async {
-    try {
-      final dto = await authApi.signIn(email: email, password: password);
-      final session = dto.toDomain();
+    final dto = await authApi.signIn(email: email, password: password);
+    final session = dto.toDomain();
 
-      await sessionStorage.saveSession(
-        accessToken: session.token,
-        refreshToken: session.refreshToken,
+    await sessionStorage.saveSession(
+      accessToken: session.token,
+      refreshToken: session.refreshToken,
+      userId: session.id,
+      username: session.username,
+      roles: session.roles,
+    );
+
+    eventBus.emit(
+      UserLoggedInEvent(
         userId: session.id,
         username: session.username,
         roles: session.roles,
-      );
+      ),
+    );
 
-      eventBus.emit(
-        UserLoggedInEvent(
-          userId: session.id,
-          username: session.username,
-          roles: session.roles,
-        ),
-      );
-
-      return session;
-    } catch (e) {
-      // Evaluation fallback for demo workshop credentials when server is offline
-      final normalizedEmail = email.trim().toLowerCase();
-      if ((normalizedEmail == 'admin@castromotors.pe' ||
-              normalizedEmail == 'felipe.taller@castromotors.pe') &&
-          password == 'Password123!') {
-        const demoSession = UserSession(
-          id: 'e4f8b2d1-9a7c-4e8b-8c2d-1a2b3c4d5e6f',
-          username: 'felipe.taller@castromotors.pe',
-          token: 'demo-jwt-token-felipe-castro-motors',
-          refreshToken: 'demo-refresh-token-castro-motors',
-          roles: ['ROLE_OWNER'],
-        );
-
-        await sessionStorage.saveSession(
-          accessToken: demoSession.token,
-          refreshToken: demoSession.refreshToken,
-          userId: demoSession.id,
-          username: demoSession.username,
-          roles: demoSession.roles,
-        );
-
-        eventBus.emit(
-          UserLoggedInEvent(
-            userId: demoSession.id,
-            username: demoSession.username,
-            roles: demoSession.roles,
-          ),
-        );
-
-        return demoSession;
-      }
-      rethrow;
-    }
+    return session;
   }
 
   @override

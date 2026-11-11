@@ -178,7 +178,7 @@ class _LoginPageState extends State<LoginPage> {
                         keyboardType: TextInputType.emailAddress,
                         autocorrect: false,
                         decoration: const InputDecoration(
-                          hintText: 'ej. felipe.taller@castromotors.pe',
+                          hintText: 'ej. allan.wagner.107@gmail.com',
                           prefixIcon: Icon(Icons.email_outlined),
                         ),
                         validator: (value) {
@@ -250,7 +250,64 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
+
+                      // Quick Account Autofill Chips
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: ShiftIQColors.primaryBlue.withAlpha(12),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: ShiftIQColors.primaryBlue.withAlpha(40),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Cuentas de Acceso Rápido (Render):',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: ShiftIQColors.primaryBlue,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 6,
+                              children: [
+                                ActionChip(
+                                  avatar: const Icon(Icons.build, size: 14, color: Colors.white),
+                                  label: const Text('Mecánico: Alan Mamani'),
+                                  backgroundColor: ShiftIQColors.primaryBlue,
+                                  labelStyle: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                                  onPressed: () {
+                                    setState(() {
+                                      _emailController.text = 'aldospeedcuber@gmail.com';
+                                      _passwordController.text = 'ShiftIQ2026!';
+                                    });
+                                  },
+                                ),
+                                ActionChip(
+                                  avatar: const Icon(Icons.business, size: 14, color: ShiftIQColors.graphiteText),
+                                  label: const Text('Dueño: Allan Wagner'),
+                                  backgroundColor: Colors.white,
+                                  labelStyle: const TextStyle(color: ShiftIQColors.graphiteText, fontSize: 11, fontWeight: FontWeight.w600),
+                                  onPressed: () {
+                                    setState(() {
+                                      _emailController.text = 'allan.wagner.107@gmail.com';
+                                      _passwordController.text = '12345678A';
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
 
                       // Submit Button
                       ElevatedButton(

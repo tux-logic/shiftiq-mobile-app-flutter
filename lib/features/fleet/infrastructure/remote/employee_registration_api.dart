@@ -100,6 +100,9 @@ class EmployeeRegistrationApi {
     if (response is List) {
       return response.cast<Map<String, dynamic>>();
     }
+    if (response is Map<String, dynamic>) {
+      return [response];
+    }
     return [];
   }
 
@@ -148,6 +151,9 @@ class EmployeeRegistrationApi {
     );
     if (response is List) {
       return response.cast<Map<String, dynamic>>();
+    }
+    if (response is Map<String, dynamic>) {
+      return [response];
     }
     return [];
   }

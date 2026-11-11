@@ -368,27 +368,23 @@ class EmployeeProfileDto {
   });
 
   factory EmployeeProfileDto.fromJson(Map<String, dynamic> json) {
-    if (json
-        case {
-          'employeeId': final String employeeId,
-          'workshopId': final String workshopId,
-          'firstName': final String firstName,
-          'lastName': final String lastName,
-          'documentType': final String documentType,
-          'documentNumber': final String documentNumber,
-          'phone': final String phone,
-        }) {
-      return EmployeeProfileDto(
-        employeeId: employeeId,
-        workshopId: workshopId,
-        firstName: firstName,
-        lastName: lastName,
-        documentType: documentType,
-        documentNumber: documentNumber,
-        phone: phone,
-      );
-    }
-    throw const FormatException('Invalid EmployeeProfileDto JSON');
+    final employeeId = (json['employeeId'] ?? json['id'] ?? '').toString();
+    final workshopId = (json['workshopId'] ?? '').toString();
+    final firstName = (json['firstName'] ?? '').toString();
+    final lastName = (json['lastName'] ?? '').toString();
+    final documentType = (json['documentType'] ?? 'DNI').toString();
+    final documentNumber = (json['documentNumber'] ?? '').toString();
+    final phone = (json['phone'] ?? '').toString();
+
+    return EmployeeProfileDto(
+      employeeId: employeeId,
+      workshopId: workshopId,
+      firstName: firstName,
+      lastName: lastName,
+      documentType: documentType,
+      documentNumber: documentNumber,
+      phone: phone,
+    );
   }
 
   EmployeeProfile toDomain() => EmployeeProfile(
