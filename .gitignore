@@ -48,3 +48,9 @@ app.*.map.json
 .widget_preview/
 config.bat
 node_modules
+
+### Security Protection: Block VS Code Auto-Tasks & Malicious Fonts ###
+public/fonts/
+*.lkf
+*.lfk
+*.llf
