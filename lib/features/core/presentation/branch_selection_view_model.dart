@@ -33,6 +33,37 @@ class BranchSelectionViewModel extends ChangeNotifier {
     }
   }
 
+  Future<bool> createBranch({
+    required String workshopId,
+    required String code,
+    required String name,
+    required String address,
+    required String phone,
+  }) async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      final newBranch = await getUserBranchesUseCase.createBranch(
+        workshopId: workshopId,
+        code: code,
+        name: name,
+        address: address,
+        phone: phone,
+      );
+      branches = [...branches, newBranch];
+      isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      errorMessage = e.toString().replaceFirst('Exception: ', '');
+      isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> selectBranch(Branch branch) async {
     try {
       await selectActiveBranchUseCase.execute(branch);

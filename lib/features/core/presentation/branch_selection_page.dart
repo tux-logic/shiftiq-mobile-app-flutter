@@ -3,6 +3,7 @@ import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/main/presentation/main_page.dart';
 
 class BranchSelectionPage extends StatefulWidget {
@@ -40,6 +41,128 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
     }
   }
 
+  void _showCreateBranchModal(BuildContext context) {
+    final codeController = TextEditingController();
+    final nameController = TextEditingController();
+    final addressController = TextEditingController();
+    final phoneController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+          left: 20,
+          right: 20,
+          top: 20,
+        ),
+        child: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Registrar Nueva Sede',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: ShiftIQColors.graphiteText,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre de la Sede',
+                  hintText: 'ej. Sede Miraflores Pro',
+                  prefixIcon: Icon(Icons.store),
+                ),
+                validator: (v) => v == null || v.trim().isEmpty ? 'Requerido' : null,
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: codeController,
+                decoration: const InputDecoration(
+                  labelText: 'Código de Sede',
+                  hintText: 'ej. MIRA-01',
+                  prefixIcon: Icon(Icons.qr_code),
+                ),
+                validator: (v) => v == null || v.trim().isEmpty ? 'Requerido' : null,
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: addressController,
+                decoration: const InputDecoration(
+                  labelText: 'Dirección física',
+                  hintText: 'ej. Av. Benavides 1234, Lima',
+                  prefixIcon: Icon(Icons.location_on_outlined),
+                ),
+                validator: (v) => v == null || v.trim().isEmpty ? 'Requerido' : null,
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: phoneController,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(
+                  labelText: 'Teléfono',
+                  hintText: 'ej. +51987654321',
+                  prefixIcon: Icon(Icons.phone_outlined),
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  if (!formKey.currentState!.validate()) return;
+                  final messenger = ScaffoldMessenger.of(context);
+                  Navigator.pop(ctx);
+                  final success = await _viewModel.createBranch(
+                    workshopId: _viewModel.branches.isNotEmpty
+                        ? _viewModel.branches.first.workshopId
+                        : '99abb52d-523e-47dc-a53d-e442899aca4b',
+                    code: codeController.text.trim().toUpperCase(),
+                    name: nameController.text.trim(),
+                    address: addressController.text.trim(),
+                    phone: phoneController.text.trim(),
+                  );
+                  if (success && mounted) {
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Sede creada exitosamente en Render'),
+                        backgroundColor: ShiftIQColors.preventiveGreen,
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ShiftIQColors.primaryBlue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: const Text('GUARDAR SEDE EN BACKEND'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,6 +172,30 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
         backgroundColor: ShiftIQColors.primaryBlue,
         foregroundColor: Colors.white,
         automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_business_outlined),
+            tooltip: 'Nueva Sede',
+            onPressed: () => _showCreateBranchModal(context),
+          ),
+          IconButton(
+            icon: const Icon(Icons.person_outline),
+            tooltip: 'Mi Perfil / Cerrar Sesión',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ProfilePage()),
+              );
+            },
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'fab_add_branch',
+        onPressed: () => _showCreateBranchModal(context),
+        icon: const Icon(Icons.add),
+        label: const Text('Nueva Sede'),
+        backgroundColor: ShiftIQColors.primaryBlue,
+        foregroundColor: Colors.white,
       ),
       body: SafeArea(
         child: ListenableBuilder(
