@@ -97,6 +97,9 @@ final getIt = GetIt.instance;
 
 /// Global Dependency Injection registry following easyrecipe architecture
 void setupDependencies() {
+  if (getIt.isRegistered<AppDatabase>()) {
+    return;
+  }
   // 1. Core Singletons
   getIt.registerLazySingleton<AppDatabase>(() => AppDatabase());
 

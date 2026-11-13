@@ -15,6 +15,7 @@ class SessionStorage {
   String? _activeWorkshopId;
   String? _activeBranchId;
   String? _activeBranchName;
+  String? _savedLocale;
 
   SessionStorage({this.appDatabase});
 
@@ -27,6 +28,7 @@ class SessionStorage {
   static const String _keyWorkshopId = 'auth_workshop_id';
   static const String _keyBranchId = 'auth_branch_id';
   static const String _keyBranchName = 'auth_branch_name';
+  static const String _keySavedLocale = 'app_saved_locale';
 
   /// Initializes in-memory cache from persistent SQLite database
   Future<void> initialize() async {
@@ -61,6 +63,9 @@ class SessionStorage {
             break;
           case _keyBranchName:
             _activeBranchName = value;
+            break;
+          case _keySavedLocale:
+            _savedLocale = value;
             break;
         }
       }
@@ -98,9 +103,15 @@ class SessionStorage {
   String? get activeWorkshopId => _activeWorkshopId;
   String? get activeBranchId => _activeBranchId;
   String? get activeBranchName => _activeBranchName;
+  String? get savedLocale => _savedLocale;
 
   bool get isAuthenticated => _accessToken != null && _accessToken!.isNotEmpty;
   bool get hasActiveBranch => _activeBranchId != null && _activeBranchId!.isNotEmpty;
+
+  Future<void> saveLocale(String localeCode) async {
+    _savedLocale = localeCode;
+    await _persistSetting(_keySavedLocale, localeCode);
+  }
 
   Future<void> saveSession({
     required String accessToken,

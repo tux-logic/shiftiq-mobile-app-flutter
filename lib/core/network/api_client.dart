@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shiftiq_mobile_app_flutter/core/domain/event/domain_event.dart';
 import 'package:shiftiq_mobile_app_flutter/core/domain/event/domain_event_bus.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/network/app_exception.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
@@ -29,6 +30,7 @@ class ApiClient {
     final headers = <String, String>{
       HttpHeaders.contentTypeHeader: 'application/json',
       HttpHeaders.acceptHeader: 'application/json',
+      HttpHeaders.acceptLanguageHeader: appLocaleNotifier.value.languageCode,
     };
 
     if (token != null && token.isNotEmpty) {
