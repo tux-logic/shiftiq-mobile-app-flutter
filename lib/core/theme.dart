@@ -140,7 +140,6 @@ class MaterialTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: colorScheme.primary,
           side: BorderSide(color: colorScheme.primary, width: 1.5),
-          minimumSize: const Size.fromHeight(48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
