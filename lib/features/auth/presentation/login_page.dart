@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_logo.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_page.dart';
 
@@ -55,6 +57,7 @@ class _LoginPageState extends State<LoginPage> {
               listenable: widget.viewModel,
               builder: (context, _) {
                 final vm = widget.viewModel;
+                final loc = AppLocalizations.of(context);
 
                 return Form(
                   key: _formKey,
@@ -63,68 +66,10 @@ class _LoginPageState extends State<LoginPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // ShiftIQ Workshop Logo & Header
-                      Center(
-                        child: Container(
-                          width: 72,
-                          height: 72,
-                          decoration: BoxDecoration(
-                            color: ShiftIQColors.primaryBlue,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: ShiftIQColors.primaryBlue.withAlpha(50),
-                                blurRadius: 16,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.car_repair,
-                            color: Colors.white,
-                            size: 40,
-                          ),
-                        ),
+                      const Center(
+                        child: ShiftIqLogo(size: LogoSize.medium),
                       ),
-                      const SizedBox(height: 20),
-
-                      RichText(
-                        textAlign: TextAlign.center,
-                        text: const TextSpan(
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: ShiftIQColors.primaryBlue,
-                            letterSpacing: -0.5,
-                          ),
-                          children: [
-                            TextSpan(text: 'Shift'),
-                            TextSpan(
-                              text: 'IQ',
-                              style: TextStyle(
-                                color: ShiftIQColors.accentSkyBlue,
-                              ),
-                            ),
-                            TextSpan(
-                              text: ' Workshop',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w500,
-                                color: ShiftIQColors.graphiteText,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      const Text(
-                        'Gestión Inteligente de Talleres Automotrices',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF64748B),
-                        ),
-                      ),
-                      const SizedBox(height: 36),
+                      const SizedBox(height: 32),
 
                       // Error Banner
                       if (vm.errorMessage != null) ...[
@@ -164,9 +109,9 @@ class _LoginPageState extends State<LoginPage> {
                       ],
 
                       // Email Field
-                      const Text(
-                        'Correo Electrónico',
-                        style: TextStyle(
+                      Text(
+                        loc.translate('email'),
+                        style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
                           color: ShiftIQColors.graphiteText,
@@ -174,12 +119,13 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 8),
                       TextFormField(
+                        key: const Key('login_email_input'),
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         autocorrect: false,
-                        decoration: const InputDecoration(
-                          hintText: 'ej. allan.wagner.107@gmail.com',
-                          prefixIcon: Icon(Icons.email_outlined),
+                        decoration: InputDecoration(
+                          hintText: loc.translate('email_hint'),
+                          prefixIcon: const Icon(Icons.email_outlined),
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
@@ -194,9 +140,9 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 20),
 
                       // Password Field
-                      const Text(
-                        'Contraseña',
-                        style: TextStyle(
+                      Text(
+                        loc.translate('password'),
+                        style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
                           color: ShiftIQColors.graphiteText,
@@ -204,10 +150,11 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 8),
                       TextFormField(
+                        key: const Key('login_password_input'),
                         controller: _passwordController,
                         obscureText: vm.obscurePassword,
                         decoration: InputDecoration(
-                          hintText: '••••••••••••',
+                          hintText: loc.translate('password_hint'),
                           prefixIcon: const Icon(Icons.lock_outline),
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -240,9 +187,9 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             );
                           },
-                          child: const Text(
-                            '¿Olvidaste tu contraseña?',
-                            style: TextStyle(
+                          child: Text(
+                            loc.translate('forgot_password'),
+                            style: const TextStyle(
                               color: ShiftIQColors.primaryBlue,
                               fontWeight: FontWeight.w600,
                               fontSize: 13,
@@ -252,7 +199,8 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Quick Account Autofill Chips
+                      // Quick Account Autofill Chips (Comentado según solicitud)
+                      /*
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -265,9 +213,9 @@ class _LoginPageState extends State<LoginPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Cuentas de Acceso Rápido (Render):',
-                              style: TextStyle(
+                            Text(
+                              loc.translate('quick_access_title'),
+                              style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                                 color: ShiftIQColors.primaryBlue,
@@ -279,25 +227,45 @@ class _LoginPageState extends State<LoginPage> {
                               runSpacing: 6,
                               children: [
                                 ActionChip(
-                                  avatar: const Icon(Icons.build, size: 14, color: Colors.white),
-                                  label: const Text('Mecánico: Alan Mamani'),
+                                  key: const Key('chip_mechanic'),
+                                  avatar: const Icon(
+                                    Icons.build,
+                                    size: 14,
+                                    color: Colors.white,
+                                  ),
+                                  label: Text(loc.translate('mechanic_chip')),
                                   backgroundColor: ShiftIQColors.primaryBlue,
-                                  labelStyle: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                                  labelStyle: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                   onPressed: () {
                                     setState(() {
-                                      _emailController.text = 'aldospeedcuber@gmail.com';
+                                      _emailController.text =
+                                          'aldospeedcuber@gmail.com';
                                       _passwordController.text = 'ShiftIQ2026!';
                                     });
                                   },
                                 ),
                                 ActionChip(
-                                  avatar: const Icon(Icons.business, size: 14, color: ShiftIQColors.graphiteText),
-                                  label: const Text('Dueño: Allan Wagner'),
+                                  key: const Key('chip_owner'),
+                                  avatar: const Icon(
+                                    Icons.business,
+                                    size: 14,
+                                    color: ShiftIQColors.graphiteText,
+                                  ),
+                                  label: Text(loc.translate('owner_chip')),
                                   backgroundColor: Colors.white,
-                                  labelStyle: const TextStyle(color: ShiftIQColors.graphiteText, fontSize: 11, fontWeight: FontWeight.w600),
+                                  labelStyle: const TextStyle(
+                                    color: ShiftIQColors.graphiteText,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                   onPressed: () {
                                     setState(() {
-                                      _emailController.text = 'allan.wagner.107@gmail.com';
+                                      _emailController.text =
+                                          'allan.wagner.107@gmail.com';
                                       _passwordController.text = '12345678A';
                                     });
                                   },
@@ -308,9 +276,11 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       const SizedBox(height: 20),
+                      */
 
                       // Submit Button
                       ElevatedButton(
+                        key: const Key('login_submit_button'),
                         onPressed: vm.isLoading ? null : _handleLogin,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: ShiftIQColors.primaryBlue,
@@ -329,9 +299,9 @@ class _LoginPageState extends State<LoginPage> {
                                   color: Colors.white,
                                 ),
                               )
-                            : const Text(
-                                'INGRESAR AL TALLER',
-                                style: TextStyle(
+                            : Text(
+                                loc.translate('login_btn'),
+                                style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: 0.5,

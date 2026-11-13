@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
+import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
@@ -27,6 +29,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _showEditProfileBottomSheet() {
+    final loc = AppLocalizations.of(context);
     final emp = _viewModel.profileContext?.employee;
     final owner = _viewModel.profileContext?.owner;
 
@@ -67,9 +70,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Editar Datos Personales',
-                        style: TextStyle(
+                      Text(
+                        loc.translate('edit_profile'),
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: ShiftIQColors.primaryBlue,
@@ -92,7 +95,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   TextFormField(
                     controller: firstNameController,
                     decoration: InputDecoration(
-                      labelText: 'Nombres',
+                      labelText: loc.translate('first_name'),
                       prefixIcon: const Icon(Icons.person_outline),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -111,7 +114,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   TextFormField(
                     controller: lastNameController,
                     decoration: InputDecoration(
-                      labelText: 'Apellidos',
+                      labelText: loc.translate('last_name'),
                       prefixIcon: const Icon(Icons.badge_outlined),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -131,7 +134,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     controller: phoneController,
                     keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
-                      labelText: 'Teléfono Móvil',
+                      labelText: loc.translate('mobile_phone'),
                       prefixIcon: const Icon(Icons.phone_outlined),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -168,17 +171,18 @@ class _ProfilePageState extends State<ProfilePage> {
                                   content: Text(
                                     'Perfil actualizado en el backend Render con éxito.',
                                   ),
-                                  backgroundColor: ShiftIQColors.preventiveGreen,
+                                  backgroundColor:
+                                      ShiftIQColors.preventiveGreen,
                                 ),
                               );
                             } else {
                               messenger.showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    _viewModel.error ??
-                                        'Error al guardar en el servidor Render.',
+                                    _viewModel.error ?? 'Error al guardar en el servidor Render.',
                                   ),
-                                  backgroundColor: ShiftIQColors.severityCrimson,
+                                  backgroundColor:
+                                      ShiftIQColors.severityCrimson,
                                 ),
                               );
                             }
@@ -218,15 +222,16 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _confirmLogout() {
+    final loc = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Row(
+          title: Row(
             children: [
-              Icon(Icons.logout, color: ShiftIQColors.severityCrimson),
-              SizedBox(width: 8),
-              Text('Cerrar Sesión'),
+              const Icon(Icons.logout, color: ShiftIQColors.severityCrimson),
+              const SizedBox(width: 8),
+              Text(loc.translate('logout_dialog_title')),
             ],
           ),
           content: const Text(
@@ -235,9 +240,10 @@ class _ProfilePageState extends State<ProfilePage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('CANCELAR'),
+              child: Text(loc.translate('cancel_upper')),
             ),
             ElevatedButton(
+              key: const Key('btn_confirm_logout'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: ShiftIQColors.severityCrimson,
                 foregroundColor: Colors.white,
@@ -248,15 +254,14 @@ class _ProfilePageState extends State<ProfilePage> {
                 if (mounted) {
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(
-                      builder: (_) => LoginPage(
-                        viewModel: getIt<LoginViewModel>(),
-                      ),
+                      builder: (_) =>
+                          LoginPage(viewModel: getIt<LoginViewModel>()),
                     ),
                     (route) => false,
                   );
                 }
               },
-              child: const Text('CERRAR SESIÓN'),
+              child: Text(loc.translate('logout_upper')),
             ),
           ],
         );
@@ -270,17 +275,19 @@ class _ProfilePageState extends State<ProfilePage> {
       listenable: _viewModel,
       builder: (context, _) {
         final vm = _viewModel;
+        final loc = AppLocalizations.of(context);
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
           appBar: AppBar(
-            title: const Text(
-              'Mi Perfil de Taller',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            title: Text(
+              loc.translate('profile_title'),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             actions: [
               IconButton(
-                tooltip: 'Refrescar datos',
+                tooltip: AppLocalizations.of(context)
+                    .translate('tooltip_refresh'),
                 icon: const Icon(Icons.refresh),
                 onPressed: vm.isLoading ? null : vm.init,
               ),
@@ -350,7 +357,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: ShiftIQColors.primaryBlue.withAlpha(25),
+                                  color: ShiftIQColors.primaryBlue.withAlpha(
+                                    25,
+                                  ),
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
                                     color: ShiftIQColors.primaryBlue,
@@ -430,17 +439,21 @@ class _ProfilePageState extends State<ProfilePage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Row(
+                              Row(
                                 children: [
                                   Icon(
-                                    Icons.storefront_outlined,
+                                    vm.isOwner
+                                        ? Icons.business_outlined
+                                        : Icons.storefront_outlined,
                                     color: ShiftIQColors.primaryBlue,
                                     size: 20,
                                   ),
-                                  SizedBox(width: 8),
+                                  const SizedBox(width: 8),
                                   Text(
-                                    'Sede de Taller Asignada',
-                                    style: TextStyle(
+                                    vm.isOwner
+                                        ? 'Empresa y Taller Matriz (Dueño)'
+                                        : 'Sede de Taller Asignada',
+                                    style: const TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -448,21 +461,139 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ],
                               ),
                               const Divider(height: 24),
-                              _buildInfoRow('Sede Actual', vm.activeBranchName),
-                              const SizedBox(height: 12),
-                              _buildInfoRow(
-                                'Dirección',
-                                'Av. Tomas Marsano Nro. 890, Surquillo',
+                              if (vm.isOwner) ...[
+                                _buildInfoRow('Taller Matriz', 'Wagner Motors'),
+                                const SizedBox(height: 12),
+                                _buildInfoRow(
+                                  'Fundador / Propietario',
+                                  vm.displayName,
+                                ),
+                                const SizedBox(height: 12),
+                                _buildInfoRow('RUC Empresa', '20601234567'),
+                                const SizedBox(height: 12),
+                                _buildInfoRow(
+                                  'Sede Principal',
+                                  vm.activeBranchName,
+                                ),
+                                const SizedBox(height: 12),
+                                _buildInfoRow(
+                                  'Gobernanza',
+                                  'Multisede / Administración Total',
+                                ),
+                              ] else ...[
+                                _buildInfoRow(
+                                  'Sede Actual',
+                                  vm.activeBranchName,
+                                ),
+                                const SizedBox(height: 12),
+                                _buildInfoRow(
+                                  'Dirección',
+                                  'Av. Tomas Marsano Nro. 890, Surquillo',
+                                ),
+                                const SizedBox(height: 12),
+                                _buildInfoRow(
+                                  'Especialidad Técnica',
+                                  vm.specialtyName,
+                                ),
+                                const SizedBox(height: 12),
+                                _buildInfoRow(
+                                  'Salario Base Asignado',
+                                  'S/ ${vm.salary.toStringAsFixed(2)}',
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Language & Localization Settings Card
+                      Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(
+                            color: ShiftIQColors.borderSlate,
+                          ),
+                        ),
+                        color: Colors.white,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Row(
+                                children: [
+                                  Icon(
+                                    Icons.translate_outlined,
+                                    color: ShiftIQColors.primaryBlue,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Idioma de la Aplicación (i18n)',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 12),
-                              _buildInfoRow(
-                                'Especialidad',
-                                vm.specialtyName,
-                              ),
-                              const SizedBox(height: 12),
-                              _buildInfoRow(
-                                'Salario Base Asignado',
-                                'S/ ${vm.salary.toStringAsFixed(2)}',
+                              const Divider(height: 20),
+                              ValueListenableBuilder<Locale>(
+                                valueListenable: appLocaleNotifier,
+                                builder: (context, currentLocale, _) {
+                                  final isSpanish =
+                                      currentLocale.languageCode == 'es';
+                                  return Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: [
+                                      ChoiceChip(
+                                        avatar: const Text(
+                                          '🇵🇪',
+                                          style: TextStyle(fontSize: 14),
+                                        ),
+                                        label: Text(
+                                          loc.translate('spanish_pe'),
+                                        ),
+                                        selected: isSpanish,
+                                        selectedColor: ShiftIQColors.primaryBlue
+                                            .withAlpha(25),
+                                        onSelected: (selected) {
+                                          if (selected) {
+                                            appLocaleNotifier.value =
+                                                const Locale('es', 'PE');
+                                            getIt<SessionStorage>().saveLocale(
+                                              'es',
+                                            );
+                                          }
+                                        },
+                                      ),
+                                      ChoiceChip(
+                                        avatar: const Text(
+                                          '🇺🇸',
+                                          style: TextStyle(fontSize: 14),
+                                        ),
+                                        label: Text(
+                                          loc.translate('english_us'),
+                                        ),
+                                        selected: !isSpanish,
+                                        selectedColor: ShiftIQColors.primaryBlue
+                                            .withAlpha(25),
+                                        onSelected: (selected) {
+                                          if (selected) {
+                                            appLocaleNotifier.value =
+                                                const Locale('en', 'US');
+                                            getIt<SessionStorage>().saveLocale(
+                                              'en',
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
                               ),
                             ],
                           ),
@@ -472,6 +603,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                       // Edit Profile Button
                       ElevatedButton.icon(
+                        key: const Key('btn_edit_profile'),
                         onPressed: _showEditProfileBottomSheet,
                         icon: const Icon(Icons.edit_outlined),
                         label: const Text(
@@ -491,6 +623,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                       // Logout Button
                       OutlinedButton.icon(
+                        key: const Key('btn_logout'),
                         onPressed: _confirmLogout,
                         icon: const Icon(
                           Icons.logout,
@@ -526,16 +659,23 @@ class _ProfilePageState extends State<ProfilePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+        Flexible(
+          child: Text(
+            label,
+            style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+          ),
         ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: ShiftIQColors.graphiteText,
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: ShiftIQColors.graphiteText,
+            ),
           ),
         ),
       ],

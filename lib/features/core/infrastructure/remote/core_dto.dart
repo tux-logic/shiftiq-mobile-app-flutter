@@ -19,25 +19,15 @@ class WorkshopDto {
   });
 
   factory WorkshopDto.fromJson(Map<String, dynamic> json) {
-    if (json
-        case {
-          'id': final String id,
-          'ownerId': final String ownerId,
-          'businessName': final String businessName,
-          'brandName': final String brandName,
-          'taxId': final String taxId,
-        }) {
-      final interval = (json['mileageIntervalConfig'] as num?)?.toInt() ?? 5000;
-      return WorkshopDto(
-        id: id,
-        ownerId: ownerId,
-        businessName: businessName,
-        brandName: brandName,
-        taxId: taxId,
-        mileageIntervalConfig: interval,
-      );
-    }
-    throw const FormatException('Invalid or missing fields in WorkshopDto JSON');
+    return WorkshopDto(
+      id: (json['id'] ?? '').toString(),
+      ownerId: (json['ownerId'] ?? '').toString(),
+      businessName: (json['businessName'] ?? json['name'] ?? '').toString(),
+      brandName: (json['brandName'] ?? '').toString(),
+      taxId: (json['taxId'] ?? json['ruc'] ?? '').toString(),
+      mileageIntervalConfig:
+          (json['mileageIntervalConfig'] as num?)?.toInt() ?? 5000,
+    );
   }
 
   Workshop toDomain() {
@@ -313,27 +303,15 @@ class OwnerProfileDto {
   });
 
   factory OwnerProfileDto.fromJson(Map<String, dynamic> json) {
-    if (json
-        case {
-          'id': final String id,
-          'userId': final String userId,
-          'firstName': final String firstName,
-          'lastName': final String lastName,
-          'documentType': final String documentType,
-          'documentNumber': final String documentNumber,
-          'phone': final String phone,
-        }) {
-      return OwnerProfileDto(
-        id: id,
-        userId: userId,
-        firstName: firstName,
-        lastName: lastName,
-        documentType: documentType,
-        documentNumber: documentNumber,
-        phone: phone,
-      );
-    }
-    throw const FormatException('Invalid OwnerProfileDto JSON');
+    return OwnerProfileDto(
+      id: (json['id'] ?? json['ownerId'] ?? '').toString(),
+      userId: (json['userId'] ?? '').toString(),
+      firstName: (json['firstName'] ?? '').toString(),
+      lastName: (json['lastName'] ?? '').toString(),
+      documentType: (json['documentType'] ?? 'DNI').toString(),
+      documentNumber: (json['documentNumber'] ?? '').toString(),
+      phone: (json['phone'] ?? '').toString(),
+    );
   }
 
   OwnerProfile toDomain() => OwnerProfile(
@@ -423,29 +401,17 @@ class CustomerProfileDto {
   });
 
   factory CustomerProfileDto.fromJson(Map<String, dynamic> json) {
-    if (json
-        case {
-          'customerId': final String customerId,
-          'userId': final String userId,
-          'firstName': final String firstName,
-          'lastName': final String lastName,
-          'documentType': final String documentType,
-          'documentNumber': final String documentNumber,
-          'phone': final String phone,
-        }) {
-      return CustomerProfileDto(
-        customerId: customerId,
-        userId: userId,
-        isCorporate: json['isCorporate'] as bool? ?? false,
-        firstName: firstName,
-        lastName: lastName,
-        businessName: json['businessName'] as String?,
-        documentType: documentType,
-        documentNumber: documentNumber,
-        phone: phone,
-      );
-    }
-    throw const FormatException('Invalid CustomerProfileDto JSON');
+    return CustomerProfileDto(
+      customerId: (json['customerId'] ?? json['id'] ?? '').toString(),
+      userId: (json['userId'] ?? '').toString(),
+      isCorporate: json['isCorporate'] as bool? ?? false,
+      firstName: (json['firstName'] ?? '').toString(),
+      lastName: (json['lastName'] ?? '').toString(),
+      businessName: json['businessName'] as String?,
+      documentType: (json['documentType'] ?? 'DNI').toString(),
+      documentNumber: (json['documentNumber'] ?? '').toString(),
+      phone: (json['phone'] ?? '').toString(),
+    );
   }
 
   CustomerProfile toDomain() => CustomerProfile(

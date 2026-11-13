@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
+import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/controllers/dashboard_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/dtc_alert_banner.dart';
@@ -8,6 +10,8 @@ import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widge
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/billing_dashboard_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/controllers/appointments_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/views/customer_directory_page.dart';
 
 class DashboardPage extends StatefulWidget {
   final DashboardViewModel? viewModel;
@@ -47,6 +51,8 @@ class _DashboardPageState extends State<DashboardPage> {
       listenable: _viewModel,
       builder: (context, _) {
         final viewModel = _viewModel;
+        final isOwner = getIt<SessionStorage>().roles.contains('ROLE_OWNER') ||
+            getIt<SessionStorage>().roles.contains('OWNER');
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
@@ -68,12 +74,15 @@ class _DashboardPageState extends State<DashboardPage> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          viewModel.activeBranchName,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                        Flexible(
+                          child: Text(
+                            viewModel.activeBranchName,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 4),
@@ -86,9 +95,12 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                   ),
                 ),
-                const Text(
-                  'Panel Ejecutivo del Taller · Castro Motors',
-                  style: TextStyle(
+                Text(
+                  isOwner
+                      ? AppLocalizations.of(context).translate('executive_dashboard')
+                      : AppLocalizations.of(context).translate('operational_dashboard'),
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
                     fontSize: 11,
                     color: Colors.white70,
                     fontWeight: FontWeight.w400,
@@ -98,18 +110,33 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
             actions: [
               IconButton(
-                tooltip: 'Facturación y Cotizaciones SUNAT',
-                icon: const Icon(Icons.receipt_long),
+                tooltip: AppLocalizations.of(context).translate('tooltip_customer_directory'),
+                icon: const Icon(Icons.people_alt_outlined),
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => const BillingDashboardPage(),
+                      builder: (_) => CustomerDirectoryPage(
+                        branchId: viewModel.activeBranchId,
+                        viewModel: getIt<AppointmentsViewModel>(),
+                      ),
                     ),
                   );
                 },
               ),
+              if (isOwner)
+                IconButton(
+                  tooltip: AppLocalizations.of(context).translate('tooltip_billing'),
+                  icon: const Icon(Icons.receipt_long),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const BillingDashboardPage(),
+                      ),
+                    );
+                  },
+                ),
               IconButton(
-                tooltip: 'Cambiar de Sede',
+                tooltip: AppLocalizations.of(context).translate('tooltip_change_branch'),
                 icon: const Icon(Icons.storefront_outlined),
                 onPressed: () {
                   Navigator.of(context).push(
@@ -120,12 +147,12 @@ class _DashboardPageState extends State<DashboardPage> {
                 },
               ),
               IconButton(
-                tooltip: 'Refrescar KPIs',
+                tooltip: AppLocalizations.of(context).translate('tooltip_refresh_kpis'),
                 icon: const Icon(Icons.refresh),
                 onPressed: viewModel.isLoading ? null : viewModel.refresh,
               ),
               IconButton(
-                tooltip: 'Mi Perfil de Taller / Cerrar Sesión',
+                tooltip: AppLocalizations.of(context).translate('tooltip_profile'),
                 icon: const CircleAvatar(
                   radius: 14,
                   backgroundColor: Colors.white24,
@@ -221,40 +248,50 @@ class _DashboardPageState extends State<DashboardPage> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           children: [
+                            if (isOwner)
+                              KpiMetricCard(
+                                title: AppLocalizations.of(context).translate('month_revenue'),
+                                value: viewModel.summary?.formattedRevenue ?? 'S/ 0.00',
+                                subtitle: AppLocalizations.of(context).translate('month_revenue_sub'),
+                                icon: Icons.trending_up,
+                                accentColor: ShiftIQColors.preventiveGreen,
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const BillingDashboardPage(),
+                                    ),
+                                  );
+                                },
+                              )
+                            else
+                              KpiMetricCard(
+                                title: AppLocalizations.of(context).translate('bays_in_service'),
+                                value: AppLocalizations.of(context).translate('bays_active_label'),
+                                subtitle: AppLocalizations.of(context).translate('bays_active_subtitle'),
+                                icon: Icons.car_repair_outlined,
+                                accentColor: ShiftIQColors.preventiveGreen,
+                                onTap: widget.onNavigateToOrders,
+                              ),
                             KpiMetricCard(
-                              title: 'Facturación Mes',
-                              value: viewModel.summary?.formattedRevenue ?? 'S/ 0.00',
-                              subtitle: '+14% vs mes anterior',
-                              icon: Icons.trending_up,
-                              accentColor: ShiftIQColors.preventiveGreen,
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const BillingDashboardPage(),
-                                  ),
-                                );
-                              },
-                            ),
-                            KpiMetricCard(
-                              title: 'Órdenes Trabajo',
+                              title: AppLocalizations.of(context).translate('work_orders_kpi'),
                               value: '${viewModel.summary?.completedWorkOrdersCount ?? 0} OTs',
-                              subtitle: '4 en bahía activa',
+                              subtitle: '4 ${AppLocalizations.of(context).translate('active_bay_sub')}',
                               icon: Icons.build_circle_outlined,
                               accentColor: ShiftIQColors.primaryBlue,
                               onTap: widget.onNavigateToOrders,
                             ),
                             KpiMetricCard(
-                              title: 'Citas de Hoy',
-                              value: '${viewModel.summary?.totalAppointmentsCount ?? 0} Citas',
-                              subtitle: '2 citas pendientes',
+                              title: AppLocalizations.of(context).translate('today_appointments_kpi'),
+                              value: '${viewModel.summary?.totalAppointmentsCount ?? 0} ${AppLocalizations.of(context).translate('appointments_tab')}',
+                              subtitle: '2 ${AppLocalizations.of(context).translate('pending_appointments_sub')}',
                               icon: Icons.calendar_today_outlined,
                               accentColor: ShiftIQColors.secondaryTeal,
                               onTap: widget.onNavigateToAppointments,
                             ),
                             KpiMetricCard(
-                              title: 'Stock Crítico',
+                              title: AppLocalizations.of(context).translate('critical_stock_kpi'),
                               value: '${viewModel.summary?.lowStockAlertsCount ?? 0} Lotes',
-                              subtitle: 'Reponer hoy',
+                              subtitle: AppLocalizations.of(context).translate('reorder_today'),
                               icon: Icons.warning_amber_rounded,
                               accentColor: ShiftIQColors.severityAmber,
                               onTap: widget.onNavigateToInventory,

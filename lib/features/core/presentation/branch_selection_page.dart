@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
+import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_view_model.dart';
@@ -28,9 +30,10 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
   void _onBranchSelected(Branch branch) async {
     final success = await _viewModel.selectBranch(branch);
     if (success && mounted) {
+      final loc = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Sede seleccionada: ${branch.name}'),
+          content: Text('${loc.translate('branch_selected')}: ${branch.name}'),
           backgroundColor: ShiftIQColors.preventiveGreen,
         ),
       );
@@ -42,6 +45,7 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
   }
 
   void _showCreateBranchModal(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final codeController = TextEditingController();
     final nameController = TextEditingController();
     final addressController = TextEditingController();
@@ -88,30 +92,30 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre de la Sede',
-                  hintText: 'ej. Sede Miraflores Pro',
-                  prefixIcon: Icon(Icons.store),
+                decoration: InputDecoration(
+                  labelText: loc.translate('branch_name'),
+                  hintText: loc.translate('branch_name_hint'),
+                  prefixIcon: const Icon(Icons.store),
                 ),
                 validator: (v) => v == null || v.trim().isEmpty ? 'Requerido' : null,
               ),
               const SizedBox(height: 10),
               TextFormField(
                 controller: codeController,
-                decoration: const InputDecoration(
-                  labelText: 'Código de Sede',
-                  hintText: 'ej. MIRA-01',
-                  prefixIcon: Icon(Icons.qr_code),
+                decoration: InputDecoration(
+                  labelText: loc.translate('branch_code'),
+                  hintText: loc.translate('branch_code_hint'),
+                  prefixIcon: const Icon(Icons.qr_code),
                 ),
                 validator: (v) => v == null || v.trim().isEmpty ? 'Requerido' : null,
               ),
               const SizedBox(height: 10),
               TextFormField(
                 controller: addressController,
-                decoration: const InputDecoration(
-                  labelText: 'Dirección física',
-                  hintText: 'ej. Av. Benavides 1234, Lima',
-                  prefixIcon: Icon(Icons.location_on_outlined),
+                decoration: InputDecoration(
+                  labelText: loc.translate('branch_address'),
+                  hintText: loc.translate('branch_address_hint'),
+                  prefixIcon: const Icon(Icons.location_on_outlined),
                 ),
                 validator: (v) => v == null || v.trim().isEmpty ? 'Requerido' : null,
               ),
@@ -119,10 +123,10 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
               TextFormField(
                 controller: phoneController,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Teléfono',
-                  hintText: 'ej. +51987654321',
-                  prefixIcon: Icon(Icons.phone_outlined),
+                decoration: InputDecoration(
+                  labelText: loc.translate('branch_phone'),
+                  hintText: loc.translate('branch_phone_hint'),
+                  prefixIcon: const Icon(Icons.phone_outlined),
                 ),
               ),
               const SizedBox(height: 20),
@@ -142,8 +146,8 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
                   );
                   if (success && mounted) {
                     messenger.showSnackBar(
-                      const SnackBar(
-                        content: Text('Sede creada exitosamente en Render'),
+                      SnackBar(
+                        content: Text(loc.translate('branch_created_success')),
                         backgroundColor: ShiftIQColors.preventiveGreen,
                       ),
                     );
@@ -154,7 +158,7 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                child: const Text('GUARDAR SEDE EN BACKEND'),
+                child: Text(loc.translate('save_branch_backend')),
               ),
             ],
           ),
@@ -165,22 +169,19 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ShiftIQColors.warmNeutral,
       appBar: AppBar(
-        title: const Text('Seleccionar Sede'),
+        title: Text(loc.translate('select_branch')),
         backgroundColor: ShiftIQColors.primaryBlue,
         foregroundColor: Colors.white,
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_business_outlined),
-            tooltip: 'Nueva Sede',
-            onPressed: () => _showCreateBranchModal(context),
-          ),
-          IconButton(
+            key: const Key('btn_profile'),
             icon: const Icon(Icons.person_outline),
-            tooltip: 'Mi Perfil / Cerrar Sesión',
+            tooltip: loc.translate('tooltip_profile'),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const ProfilePage()),
@@ -189,14 +190,18 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'fab_add_branch',
-        onPressed: () => _showCreateBranchModal(context),
-        icon: const Icon(Icons.add),
-        label: const Text('Nueva Sede'),
-        backgroundColor: ShiftIQColors.primaryBlue,
-        foregroundColor: Colors.white,
-      ),
+      floatingActionButton: (getIt<SessionStorage>().roles.contains('ROLE_OWNER') ||
+              getIt<SessionStorage>().roles.contains('OWNER'))
+          ? FloatingActionButton(
+              key: const Key('btn_add_branch'),
+              heroTag: 'fab_add_branch',
+              tooltip: AppLocalizations.of(context).translate('tooltip_create_branch'),
+              onPressed: () => _showCreateBranchModal(context),
+              backgroundColor: ShiftIQColors.primaryBlue,
+              foregroundColor: Colors.white,
+              child: const Icon(Icons.add),
+            )
+          : null,
       body: SafeArea(
         child: ListenableBuilder(
           listenable: _viewModel,
@@ -247,7 +252,7 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
                       ElevatedButton.icon(
                         onPressed: vm.loadBranches,
                         icon: const Icon(Icons.refresh),
-                        label: const Text('Reintentar'),
+                        label: Text(loc.translate('retry')),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: ShiftIQColors.primaryBlue,
                           foregroundColor: Colors.white,
@@ -291,7 +296,7 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
                     OutlinedButton.icon(
                       onPressed: vm.loadBranches,
                       icon: const Icon(Icons.refresh),
-                      label: const Text('Actualizar'),
+                      label: Text(loc.translate('refresh')),
                     ),
                   ],
                 ),
@@ -335,7 +340,9 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
                   final isCurrent = vm.selectedBranch?.id == branch.id;
 
                   return Card(
+                    key: Key('branch_card_${branch.code}'),
                     margin: const EdgeInsets.only(bottom: 14),
+                    clipBehavior: Clip.antiAlias,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                       side: BorderSide(
@@ -345,107 +352,146 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
                         width: isCurrent ? 2 : 1,
                       ),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: ShiftIQColors.primaryBlue.withAlpha(
-                                    20,
-                                  ),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Icon(
-                                  Icons.location_on,
-                                  color: ShiftIQColors.primaryBlue,
-                                  size: 22,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  branch.name,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: ShiftIQColors.graphiteText,
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: branch.active
-                                      ? ShiftIQColors.preventiveGreen.withAlpha(
-                                          25,
-                                        )
-                                      : ShiftIQColors.severityCrimson.withAlpha(
-                                          25,
-                                        ),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  branch.active ? 'ACTIVA' : 'INACTIVA',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: branch.active
-                                        ? ShiftIQColors.preventiveGreen
-                                        : ShiftIQColors.severityCrimson,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.map_outlined,
-                                size: 16,
-                                color: Color(0xFF64748B),
-                              ),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  branch.address,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: Color(0xFF475569),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: () => _onBranchSelected(branch),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: ShiftIQColors.primaryBlue,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                    child: InkWell(
+                      onTap: () => _onBranchSelected(branch),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
                               children: [
-                                Text('INGRESAR A ESTA SEDE'),
-                                SizedBox(width: 8),
-                                Icon(Icons.arrow_forward, size: 18),
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: ShiftIQColors.primaryBlue.withAlpha(20),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.location_on,
+                                    color: ShiftIQColors.primaryBlue,
+                                    size: 22,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    branch.name,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: ShiftIQColors.graphiteText,
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: branch.active
+                                        ? ShiftIQColors.preventiveGreen.withAlpha(25)
+                                        : ShiftIQColors.severityCrimson.withAlpha(25),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    branch.active ? 'ACTIVA' : 'INACTIVA',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: branch.active
+                                          ? ShiftIQColors.preventiveGreen
+                                          : ShiftIQColors.severityCrimson,
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 10),
+                            // Workshop & Creator attribution badge
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: ShiftIQColors.primaryBlue.withAlpha(12),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.business_center_outlined,
+                                    size: 14,
+                                    color: ShiftIQColors.primaryBlue,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  const Expanded(
+                                    child: Text(
+                                      'Taller: Wagner Motors · Creado por Dueño (Owner)',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: ShiftIQColors.primaryBlue,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    'Cód: ${branch.code}',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: ShiftIQColors.graphiteText,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.map_outlined,
+                                  size: 16,
+                                  color: Color(0xFF64748B),
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    branch.address,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: Color(0xFF475569),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              key: Key('btn_enter_branch_${branch.code}'),
+                              onPressed: () => _onBranchSelected(branch),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: ShiftIQColors.primaryBlue,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(loc.translate('enter_this_branch')),
+                                  const SizedBox(width: 8),
+                                  const Icon(Icons.arrow_forward, size: 18),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );

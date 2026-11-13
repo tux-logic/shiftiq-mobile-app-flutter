@@ -48,6 +48,20 @@ class ProfileViewModel extends ChangeNotifier {
   double _salary = 2800.0;
   double get salary => _salary;
 
+  bool get isOwner {
+    final roles = _profileContext?.roles ?? sessionStorage.roles;
+    return _profileContext?.owner != null ||
+        roles.contains('ROLE_OWNER') ||
+        roles.contains('OWNER');
+  }
+
+  bool get isEmployee {
+    final roles = _profileContext?.roles ?? sessionStorage.roles;
+    return _profileContext?.employee != null ||
+        roles.contains('ROLE_EMPLOYEE') ||
+        roles.contains('EMPLOYEE');
+  }
+
   String get displayName {
     if (_profileContext?.employee != null) {
       return _profileContext!.employee!.fullName;

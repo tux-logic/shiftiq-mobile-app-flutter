@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/views/dashboard_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/views/appointments_page.dart';
@@ -52,31 +53,31 @@ class _MainPageState extends State<MainPage> {
         selectedIndex: _currentIndex,
         onDestinationSelected: _onDestinationSelected,
         indicatorColor: ShiftIQColors.primaryBlue.withAlpha(35),
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard, color: ShiftIQColors.primaryBlue),
-            label: 'Panel',
+            icon: const Icon(Icons.dashboard_outlined),
+            selectedIcon: const Icon(Icons.dashboard, color: ShiftIQColors.primaryBlue),
+            label: AppLocalizations.of(context).translate('dashboard_tab'),
           ),
           NavigationDestination(
-            icon: Icon(Icons.build_outlined),
-            selectedIcon: Icon(Icons.build, color: ShiftIQColors.primaryBlue),
-            label: 'Órdenes',
+            icon: const Icon(Icons.build_outlined),
+            selectedIcon: const Icon(Icons.build, color: ShiftIQColors.primaryBlue),
+            label: AppLocalizations.of(context).translate('orders_tab'),
           ),
           NavigationDestination(
-            icon: Icon(Icons.calendar_month_outlined),
-            selectedIcon: Icon(Icons.calendar_month, color: ShiftIQColors.primaryBlue),
-            label: 'Citas',
+            icon: const Icon(Icons.calendar_month_outlined),
+            selectedIcon: const Icon(Icons.calendar_month, color: ShiftIQColors.primaryBlue),
+            label: AppLocalizations.of(context).translate('appointments_tab'),
           ),
           NavigationDestination(
-            icon: Icon(Icons.inventory_2_outlined),
-            selectedIcon: Icon(Icons.inventory_2, color: ShiftIQColors.primaryBlue),
-            label: 'Inventario',
+            icon: const Icon(Icons.inventory_2_outlined),
+            selectedIcon: const Icon(Icons.inventory_2, color: ShiftIQColors.primaryBlue),
+            label: AppLocalizations.of(context).translate('inventory_tab'),
           ),
           NavigationDestination(
-            icon: Icon(Icons.sensors_outlined),
-            selectedIcon: Icon(Icons.sensors, color: ShiftIQColors.primaryBlue),
-            label: 'Telemetría',
+            icon: const Icon(Icons.sensors_outlined),
+            selectedIcon: const Icon(Icons.sensors, color: ShiftIQColors.primaryBlue),
+            label: AppLocalizations.of(context).translate('telemetry_tab'),
           ),
         ],
       ),
