@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1016784567022",
+    "project_id": "shiftiq-workshop",
+    "storage_bucket": "shiftiq-workshop.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1016784567022:android:2735d1984219eff7d9d1ff",
+        "android_client_info": {
+          "package_name": "com.tuxlogic.shiftiq.mobile.shiftiq_mobile_app_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjm0LILSubbdvF5S_toow7rEEakcNG6Uk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
+
