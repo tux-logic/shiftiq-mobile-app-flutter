@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/presentation/controllers/inventory_view_model.dart';
 
@@ -83,10 +84,11 @@ class _CreateProductModalState extends State<CreateProductModal> {
     setState(() => _isLoading = false);
 
     if (success) {
+      final loc = AppLocalizations.of(context);
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Repuesto registrado exitosamente en el catálogo'),
+        SnackBar(
+          content: Text(loc.translate('product_registered_success')),
           backgroundColor: ShiftIQColors.preventiveGreen,
         ),
       );
@@ -95,6 +97,7 @@ class _CreateProductModalState extends State<CreateProductModal> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Padding(
       padding: EdgeInsets.only(
         left: 20,
@@ -137,10 +140,10 @@ class _CreateProductModalState extends State<CreateProductModal> {
                     child: TextFormField(
                       controller: _skuCtrl,
                       textCapitalization: TextCapitalization.characters,
-                      decoration: const InputDecoration(
-                        labelText: 'Código SKU *',
-                        hintText: 'Ej. FLT-AIR-22',
-                        prefixIcon: Icon(Icons.qr_code_outlined),
+                      decoration: InputDecoration(
+                        labelText: loc.translate('sku_required'),
+                        hintText: loc.translate('sku_hint'),
+                        prefixIcon: const Icon(Icons.qr_code_outlined),
                       ),
                       validator: (val) =>
                           val == null || val.trim().isEmpty ? 'Requerido' : null,
@@ -152,9 +155,9 @@ class _CreateProductModalState extends State<CreateProductModal> {
                     child: DropdownButtonFormField<String>(
                       initialValue: _selectedCategory,
                       isExpanded: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Categoría *',
-                        prefixIcon: Icon(Icons.category_outlined),
+                      decoration: InputDecoration(
+                        labelText: loc.translate('category_required'),
+                        prefixIcon: const Icon(Icons.category_outlined),
                       ),
                       items: _categories
                           .map((c) => DropdownMenuItem(value: c, child: Text(c, style: const TextStyle(fontSize: 12))))
@@ -171,10 +174,10 @@ class _CreateProductModalState extends State<CreateProductModal> {
               // Product Name
               TextFormField(
                 controller: _nameCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Descripción / Nombre del Repuesto *',
-                  hintText: 'Ej. Filtro de Aire Mann C25114',
-                  prefixIcon: Icon(Icons.build_outlined),
+                decoration: InputDecoration(
+                  labelText: loc.translate('part_name_required'),
+                  hintText: loc.translate('part_name_hint'),
+                  prefixIcon: const Icon(Icons.build_outlined),
                 ),
                 validator: (val) =>
                     val == null || val.trim().isEmpty ? 'Ingrese el nombre' : null,
@@ -188,9 +191,9 @@ class _CreateProductModalState extends State<CreateProductModal> {
                     child: TextFormField(
                       controller: _sellingPriceCtrl,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(
-                        labelText: 'Precio Venta (S/) *',
-                        prefixIcon: Icon(Icons.sell_outlined),
+                      decoration: InputDecoration(
+                        labelText: loc.translate('sale_price_required'),
+                        prefixIcon: const Icon(Icons.sell_outlined),
                       ),
                       validator: (val) {
                         final n = double.tryParse(val ?? '');
@@ -204,9 +207,9 @@ class _CreateProductModalState extends State<CreateProductModal> {
                     child: TextFormField(
                       controller: _costPriceCtrl,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(
-                        labelText: 'Costo Compra (S/) *',
-                        prefixIcon: Icon(Icons.monetization_on_outlined),
+                      decoration: InputDecoration(
+                        labelText: loc.translate('cost_price_required'),
+                        prefixIcon: const Icon(Icons.monetization_on_outlined),
                       ),
                       validator: (val) {
                         final n = double.tryParse(val ?? '');
@@ -226,9 +229,9 @@ class _CreateProductModalState extends State<CreateProductModal> {
                     child: TextFormField(
                       controller: _stockCtrl,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Stock Inicial *',
-                        prefixIcon: Icon(Icons.inventory_2_outlined),
+                      decoration: InputDecoration(
+                        labelText: loc.translate('initial_stock_required'),
+                        prefixIcon: const Icon(Icons.inventory_2_outlined),
                       ),
                     ),
                   ),
@@ -237,9 +240,9 @@ class _CreateProductModalState extends State<CreateProductModal> {
                     child: TextFormField(
                       controller: _minStockCtrl,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Alerta Mínima *',
-                        prefixIcon: Icon(Icons.warning_amber_rounded),
+                      decoration: InputDecoration(
+                        labelText: loc.translate('min_alert_stock'),
+                        prefixIcon: const Icon(Icons.warning_amber_rounded),
                       ),
                     ),
                   ),
@@ -248,8 +251,8 @@ class _CreateProductModalState extends State<CreateProductModal> {
                     child: DropdownButtonFormField<String>(
                       initialValue: _selectedUnit,
                       isExpanded: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Unidad',
+                      decoration: InputDecoration(
+                        labelText: loc.translate('unit'),
                       ),
                       items: _units
                           .map((u) => DropdownMenuItem(value: u, child: Text(u, style: const TextStyle(fontSize: 12))))
@@ -266,10 +269,10 @@ class _CreateProductModalState extends State<CreateProductModal> {
               TextFormField(
                 controller: _descCtrl,
                 maxLines: 2,
-                decoration: const InputDecoration(
-                  labelText: 'Aplicación / Compatibilidad (Opcional)',
-                  hintText: 'Ej. Compatible con motores 1.5L Toyota 2NR-FE...',
-                  prefixIcon: Icon(Icons.info_outline),
+                decoration: InputDecoration(
+                  labelText: loc.translate('compatibility_notes'),
+                  hintText: loc.translate('compatibility_notes_hint'),
+                  prefixIcon: const Icon(Icons.info_outline),
                 ),
               ),
               const SizedBox(height: 20),
@@ -279,9 +282,9 @@ class _CreateProductModalState extends State<CreateProductModal> {
                 child: FilledButton.icon(
                   onPressed: _isLoading ? null : _submit,
                   icon: const Icon(Icons.check_circle_outline),
-                  label: const Text(
-                    'Guardar en Catálogo',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  label: Text(
+                    loc.translate('save'),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   style: FilledButton.styleFrom(
                     backgroundColor: ShiftIQColors.primaryBlue,

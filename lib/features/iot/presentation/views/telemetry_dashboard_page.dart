@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
@@ -82,6 +83,7 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ShiftIQColors.warmNeutral,
       appBar: AppBar(
@@ -100,7 +102,7 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> {
         ),
         actions: [
           IconButton(
-            tooltip: 'Actualizar',
+            tooltip: AppLocalizations.of(context).translate('tooltip_refresh'),
             icon: const Icon(Icons.refresh),
             onPressed: () => _viewModel.loadDtcAlerts(_effectiveBranchId),
           ),
@@ -153,7 +155,7 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> {
                     FilledButton.icon(
                       onPressed: _openLiveSensors,
                       icon: const Icon(Icons.sensors, size: 16),
-                      label: const Text('Sensores en Vivo'),
+                      label: Text(loc.translate('live_telemetry')),
                       style: FilledButton.styleFrom(
                         backgroundColor: ShiftIQColors.primaryBlue,
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

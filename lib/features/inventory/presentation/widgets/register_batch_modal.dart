@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/models/product.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/presentation/controllers/inventory_view_model.dart';
@@ -103,6 +104,7 @@ class _RegisterBatchModalState extends State<RegisterBatchModal> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Padding(
       padding: EdgeInsets.only(
         left: 20,
@@ -154,9 +156,9 @@ class _RegisterBatchModalState extends State<RegisterBatchModal> {
               TextFormField(
                 controller: _batchNumberCtrl,
                 textCapitalization: TextCapitalization.characters,
-                decoration: const InputDecoration(
-                  labelText: 'Número de Lote / Factura *',
-                  prefixIcon: Icon(Icons.qr_code_outlined),
+                decoration: InputDecoration(
+                  labelText: loc.translate('batch_invoice_number'),
+                  prefixIcon: const Icon(Icons.qr_code_outlined),
                 ),
                 validator: (val) =>
                     val == null || val.trim().isEmpty ? 'Ingrese el lote' : null,
@@ -165,9 +167,9 @@ class _RegisterBatchModalState extends State<RegisterBatchModal> {
 
               TextFormField(
                 controller: _supplierNameCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Proveedor / Distribuidor *',
-                  prefixIcon: Icon(Icons.business_outlined),
+                decoration: InputDecoration(
+                  labelText: loc.translate('supplier_distributor'),
+                  prefixIcon: const Icon(Icons.business_outlined),
                 ),
                 validator: (val) => val == null || val.trim().isEmpty
                     ? 'Ingrese el proveedor'
@@ -183,7 +185,7 @@ class _RegisterBatchModalState extends State<RegisterBatchModal> {
                       controller: _quantityCtrl,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                        labelText: 'Cantidad (${widget.product.unitOfMeasure}) *',
+                        labelText: '${loc.translate('quantity_with_unit')} (${widget.product.unitOfMeasure}) *',
                         prefixIcon: const Icon(Icons.inventory_outlined),
                       ),
                       validator: (val) {
@@ -198,9 +200,9 @@ class _RegisterBatchModalState extends State<RegisterBatchModal> {
                     child: TextFormField(
                       controller: _costPriceCtrl,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(
-                        labelText: 'Costo Unit. (S/) *',
-                        prefixIcon: Icon(Icons.monetization_on_outlined),
+                      decoration: InputDecoration(
+                        labelText: loc.translate('unit_cost_currency'),
+                        prefixIcon: const Icon(Icons.monetization_on_outlined),
                       ),
                       validator: (val) {
                         final n = double.tryParse(val ?? '');

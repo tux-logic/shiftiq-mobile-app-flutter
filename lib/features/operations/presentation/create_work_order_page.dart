@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/application/operations_application.dart';
 
@@ -82,9 +83,10 @@ class _CreateWorkOrderPageState extends State<CreateWorkOrderPage> {
       );
 
       if (mounted) {
+        final loc = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Orden de Trabajo creada exitosamente en el taller'),
+          SnackBar(
+            content: Text(loc.translate('work_order_created_success')),
             backgroundColor: ShiftIQColors.preventiveGreen,
           ),
         );
@@ -92,9 +94,10 @@ class _CreateWorkOrderPageState extends State<CreateWorkOrderPage> {
       }
     } catch (e) {
       if (mounted) {
+        final loc = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al crear orden: ${e.toString()}'),
+            content: Text('${loc.translate('error_creating_order')}: ${e.toString()}'),
             backgroundColor: ShiftIQColors.severityCrimson,
           ),
         );
@@ -108,10 +111,11 @@ class _CreateWorkOrderPageState extends State<CreateWorkOrderPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ShiftIQColors.warmNeutral,
       appBar: AppBar(
-        title: const Text('Nueva Orden de Trabajo'),
+        title: Text(loc.translate('new_work_order')),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -147,10 +151,10 @@ class _CreateWorkOrderPageState extends State<CreateWorkOrderPage> {
                           child: TextFormField(
                             controller: _plateController,
                             textCapitalization: TextCapitalization.characters,
-                            decoration: const InputDecoration(
-                              labelText: 'Placa *',
-                              hintText: 'ABC-123',
-                              prefixIcon: Icon(Icons.pin),
+                            decoration: InputDecoration(
+                              labelText: loc.translate('plate_required'),
+                              hintText: loc.translate('plate_hint'),
+                              prefixIcon: const Icon(Icons.pin),
                             ),
                             validator: (v) => v == null || v.isEmpty
                                 ? 'Ingrese la placa'
@@ -162,10 +166,10 @@ class _CreateWorkOrderPageState extends State<CreateWorkOrderPage> {
                           flex: 3,
                           child: TextFormField(
                             controller: _modelController,
-                            decoration: const InputDecoration(
-                              labelText: 'Marca y Modelo *',
-                              hintText: 'Toyota Hilux 2021',
-                              prefixIcon: Icon(Icons.directions_car),
+                            decoration: InputDecoration(
+                              labelText: loc.translate('brand_model_required'),
+                              hintText: loc.translate('brand_model_hint'),
+                              prefixIcon: const Icon(Icons.directions_car),
                             ),
                             validator: (v) => v == null || v.isEmpty
                                 ? 'Ingrese el modelo'
@@ -177,9 +181,9 @@ class _CreateWorkOrderPageState extends State<CreateWorkOrderPage> {
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _customerController,
-                      decoration: const InputDecoration(
-                        labelText: 'Nombre del Cliente / Dueño *',
-                        prefixIcon: Icon(Icons.person),
+                      decoration: InputDecoration(
+                        labelText: loc.translate('customer_name_required'),
+                        prefixIcon: const Icon(Icons.person),
                       ),
                       validator: (v) => v == null || v.isEmpty
                           ? 'Ingrese el nombre del cliente'
@@ -192,9 +196,9 @@ class _CreateWorkOrderPageState extends State<CreateWorkOrderPage> {
                           child: TextFormField(
                             controller: _phoneController,
                             keyboardType: TextInputType.phone,
-                            decoration: const InputDecoration(
-                              labelText: 'Teléfono',
-                              prefixIcon: Icon(Icons.phone),
+                            decoration: InputDecoration(
+                              labelText: loc.translate('phone'),
+                              prefixIcon: const Icon(Icons.phone),
                             ),
                           ),
                         ),
@@ -203,9 +207,9 @@ class _CreateWorkOrderPageState extends State<CreateWorkOrderPage> {
                           child: TextFormField(
                             controller: _mileageController,
                             keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Kilometraje Ingreso *',
-                              prefixIcon: Icon(Icons.speed),
+                            decoration: InputDecoration(
+                              labelText: loc.translate('mileage_entry_required'),
+                              prefixIcon: const Icon(Icons.speed),
                               suffixText: 'km',
                             ),
                             validator: (v) => v == null || v.isEmpty
@@ -219,8 +223,8 @@ class _CreateWorkOrderPageState extends State<CreateWorkOrderPage> {
                     TextFormField(
                       controller: _diagnosticController,
                       maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Diagnóstico Inicial / Motivo de Ingreso *',
+                      decoration: InputDecoration(
+                        labelText: loc.translate('diagnostic_summary_required'),
                         alignLabelWithHint: true,
                       ),
                       validator: (v) => v == null || v.isEmpty

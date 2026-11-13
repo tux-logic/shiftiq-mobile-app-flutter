@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/domain/iot_domain.dart';
 
@@ -16,6 +17,7 @@ class DtcAlertCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     Color severityColor = alert.severity.color;
     Color severityBg;
 
@@ -73,34 +75,41 @@ class DtcAlertCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: severityBg,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          alert.isCritical
-                              ? Icons.warning_rounded
-                              : Icons.info_outline,
-                          size: 13,
-                          color: severityColor,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          alert.severity.label,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
+                  Flexible(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: severityBg,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            alert.isCritical
+                                ? Icons.warning_rounded
+                                : Icons.info_outline,
+                            size: 13,
                             color: severityColor,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              alert.severity.label,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: severityColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 8),
                   Text(
                     alert.formattedTimeAgo,
                     style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
@@ -135,20 +144,26 @@ class DtcAlertCard extends StatelessWidget {
                       color: Color(0xFF64748B),
                     ),
                     const SizedBox(width: 6),
-                    Text(
-                      '${alert.vehiclePlate} · ${alert.vehicleModel}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: ShiftIQColors.graphiteText,
+                    Expanded(
+                      child: Text(
+                        '${alert.vehiclePlate} · ${alert.vehicleModel}',
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: ShiftIQColors.graphiteText,
+                        ),
                       ),
                     ),
-                    const Spacer(),
-                    Text(
-                      alert.customerName,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFF64748B),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        alert.customerName,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF64748B),
+                        ),
                       ),
                     ),
                   ],
@@ -197,7 +212,7 @@ class DtcAlertCard extends StatelessWidget {
                   OutlinedButton.icon(
                     onPressed: onTap,
                     icon: const Icon(Icons.analytics_outlined, size: 14),
-                    label: const Text('Freeze Frame'),
+                    label: Text(loc.translate('freeze_frame')),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: ShiftIQColors.graphiteText,
                       side: const BorderSide(color: ShiftIQColors.borderSlate),
@@ -209,7 +224,7 @@ class DtcAlertCard extends StatelessWidget {
                   FilledButton.icon(
                     onPressed: onOpenWorkOrder,
                     icon: const Icon(Icons.post_add_outlined, size: 14),
-                    label: const Text('Abrir OT'),
+                    label: Text(loc.translate('open_ot')),
                     style: FilledButton.styleFrom(
                       backgroundColor: ShiftIQColors.primaryBlue,
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

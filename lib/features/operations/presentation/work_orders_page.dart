@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/create_work_order_page.dart';
@@ -53,7 +54,7 @@ class _WorkOrdersPageState extends State<WorkOrdersPage> {
             ),
             actions: [
               IconButton(
-                tooltip: 'Refrescar OTs',
+                tooltip: AppLocalizations.of(context).translate('tooltip_refresh_orders'),
                 icon: const Icon(Icons.refresh),
                 onPressed: vm.isLoading ? null : vm.refresh,
               ),

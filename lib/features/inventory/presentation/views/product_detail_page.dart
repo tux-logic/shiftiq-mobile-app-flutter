@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/model/aggregates/product.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/model/entities/product_batch.dart';
@@ -50,6 +51,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return ListenableBuilder(
       listenable: widget.viewModel,
       builder: (context, _) {
+        final loc = AppLocalizations.of(context);
         final product = widget.viewModel.selectedProduct ?? widget.initialProduct;
 
         return Scaffold(
@@ -70,7 +72,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             ),
             actions: [
               IconButton(
-                tooltip: 'Actualizar',
+                tooltip: AppLocalizations.of(context).translate('tooltip_refresh'),
                 icon: const Icon(Icons.refresh),
                 onPressed: () => widget.viewModel.loadProductDetail(product.id),
               ),
@@ -206,7 +208,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     FilledButton.icon(
                       onPressed: () => _openAddBatch(product),
                       icon: const Icon(Icons.add, size: 16),
-                      label: const Text('Ingresar Lote'),
+                      label: Text(loc.translate('batch_entry')),
                       style: FilledButton.styleFrom(
                         backgroundColor: ShiftIQColors.primaryBlue,
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

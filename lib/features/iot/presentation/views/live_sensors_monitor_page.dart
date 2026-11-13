@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/controllers/telemetry_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/widgets/sensor_gauge_card.dart';
@@ -49,7 +50,7 @@ class _LiveSensorsMonitorPageState extends State<LiveSensorsMonitorPage> {
             ),
             actions: [
               IconButton(
-                tooltip: 'Refrescar Sensores',
+                tooltip: AppLocalizations.of(context).translate('tooltip_refresh_sensors'),
                 icon: const Icon(Icons.refresh),
                 onPressed: () =>
                     widget.viewModel.loadLiveSensors(widget.vehiclePlate),

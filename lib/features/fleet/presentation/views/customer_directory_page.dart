@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/entities/customer_registration.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/controllers/appointments_view_model.dart';
@@ -54,12 +55,13 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppColors.neutralBg,
       appBar: AppBar(
-        title: const Text(
-          'Directorio de Clientes B2B',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          loc.translate('tooltip_customer_directory'),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -82,12 +84,15 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
               // Search bar
               Container(
                 color: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: TextField(
                   controller: _searchController,
                   onChanged: _onSearchChanged,
                   decoration: InputDecoration(
-                    hintText: 'Buscar por nombre, placa o teléfono...',
+                    hintText: loc.translate('search_customer_hint'),
                     prefixIcon: const Icon(Icons.search),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
@@ -111,7 +116,10 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
 
               // KPI Header
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   border: Border(
@@ -143,47 +151,46 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
                 child: isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : customers.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.person_search_outlined,
-                                  size: 48,
-                                  color: AppColors.neutralLight,
-                                ),
-                                const SizedBox(height: 12),
-                                const Text(
-                                  'No se encontraron clientes',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.neutralDark,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  _searchController.text.isNotEmpty
-                                      ? 'Prueba con otro término de búsqueda'
-                                      : 'No hay registros en esta sede',
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: AppColors.neutralLight,
-                                  ),
-                                ),
-                              ],
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.person_search_outlined,
+                              size: 48,
+                              color: AppColors.neutralLight,
                             ),
-                          )
-                        : ListView.separated(
-                            padding: const EdgeInsets.all(16),
-                            itemCount: customers.length,
-                            separatorBuilder: (_, _) =>
-                                const SizedBox(height: 10),
-                            itemBuilder: (context, index) {
-                              final customer = customers[index];
-                              return _buildCustomerCard(customer);
-                            },
-                          ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'No se encontraron clientes',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.neutralDark,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _searchController.text.isNotEmpty
+                                  ? 'Prueba con otro término de búsqueda'
+                                  : 'No hay registros en esta sede',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.neutralLight,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: customers.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 10),
+                        itemBuilder: (context, index) {
+                          final customer = customers[index];
+                          return _buildCustomerCard(customer);
+                        },
+                      ),
               ),
             ],
           );
@@ -193,7 +200,7 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
         heroTag: 'fab_customer_directory',
         onPressed: () => _openCreateAppointment(),
         icon: const Icon(Icons.add),
-        label: const Text('Nueva Cita'),
+        label: Text(loc.translate('new_appointment')),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
@@ -242,19 +249,81 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
                         ),
                       ),
                       const SizedBox(height: 2),
-                      Text(
-                        customer.phone,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.neutralLight,
-                        ),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.phone_outlined,
+                            size: 13,
+                            color: AppColors.neutralLight,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            customer.phone.isNotEmpty
+                                ? customer.phone
+                                : 'Sin teléfono registrado',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.neutralLight,
+                            ),
+                          ),
+                          if (customer.phone.isNotEmpty) ...[
+                            const SizedBox(width: 8),
+                            InkWell(
+                              onTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Contactando al cliente ${customer.customerName} al ${customer.phone}...',
+                                    ),
+                                    backgroundColor: Colors.teal,
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.withAlpha(20),
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(
+                                    color: Colors.green.withAlpha(60),
+                                  ),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.phone,
+                                      size: 11,
+                                      color: Colors.green,
+                                    ),
+                                    SizedBox(width: 3),
+                                    Text(
+                                      'Llamar',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ],
                   ),
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.neutralDark,
                     borderRadius: BorderRadius.circular(6),
@@ -315,12 +384,14 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
               child: OutlinedButton.icon(
                 onPressed: () => _openCreateAppointment(customer: customer),
                 icon: const Icon(Icons.calendar_today_outlined, size: 14),
-                label: const Text('Agendar Cita'),
+                label: Text(AppLocalizations.of(context).translate('schedule_appointment')),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.primary,
                   side: const BorderSide(color: AppColors.primary),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   textStyle: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,

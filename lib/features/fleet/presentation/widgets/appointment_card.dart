@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/aggregates/appointment.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/valueobjects/appointment_status.dart';
@@ -21,6 +22,7 @@ class AppointmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final statusColor = _getStatusColor(appointment.status);
     final statusBg = _getStatusBg(appointment.status);
 
@@ -241,55 +243,59 @@ class AppointmentCard extends StatelessWidget {
             const SizedBox(height: 12),
 
             // Actions row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            Wrap(
+              alignment: WrapAlignment.end,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 if (appointment.isPending) ...[
                   OutlinedButton.icon(
                     onPressed: onCancel,
                     icon: const Icon(Icons.close, size: 14),
-                    label: const Text('Cancelar'),
+                    label: Text(loc.translate('cancel')),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.stateError,
                       side: const BorderSide(color: AppColors.stateError),
+                      minimumSize: Size.zero,
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       textStyle: const TextStyle(fontSize: 12),
                     ),
                   ),
-                  const SizedBox(width: 8),
                   FilledButton.icon(
                     onPressed: onConfirm,
                     icon: const Icon(Icons.check, size: 14),
-                    label: const Text('Confirmar'),
+                    label: Text(loc.translate('confirm')),
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.stateSuccess,
                       foregroundColor: Colors.white,
+                      minimumSize: Size.zero,
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       textStyle: const TextStyle(fontSize: 12),
                     ),
                   ),
-                  const SizedBox(width: 8),
                 ],
                 if (appointment.isConfirmed) ...[
                   OutlinedButton.icon(
                     onPressed: onComplete,
                     icon: const Icon(Icons.done_all, size: 14),
-                    label: const Text('Completar'),
+                    label: Text(loc.translate('complete')),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.stateInfo,
                       side: const BorderSide(color: AppColors.stateInfo),
+                      minimumSize: Size.zero,
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       textStyle: const TextStyle(fontSize: 12),
                     ),
                   ),
-                  const SizedBox(width: 8),
                 ],
                 FilledButton.icon(
                   onPressed: onOpenWorkOrder,
                   icon: const Icon(Icons.post_add_rounded, size: 16),
-                  label: const Text('Abrir OT'),
+                  label: Text(loc.translate('open_ot')),
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.primary,
+                    minimumSize: Size.zero,
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     textStyle: const TextStyle(
                       fontSize: 12,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/controllers/billing_view_model.dart';
@@ -35,6 +36,7 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
 
   void _showPaymentModal(BuildContext context) {
     PaymentMethod selected = PaymentMethod.cash;
+    final loc = AppLocalizations.of(context);
 
     showModalBottomSheet(
       context: context,
@@ -98,8 +100,8 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
                               if (success && mounted) {
                                 navigator.pop();
                                 scaffold.showSnackBar(
-                                  const SnackBar(
-                                    content: Text('¡Cobro registrado exitosamente!'),
+                                  SnackBar(
+                                    content: Text(loc.translate('payment_recorded_success')),
                                     backgroundColor: AppColors.success,
                                   ),
                                 );
@@ -134,6 +136,7 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
       builder: (context, _) {
         final viewModel = _viewModel;
         final voucher = viewModel.selectedVoucher;
+        final loc = AppLocalizations.of(context);
 
         if (viewModel.isLoading && voucher == null) {
           return const Scaffold(
@@ -143,7 +146,7 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
 
         if (voucher == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Detalle de Comprobante')),
+            appBar: AppBar(title: Text(loc.translate('voucher_detail'))),
             body: Center(
               child: Text(
                 viewModel.errorMessage ?? 'No se encontró el comprobante',
@@ -162,7 +165,7 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
             actions: [
               IconButton(
                 icon: const Icon(Icons.share_outlined),
-                tooltip: 'Compartir por WhatsApp',
+                tooltip: AppLocalizations.of(context).translate('tooltip_share_whatsapp'),
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -233,7 +236,7 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
                             backgroundColor: AppColors.success,
                             foregroundColor: Colors.white,
                           ),
-                          child: const Text('COBRAR'),
+                          child: Text(loc.translate('pay')),
                         ),
                     ],
                   ),
@@ -409,7 +412,7 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
                           );
                         },
                         icon: const Icon(Icons.print_outlined),
-                        label: const Text('TICKET TÉRMICO'),
+                        label: Text(loc.translate('thermal_ticket')),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -425,7 +428,7 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
                           );
                         },
                         icon: const Icon(Icons.download),
-                        label: const Text('PDF SUNAT'),
+                        label: Text(loc.translate('pdf_sunat')),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,

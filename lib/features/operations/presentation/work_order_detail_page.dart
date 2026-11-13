@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_order_detail_view_model.dart';
@@ -33,6 +34,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
   }
 
   void _showAddTaskDialog(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final descController = TextEditingController();
     final priceController = TextEditingController(text: '80.00');
     final mechanicController = TextEditingController(text: 'Luis Ramos');
@@ -40,32 +42,32 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Agregar Tarea Mecánica'),
+        title: Text(loc.translate('add_task')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: descController,
-              decoration: const InputDecoration(
-                labelText: 'Descripción del Servicio *',
-                hintText: 'Ej. Cambio de bujías y cables',
+              decoration: InputDecoration(
+                labelText: loc.translate('task_description_required'),
+                hintText: loc.translate('task_description_hint'),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: priceController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Precio de Mano de Obra (S/) *',
+              decoration: InputDecoration(
+                labelText: loc.translate('labor_price_required'),
                 prefixText: 'S/ ',
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: mechanicController,
-              decoration: const InputDecoration(
-                labelText: 'Mecánico Asignado',
-                hintText: 'Ej. Luis Ramos',
+              decoration: InputDecoration(
+                labelText: loc.translate('assigned_mechanic'),
+                hintText: loc.translate('mechanic_name_hint'),
               ),
             ),
           ],
@@ -73,7 +75,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancelar'),
+            child: Text(loc.translate('cancel')),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -92,7 +94,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
               backgroundColor: ShiftIQColors.primaryBlue,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Agregar'),
+            child: Text(loc.translate('add')),
           ),
         ],
       ),
@@ -100,6 +102,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
   }
 
   void _showAddProductDialog(BuildContext context, String taskId) {
+    final loc = AppLocalizations.of(context);
     final nameController = TextEditingController(text: 'Filtro de Aceite Mann');
     final qtyController = TextEditingController(text: '1');
     final priceController = TextEditingController(text: '35.00');
@@ -107,29 +110,29 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Despachar Repuesto de Stock'),
+        title: Text(loc.translate('dispatch_part_stock')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(
-                labelText: 'Nombre del Repuesto *',
-                hintText: 'Ej. Pastillas Bosch Fr-02',
+              decoration: InputDecoration(
+                labelText: loc.translate('part_name_input'),
+                hintText: loc.translate('part_name_dispatch_hint'),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: qtyController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Cantidad *'),
+              decoration: InputDecoration(labelText: loc.translate('quantity_required')),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: priceController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Precio Unitario (S/) *',
+              decoration: InputDecoration(
+                labelText: loc.translate('unit_price_required'),
                 prefixText: 'S/ ',
               ),
             ),
@@ -138,7 +141,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancelar'),
+            child: Text(loc.translate('cancel')),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -158,7 +161,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
               backgroundColor: ShiftIQColors.primaryBlue,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Despachar'),
+            child: Text(loc.translate('dispatch')),
           ),
         ],
       ),
@@ -172,6 +175,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
       builder: (context, _) {
         final vm = _viewModel;
         final order = vm.order;
+        final loc = AppLocalizations.of(context);
 
         if (vm.isLoading && order == null) {
           return const Scaffold(
@@ -183,8 +187,8 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
 
         if (order == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Detalle de OT')),
-            body: const Center(child: Text('Orden no encontrada')),
+            appBar: AppBar(title: Text(loc.translate('work_order_detail'))),
+            body: Center(child: Text(loc.translate('work_order_not_found'))),
           );
         }
 
@@ -194,7 +198,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
             title: Text(order.formattedNumber),
             actions: [
               IconButton(
-                tooltip: 'Actualizar',
+                tooltip: AppLocalizations.of(context).translate('tooltip_refresh'),
                 icon: const Icon(Icons.refresh),
                 onPressed: () => vm.loadOrder(order.id),
               ),
@@ -444,14 +448,14 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                       final confirmed = await showDialog<bool>(
                         context: context,
                         builder: (ctx) => AlertDialog(
-                          title: const Text('¿Finalizar y Liquidar Orden?'),
+                          title: Text(loc.translate('finalize_order_dialog_title')),
                           content: Text(
                             'Se cerrará la orden ${order.formattedNumber} por un monto total de ${order.formattedAmount}.',
                           ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.of(ctx).pop(false),
-                              child: const Text('Cancelar'),
+                              child: Text(loc.translate('cancel')),
                             ),
                             ElevatedButton(
                               onPressed: () => Navigator.of(ctx).pop(true),
@@ -459,7 +463,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                                 backgroundColor: ShiftIQColors.preventiveGreen,
                                 foregroundColor: Colors.white,
                               ),
-                              child: const Text('Confirmar y Liquidar'),
+                              child: Text(loc.translate('confirm_and_settle')),
                             ),
                           ],
                         ),
@@ -570,7 +574,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                       );
                     },
                     icon: const Icon(Icons.receipt_long),
-                    label: const Text('EMITIR BOLETA / FACTURA SUNAT'),
+                    label: Text(loc.translate('emit_voucher_btn')),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: ShiftIQColors.primaryBlue,
                       foregroundColor: Colors.white,
@@ -596,6 +600,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
     WorkOrderTask task,
     WorkOrderDetailViewModel vm,
   ) {
+    final loc = AppLocalizations.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
@@ -623,7 +628,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                 )
               else if (task.isInProgress)
                 IconButton(
-                  tooltip: 'Marcar como Completada',
+                  tooltip: AppLocalizations.of(context).translate('tooltip_complete_task'),
                   icon: const Icon(
                     Icons.radio_button_unchecked,
                     color: ShiftIQColors.secondaryTeal,
@@ -632,7 +637,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                 )
               else
                 IconButton(
-                  tooltip: 'Iniciar Tarea',
+                  tooltip: AppLocalizations.of(context).translate('tooltip_start_task'),
                   icon: const Icon(Icons.play_circle_outline, color: Colors.grey),
                   onPressed: () => vm.startTask(task.id),
                 ),
@@ -692,18 +697,18 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                 TextButton.icon(
                   onPressed: () => vm.startTask(task.id),
                   icon: const Icon(Icons.play_arrow, size: 14),
-                  label: const Text('Iniciar', style: TextStyle(fontSize: 11)),
+                  label: Text(loc.translate('start'), style: const TextStyle(fontSize: 11)),
                 ),
               if (!task.isCompleted && task.isInProgress)
                 TextButton.icon(
                   onPressed: () => vm.completeTask(task.id),
                   icon: const Icon(Icons.check, size: 14),
-                  label: const Text('Completar', style: TextStyle(fontSize: 11)),
+                  label: Text(loc.translate('complete'), style: const TextStyle(fontSize: 11)),
                 ),
               TextButton.icon(
                 onPressed: () => _showAddProductDialog(context, task.id),
                 icon: const Icon(Icons.inventory_2_outlined, size: 14),
-                label: const Text('+ Repuesto', style: TextStyle(fontSize: 11)),
+                label: Text(loc.translate('add_part_btn'), style: const TextStyle(fontSize: 11)),
               ),
             ],
           ),

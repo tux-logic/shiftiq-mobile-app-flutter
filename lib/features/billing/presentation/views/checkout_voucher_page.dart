@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/controllers/billing_view_model.dart';
@@ -170,10 +171,11 @@ class _CheckoutVoucherPageState extends State<CheckoutVoucherPage> {
       listenable: _viewModel,
       builder: (context, _) {
         final viewModel = _viewModel;
+        final loc = AppLocalizations.of(context);
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Liquidación y Facturación SUNAT'),
+            title: Text(loc.translate('liquidation_billing_title')),
             backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
           ),
@@ -231,7 +233,7 @@ class _CheckoutVoucherPageState extends State<CheckoutVoucherPage> {
                     children: [
                       Expanded(
                         child: ChoiceChip(
-                          label: const Center(child: Text('Boleta de Venta (B001)')),
+                          label: Center(child: Text(loc.translate('boleta_venta'))),
                           selected: _selectedType == VoucherType.boleta,
                           onSelected: (_) => _onTypeChanged(VoucherType.boleta),
                           selectedColor: AppColors.primary.withValues(alpha: 0.2),
@@ -240,7 +242,7 @@ class _CheckoutVoucherPageState extends State<CheckoutVoucherPage> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: ChoiceChip(
-                          label: const Center(child: Text('Factura (F001)')),
+                          label: Center(child: Text(loc.translate('factura'))),
                           selected: _selectedType == VoucherType.factura,
                           onSelected: (_) => _onTypeChanged(VoucherType.factura),
                           selectedColor: AppColors.primary.withValues(alpha: 0.2),
@@ -257,16 +259,16 @@ class _CheckoutVoucherPageState extends State<CheckoutVoucherPage> {
                         width: 90,
                         child: DropdownButtonFormField<String>(
                           initialValue: _docType,
-                          decoration: const InputDecoration(
-                            labelText: 'Doc.',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: loc.translate('doc_label'),
+                            border: const OutlineInputBorder(),
                             contentPadding:
-                                EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                                const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                           ),
-                          items: const [
-                            DropdownMenuItem(value: 'DNI', child: Text('DNI')),
-                            DropdownMenuItem(value: 'RUC', child: Text('RUC')),
-                            DropdownMenuItem(value: 'CE', child: Text('CE')),
+                          items: [
+                            DropdownMenuItem(value: 'DNI', child: Text(loc.translate('dni_doc'))),
+                            DropdownMenuItem(value: 'RUC', child: Text(loc.translate('ruc_doc'))),
+                            DropdownMenuItem(value: 'CE', child: Text(loc.translate('ce_doc'))),
                           ],
                           onChanged: (val) {
                             if (val != null) setState(() => _docType = val);
@@ -278,7 +280,7 @@ class _CheckoutVoucherPageState extends State<CheckoutVoucherPage> {
                         child: TextFormField(
                           controller: _docNumberController,
                           decoration: InputDecoration(
-                            labelText: 'Número de $_docType',
+                            labelText: '${loc.translate('doc_number_prefix')} $_docType',
                             border: const OutlineInputBorder(),
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 12),
@@ -301,11 +303,11 @@ class _CheckoutVoucherPageState extends State<CheckoutVoucherPage> {
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _customerNameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Razón Social / Nombre Completo',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: loc.translate('legal_name_or_full_name'),
+                      border: const OutlineInputBorder(),
                       contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                     ),
                     validator: (v) =>
                         v == null || v.trim().isEmpty ? 'Requerido' : null,
@@ -313,11 +315,11 @@ class _CheckoutVoucherPageState extends State<CheckoutVoucherPage> {
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _addressController,
-                    decoration: const InputDecoration(
-                      labelText: 'Dirección Fiscal (Lima)',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: loc.translate('fiscal_address'),
+                      border: const OutlineInputBorder(),
                       contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                     ),
                   ),
                   const SizedBox(height: 24),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/create_appointment.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/entities/customer_registration.dart';
@@ -122,10 +123,11 @@ class _CreateAppointmentModalState extends State<CreateAppointmentModal> {
     if (!mounted) return;
 
     if (success) {
+      final loc = AppLocalizations.of(context);
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cita agendada exitosamente en bahía'),
+        SnackBar(
+          content: Text(loc.translate('appointment_scheduled_success')),
           backgroundColor: AppColors.stateSuccess,
         ),
       );
@@ -134,6 +136,7 @@ class _CreateAppointmentModalState extends State<CreateAppointmentModal> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final customers = widget.viewModel.customers;
 
     return Padding(
@@ -175,14 +178,14 @@ class _CreateAppointmentModalState extends State<CreateAppointmentModal> {
                 DropdownButtonFormField<CustomerRegistration>(
                   initialValue: _selectedCustomer,
                   isExpanded: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Seleccionar Cliente Registrado (Opcional)',
-                    prefixIcon: Icon(Icons.person_search_outlined),
+                  decoration: InputDecoration(
+                    labelText: loc.translate('select_registered_customer_optional'),
+                    prefixIcon: const Icon(Icons.person_search_outlined),
                   ),
                   items: [
-                    const DropdownMenuItem<CustomerRegistration>(
+                    DropdownMenuItem<CustomerRegistration>(
                       value: null,
-                      child: Text('Cliente Nuevo / Ingresar Manualmente'),
+                      child: Text(loc.translate('new_customer_manual')),
                     ),
                     ...customers.map(
                       (c) => DropdownMenuItem(
@@ -203,9 +206,9 @@ class _CreateAppointmentModalState extends State<CreateAppointmentModal> {
                     flex: 3,
                     child: TextFormField(
                       controller: _customerNameCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Nombre Completo *',
-                        prefixIcon: Icon(Icons.person_outline),
+                      decoration: InputDecoration(
+                        labelText: loc.translate('full_name_required'),
+                        prefixIcon: const Icon(Icons.person_outline),
                       ),
                       validator: (val) => val == null || val.trim().isEmpty
                           ? 'Ingrese el cliente'
@@ -218,9 +221,9 @@ class _CreateAppointmentModalState extends State<CreateAppointmentModal> {
                     child: TextFormField(
                       controller: _customerPhoneCtrl,
                       keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(
-                        labelText: 'Teléfono',
-                        prefixIcon: Icon(Icons.phone_outlined),
+                      decoration: InputDecoration(
+                        labelText: loc.translate('phone'),
+                        prefixIcon: const Icon(Icons.phone_outlined),
                       ),
                     ),
                   ),
@@ -236,10 +239,10 @@ class _CreateAppointmentModalState extends State<CreateAppointmentModal> {
                     child: TextFormField(
                       controller: _vehiclePlateCtrl,
                       textCapitalization: TextCapitalization.characters,
-                      decoration: const InputDecoration(
-                        labelText: 'Placa *',
-                        hintText: 'ABC-123',
-                        prefixIcon: Icon(Icons.badge_outlined),
+                      decoration: InputDecoration(
+                        labelText: loc.translate('plate_required'),
+                        hintText: loc.translate('plate_hint'),
+                        prefixIcon: const Icon(Icons.badge_outlined),
                       ),
                       validator: (val) => val == null || val.trim().isEmpty
                           ? 'Ingrese placa'
@@ -251,10 +254,10 @@ class _CreateAppointmentModalState extends State<CreateAppointmentModal> {
                     flex: 3,
                     child: TextFormField(
                       controller: _vehicleModelCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Modelo / Marca',
-                        hintText: 'Ej. Toyota Hilux 2021',
-                        prefixIcon: Icon(Icons.directions_car_outlined),
+                      decoration: InputDecoration(
+                        labelText: loc.translate('model_brand'),
+                        hintText: loc.translate('model_brand_hint'),
+                        prefixIcon: const Icon(Icons.directions_car_outlined),
                       ),
                     ),
                   ),
@@ -343,7 +346,7 @@ class _CreateAppointmentModalState extends State<CreateAppointmentModal> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: ChoiceChip(
-                        label: Text('Bahía $bay'),
+                        label: Text('${loc.translate('bay')} $bay'),
                         selected: isSelected,
                         selectedColor: AppColors.primary,
                         labelStyle: TextStyle(
@@ -365,9 +368,9 @@ class _CreateAppointmentModalState extends State<CreateAppointmentModal> {
               DropdownButtonFormField<String>(
                 initialValue: _selectedService,
                 isExpanded: true,
-                decoration: const InputDecoration(
-                  labelText: 'Tipo de Servicio / Trabajo',
-                  prefixIcon: Icon(Icons.build_circle_outlined),
+                decoration: InputDecoration(
+                  labelText: loc.translate('service_type_job'),
+                  prefixIcon: const Icon(Icons.build_circle_outlined),
                 ),
                 items: _serviceOptions
                     .map((s) => DropdownMenuItem(value: s, child: Text(s, style: const TextStyle(fontSize: 13))))
@@ -382,10 +385,10 @@ class _CreateAppointmentModalState extends State<CreateAppointmentModal> {
               TextFormField(
                 controller: _notesCtrl,
                 maxLines: 2,
-                decoration: const InputDecoration(
-                  labelText: 'Notas / Síntomas reportados',
-                  hintText: 'Detalles del cliente o sospecha técnica...',
-                  prefixIcon: Icon(Icons.notes_outlined),
+                decoration: InputDecoration(
+                  labelText: loc.translate('symptoms_notes'),
+                  hintText: loc.translate('symptoms_notes_hint'),
+                  prefixIcon: const Icon(Icons.notes_outlined),
                 ),
               ),
               const SizedBox(height: 18),

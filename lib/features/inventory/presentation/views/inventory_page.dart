@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
@@ -105,6 +106,7 @@ class _InventoryPageState extends State<InventoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ShiftIQColors.warmNeutral,
       appBar: AppBar(
@@ -123,7 +125,7 @@ class _InventoryPageState extends State<InventoryPage> {
         ),
         actions: [
           IconButton(
-            tooltip: 'Actualizar',
+            tooltip: AppLocalizations.of(context).translate('tooltip_refresh'),
             icon: const Icon(Icons.refresh),
             onPressed: () => _viewModel.loadProducts(_effectiveBranchId),
           ),
@@ -146,7 +148,7 @@ class _InventoryPageState extends State<InventoryPage> {
                   controller: _searchController,
                   onChanged: (val) => _viewModel.search(val, _effectiveBranchId),
                   decoration: InputDecoration(
-                    hintText: 'Buscar por SKU, nombre o categoría...',
+                    hintText: loc.translate('search_product_hint'),
                     prefixIcon: const Icon(Icons.search),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
@@ -311,7 +313,7 @@ class _InventoryPageState extends State<InventoryPage> {
                                 FilledButton.icon(
                                   onPressed: _openCreateProduct,
                                   icon: const Icon(Icons.add),
-                                  label: const Text('Registrar Nuevo Repuesto'),
+                                  label: Text(loc.translate('register_new_product')),
                                   style: FilledButton.styleFrom(
                                     backgroundColor: ShiftIQColors.primaryBlue,
                                   ),
@@ -340,7 +342,7 @@ class _InventoryPageState extends State<InventoryPage> {
         heroTag: 'fab_inventory',
         onPressed: _openCreateProduct,
         icon: const Icon(Icons.add),
-        label: const Text('Nuevo Repuesto'),
+        label: Text(loc.translate('new_product')),
         backgroundColor: ShiftIQColors.primaryBlue,
         foregroundColor: Colors.white,
       ),

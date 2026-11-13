@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/model/aggregates/product.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/presentation/widgets/stock_indicator_chip.dart';
@@ -17,6 +18,7 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),
@@ -53,23 +55,27 @@ class ProductCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: ShiftIQColors.warmNeutral,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: ShiftIQColors.borderSlate),
-                    ),
-                    child: Text(
-                      product.category,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF64748B),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: ShiftIQColors.warmNeutral,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: ShiftIQColors.borderSlate),
+                      ),
+                      child: Text(
+                        product.category,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF64748B),
+                        ),
                       ),
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 8),
                   StockIndicatorChip(
                     status: product.status,
                     currentStock: product.currentStock,
@@ -110,73 +116,83 @@ class ProductCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'PRECIO VENTA',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF64748B),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'PRECIO VENTA',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF64748B),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${product.formattedUnitPrice} / ${product.unitOfMeasure}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: ShiftIQColors.primaryBlue,
+                          const SizedBox(height: 2),
+                          Text(
+                            '${product.formattedUnitPrice} / ${product.unitOfMeasure}',
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: ShiftIQColors.primaryBlue,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'COSTO COMPRA',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF64748B),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'COSTO COMPRA',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF64748B),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          product.formattedCostPrice,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: ShiftIQColors.graphiteText,
+                          const SizedBox(height: 2),
+                          Text(
+                            product.formattedCostPrice,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: ShiftIQColors.graphiteText,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        const Text(
-                          'VALUACIÓN STOCK',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF64748B),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          const Text(
+                            'VALUACIÓN',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF64748B),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          product.formattedTotalValue,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: ShiftIQColors.preventiveGreen,
+                          const SizedBox(height: 2),
+                          Text(
+                            product.formattedTotalValue,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: ShiftIQColors.preventiveGreen,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -203,7 +219,7 @@ class ProductCard extends StatelessWidget {
                   OutlinedButton.icon(
                     onPressed: onAddBatch,
                     icon: const Icon(Icons.add, size: 14),
-                    label: const Text('+ Lote'),
+                    label: Text(loc.translate('add_batch_btn')),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: ShiftIQColors.primaryBlue,
                       side: const BorderSide(color: ShiftIQColors.primaryBlue),

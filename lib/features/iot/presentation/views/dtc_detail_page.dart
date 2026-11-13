@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/domain/iot_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/controllers/telemetry_view_model.dart';
@@ -34,10 +35,11 @@ class DtcDetailPage extends StatelessWidget {
   Future<void> _resolveDtc(BuildContext context) async {
     await viewModel.updateDtcStatus(alert.id, DtcStatus.resolved, branchId);
     if (context.mounted) {
+      final loc = AppLocalizations.of(context);
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Código DTC marcado como RESUELTO'),
+        SnackBar(
+          content: Text(loc.translate('dtc_resolved_success')),
           backgroundColor: ShiftIQColors.preventiveGreen,
         ),
       );
@@ -46,6 +48,7 @@ class DtcDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ShiftIQColors.warmNeutral,
       appBar: AppBar(
@@ -235,7 +238,7 @@ class DtcDetailPage extends StatelessWidget {
                   child: OutlinedButton.icon(
                     onPressed: () => _resolveDtc(context),
                     icon: const Icon(Icons.check_circle_outline, size: 16),
-                    label: const Text('Marcar Resuelto'),
+                    label: Text(loc.translate('mark_resolved')),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: ShiftIQColors.preventiveGreen,
                       side: const BorderSide(color: ShiftIQColors.preventiveGreen),
@@ -248,7 +251,7 @@ class DtcDetailPage extends StatelessWidget {
                   child: FilledButton.icon(
                     onPressed: () => _openWorkOrder(context),
                     icon: const Icon(Icons.post_add, size: 16),
-                    label: const Text('Abrir OT en Bahía'),
+                    label: Text(loc.translate('open_ot_bay')),
                     style: FilledButton.styleFrom(
                       backgroundColor: ShiftIQColors.primaryBlue,
                       padding: const EdgeInsets.symmetric(vertical: 14),

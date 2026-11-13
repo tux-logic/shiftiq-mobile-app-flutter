@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
@@ -55,10 +56,11 @@ class _BillingDashboardPageState extends State<BillingDashboardPage>
       listenable: _viewModel,
       builder: (context, _) {
         final viewModel = _viewModel;
+        final loc = AppLocalizations.of(context);
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Facturación SUNAT y Cotizaciones'),
+            title: Text(loc.translate('billing_title')),
             backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
             bottom: TabBar(
@@ -69,11 +71,11 @@ class _BillingDashboardPageState extends State<BillingDashboardPage>
               tabs: [
                 Tab(
                   icon: const Icon(Icons.receipt_long),
-                  text: 'Comprobantes (${viewModel.vouchers.length})',
+                  text: '${loc.translate('vouchers')} (${viewModel.vouchers.length})',
                 ),
                 Tab(
                   icon: const Icon(Icons.request_quote_outlined),
-                  text: 'Cotizaciones (${viewModel.quotes.length})',
+                  text: '${loc.translate('quotes')} (${viewModel.quotes.length})',
                 ),
               ],
             ),
@@ -167,14 +169,14 @@ class _BillingDashboardPageState extends State<BillingDashboardPage>
                       child: Row(
                         children: [
                           FilterChip(
-                            label: const Text('Todos'),
+                            label: Text(loc.translate('all')),
                             selected: viewModel.selectedTypeFilter == null,
                             onSelected: (_) =>
                                 viewModel.filterByType(null, _activeBranchId),
                           ),
                           const SizedBox(width: 8),
                           FilterChip(
-                            label: const Text('Boletas (B001)'),
+                            label: Text(loc.translate('boletas_filter')),
                             selected:
                                 viewModel.selectedTypeFilter == VoucherType.boleta,
                             onSelected: (_) => viewModel.filterByType(
@@ -184,7 +186,7 @@ class _BillingDashboardPageState extends State<BillingDashboardPage>
                           ),
                           const SizedBox(width: 8),
                           FilterChip(
-                            label: const Text('Facturas (F001)'),
+                            label: Text(loc.translate('facturas_filter')),
                             selected:
                                 viewModel.selectedTypeFilter == VoucherType.factura,
                             onSelected: (_) => viewModel.filterByType(
@@ -319,7 +321,7 @@ class _BillingDashboardPageState extends State<BillingDashboardPage>
             backgroundColor: AppColors.success,
             foregroundColor: Colors.white,
             icon: const Icon(Icons.add),
-            label: const Text('EMITIR COMPROBANTE'),
+            label: Text(loc.translate('emit_voucher_action')),
           ),
         );
       },

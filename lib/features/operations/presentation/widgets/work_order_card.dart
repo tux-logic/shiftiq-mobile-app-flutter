@@ -124,7 +124,7 @@ class WorkOrderCard extends StatelessWidget {
               ),
               const SizedBox(height: 6),
 
-              // Customer Name
+              // Customer Name & Phone
               Row(
                 children: [
                   const Icon(
@@ -133,10 +133,31 @@ class WorkOrderCard extends StatelessWidget {
                     color: Color(0xFF64748B),
                   ),
                   const SizedBox(width: 6),
-                  Text(
-                    workOrder.customerName,
-                    style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                  Expanded(
+                    child: Text(
+                      workOrder.customerName,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[800],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
+                  if (workOrder.customerPhone.isNotEmpty) ...[
+                    const Icon(
+                      Icons.phone_outlined,
+                      size: 13,
+                      color: Color(0xFF64748B),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      workOrder.customerPhone,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
                 ],
               ),
               const SizedBox(height: 6),
