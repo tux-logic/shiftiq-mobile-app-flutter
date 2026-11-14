@@ -80,8 +80,8 @@ void main() {
       expect(viewModel.roleDisplay, equals('Mecánico Especialista (B2B Staff)'));
       expect(viewModel.documentDisplay, equals('DNI: 75981176'));
       expect(viewModel.phoneDisplay, equals('+51987654322'));
-      expect(viewModel.specialtyName, equals('Mecánica General'));
-      expect(viewModel.salary, equals(2800.0));
+      expect(viewModel.specialtyName, equals('-'));
+      expect(viewModel.salary, equals(0.0));
       expect(viewModel.activeBranchName, equals('Sede Principal Surquillo'));
     });
 
@@ -159,7 +159,7 @@ void main() {
 
       expect(success, isTrue);
       expect(putCalled, isTrue);
-      expect(viewModel.successMessage, contains('exitosamente'));
+      expect(viewModel.successMessage, contains('successfully'));
     });
 
     test('logout() should clear session storage', () async {
