@@ -36,16 +36,16 @@ class ProfileViewModel extends ChangeNotifier {
   String _userEmail = '';
   String get userEmail => _userEmail;
 
-  String _activeBranchName = 'Sede Principal Surquillo';
+  String _activeBranchName = '-';
   String get activeBranchName => _activeBranchName;
 
   String _activeBranchId = '';
   String get activeBranchId => _activeBranchId;
 
-  String _specialtyName = 'Mecánica General';
+  String _specialtyName = '-';
   String get specialtyName => _specialtyName;
 
-  double _salary = 2800.0;
+  double _salary = 0.0;
   double get salary => _salary;
 
   bool get isOwner {
@@ -115,10 +115,9 @@ class ProfileViewModel extends ChangeNotifier {
     try {
       _userEmail = sessionStorage.username ?? '';
       _activeBranchId = await sessionStorage.getActiveBranchId() ?? '';
-      _activeBranchName =
-          await sessionStorage.getActiveBranchName() ?? 'Sede Principal Surquillo';
+      _activeBranchName = await sessionStorage.getActiveBranchName() ?? '-';
 
-      // 1. Fetch live unified profile context from Render (/api/v1/profiles/me)
+      // 1. Fetch live unified profile context (/api/v1/profiles/me)
       final rawContext = await profileApi.getMyProfileContext();
       final dto = UserProfileContextDto.fromJson(rawContext);
       _profileContext = dto.toDomain();
@@ -134,15 +133,15 @@ class ProfileViewModel extends ChangeNotifier {
             final spec = (activeReg['speciality'] ?? '').toString();
             _specialtyName = specName.isNotEmpty
                 ? specName
-                : (spec.isNotEmpty ? spec : 'Mecánica General');
-            _salary = (activeReg['salary'] as num?)?.toDouble() ?? 2800.0;
+                : (spec.isNotEmpty ? spec : '-');
+            _salary = (activeReg['salary'] as num?)?.toDouble() ?? 0.0;
           }
         } catch (_) {
-          // Fallback to standard specialty if registration query fails
+          // Keep default '-' if registration query fails
         }
       }
     } catch (e) {
-      _error = 'Error cargando datos del perfil desde Render: $e';
+      _error = 'Error loading profile: $e';
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -189,11 +188,11 @@ class ProfileViewModel extends ChangeNotifier {
       }
 
       await init(); // Refresh profile context
-      _successMessage = 'Perfil actualizado exitosamente en el servidor Render.';
+      _successMessage = 'Profile updated successfully.';
       notifyListeners();
       return true;
     } catch (e) {
-      _error = 'Error actualizando perfil en Render: $e';
+      _error = 'Error updating profile: $e';
       return false;
     } finally {
       _isSaving = false;

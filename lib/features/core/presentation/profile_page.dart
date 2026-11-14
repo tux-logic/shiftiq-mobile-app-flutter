@@ -5,8 +5,10 @@ import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_view_model.dart';
 
+/// Redesigned user profile screen displaying live backend identity and branch context.
 class ProfilePage extends StatefulWidget {
   final ProfileViewModel? viewModel;
 
@@ -42,7 +44,6 @@ class _ProfilePageState extends State<ProfilePage> {
     final phoneController = TextEditingController(
       text: emp?.phone ?? owner?.phone ?? '',
     );
-
     final formKey = GlobalKey<FormState>();
 
     showModalBottomSheet(
@@ -50,7 +51,7 @@ class _ProfilePageState extends State<ProfilePage> {
       isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (bottomSheetContext) {
         return Padding(
@@ -74,143 +75,82 @@ class _ProfilePageState extends State<ProfilePage> {
                         loc.translate('edit_profile'),
                         style: const TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: ShiftIQColors.primaryBlue,
+                          fontWeight: FontWeight.w800,
+                          color: ShiftIQColors.graphiteText,
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close),
+                        icon: const Icon(Icons.close_rounded),
                         onPressed: () => Navigator.of(bottomSheetContext).pop(),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Los cambios se sincronizarán directamente con el servidor Render.',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
                   const SizedBox(height: 16),
-
-                  // First Name
                   TextFormField(
                     controller: firstNameController,
-                    decoration: InputDecoration(
-                      labelText: loc.translate('first_name'),
-                      prefixIcon: const Icon(Icons.person_outline),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) {
-                        return 'Ingresa tus nombres';
-                      }
-                      return null;
-                    },
+                    decoration: authInputDecoration(
+                      hintText: loc.translate('first_name'),
+                      prefixIcon: Icons.person_outline_rounded,
+                    ).copyWith(labelText: loc.translate('first_name')),
+                    validator: (val) => val == null || val.trim().isEmpty
+                        ? 'First name is required'
+                        : null,
                   ),
                   const SizedBox(height: 12),
-
-                  // Last Name
                   TextFormField(
                     controller: lastNameController,
-                    decoration: InputDecoration(
-                      labelText: loc.translate('last_name'),
-                      prefixIcon: const Icon(Icons.badge_outlined),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) {
-                        return 'Ingresa tus apellidos';
-                      }
-                      return null;
-                    },
+                    decoration: authInputDecoration(
+                      hintText: loc.translate('last_name'),
+                      prefixIcon: Icons.badge_outlined,
+                    ).copyWith(labelText: loc.translate('last_name')),
+                    validator: (val) => val == null || val.trim().isEmpty
+                        ? 'Last name is required'
+                        : null,
                   ),
                   const SizedBox(height: 12),
-
-                  // Phone
                   TextFormField(
                     controller: phoneController,
                     keyboardType: TextInputType.phone,
-                    decoration: InputDecoration(
-                      labelText: loc.translate('mobile_phone'),
-                      prefixIcon: const Icon(Icons.phone_outlined),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) {
-                        return 'Ingresa un teléfono de contacto';
-                      }
-                      return null;
-                    },
+                    decoration: authInputDecoration(
+                      hintText: loc.translate('mobile_phone'),
+                      prefixIcon: Icons.phone_outlined,
+                    ).copyWith(labelText: loc.translate('mobile_phone')),
+                    validator: (val) => val == null || val.trim().isEmpty
+                        ? 'Phone is required'
+                        : null,
                   ),
                   const SizedBox(height: 20),
+                  AuthPrimaryButton(
+                    label: loc.translate('save'),
+                    isLoading: _viewModel.isSaving,
+                    onPressed: () async {
+                      if (!formKey.currentState!.validate()) return;
+                      final nav = Navigator.of(bottomSheetContext);
+                      final messenger = ScaffoldMessenger.of(context);
 
-                  // Submit Button
-                  ElevatedButton(
-                    onPressed: _viewModel.isSaving
-                        ? null
-                        : () async {
-                            if (!formKey.currentState!.validate()) return;
-                            final nav = Navigator.of(bottomSheetContext);
-                            final messenger = ScaffoldMessenger.of(context);
+                      final success = await _viewModel.updateProfile(
+                        firstName: firstNameController.text,
+                        lastName: lastNameController.text,
+                        phone: phoneController.text,
+                      );
 
-                            final success = await _viewModel.updateProfile(
-                              firstName: firstNameController.text,
-                              lastName: lastNameController.text,
-                              phone: phoneController.text,
-                            );
-
-                            if (success) {
-                              nav.pop();
-                              messenger.showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Perfil actualizado en el backend Render con éxito.',
-                                  ),
-                                  backgroundColor:
-                                      ShiftIQColors.preventiveGreen,
-                                ),
-                              );
-                            } else {
-                              messenger.showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    _viewModel.error ?? 'Error al guardar en el servidor Render.',
-                                  ),
-                                  backgroundColor:
-                                      ShiftIQColors.severityCrimson,
-                                ),
-                              );
-                            }
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ShiftIQColors.primaryBlue,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: _viewModel.isSaving
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Text(
-                            'GUARDAR CAMBIOS EN RENDER',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
+                      if (success) {
+                        nav.pop();
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text(_viewModel.successMessage ?? 'Saved'),
+                            backgroundColor: ShiftIQColors.preventiveGreen,
                           ),
+                        );
+                      } else {
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text(_viewModel.error ?? 'Error'),
+                            backgroundColor: ShiftIQColors.severityCrimson,
+                          ),
+                        );
+                      }
+                    },
                   ),
                 ],
               ),
@@ -229,24 +169,21 @@ class _ProfilePageState extends State<ProfilePage> {
         return AlertDialog(
           title: Row(
             children: [
-              const Icon(Icons.logout, color: ShiftIQColors.severityCrimson),
+              const Icon(Icons.logout_rounded, color: ShiftIQColors.severityCrimson),
               const SizedBox(width: 8),
               Text(loc.translate('logout_dialog_title')),
             ],
           ),
-          content: const Text(
-            '¿Estás seguro de que deseas cerrar tu sesión activa en este taller?',
-          ),
+          content: Text(loc.translate('customer_logout_confirm')),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
               child: Text(loc.translate('cancel_upper')),
             ),
-            ElevatedButton(
+            FilledButton(
               key: const Key('btn_confirm_logout'),
-              style: ElevatedButton.styleFrom(
+              style: FilledButton.styleFrom(
                 backgroundColor: ShiftIQColors.severityCrimson,
-                foregroundColor: Colors.white,
               ),
               onPressed: () async {
                 Navigator.of(dialogContext).pop();
@@ -271,24 +208,26 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+
     return ListenableBuilder(
       listenable: _viewModel,
       builder: (context, _) {
         final vm = _viewModel;
-        final loc = AppLocalizations.of(context);
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
           appBar: AppBar(
+            backgroundColor: const Color(0xFF0F172A),
+            foregroundColor: Colors.white,
             title: Text(
               loc.translate('profile_title'),
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
             actions: [
               IconButton(
-                tooltip: AppLocalizations.of(context)
-                    .translate('tooltip_refresh'),
-                icon: const Icon(Icons.refresh),
+                tooltip: loc.translate('tooltip_refresh'),
+                icon: const Icon(Icons.refresh_rounded),
                 onPressed: vm.isLoading ? null : vm.init,
               ),
             ],
@@ -304,345 +243,223 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // User Avatar & Role Header
-                      Card(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(
-                            color: ShiftIQColors.borderSlate,
+                      // Identity hero card
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color(0xFF0F172A),
+                              ShiftIQColors.primaryBlue,
+                            ],
                           ),
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        color: Colors.white,
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            children: [
-                              CircleAvatar(
-                                radius: 36,
-                                backgroundColor: ShiftIQColors.primaryBlue,
-                                child: Text(
-                                  vm.displayName.isNotEmpty
-                                      ? vm.displayName[0].toUpperCase()
-                                      : 'U',
-                                  style: const TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                vm.displayName,
-                                textAlign: TextAlign.center,
+                        child: Column(
+                          children: [
+                            CircleAvatar(
+                              radius: 34,
+                              backgroundColor: Colors.white.withAlpha(30),
+                              child: Text(
+                                vm.displayName.isNotEmpty
+                                    ? vm.displayName[0].toUpperCase()
+                                    : 'U',
                                 style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: ShiftIQColors.graphiteText,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
                                 ),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                vm.userEmail,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey[600],
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              vm.displayName,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              vm.userEmail,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.white70,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withAlpha(24),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: Colors.white.withAlpha(55),
                                 ),
                               ),
+                              child: Text(
+                                vm.roleDisplay,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Personal Info Card
+                      _ProfileSectionCard(
+                        icon: Icons.badge_outlined,
+                        title: 'Personal Information',
+                        children: [
+                          _InfoRow(label: 'Document', value: vm.documentDisplay),
+                          const SizedBox(height: 10),
+                          _InfoRow(label: 'Phone', value: vm.phoneDisplay),
+                          const SizedBox(height: 10),
+                          _InfoRow(label: 'Email', value: vm.userEmail),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Branch & Role Context Card
+                      _ProfileSectionCard(
+                        icon: vm.isOwner
+                            ? Icons.business_outlined
+                            : Icons.storefront_outlined,
+                        title: vm.isOwner
+                            ? 'Organization & Active Branch'
+                            : 'Assigned Branch',
+                        children: [
+                          _InfoRow(
+                            label: 'Active Branch',
+                            value: vm.activeBranchName,
+                          ),
+                          if (!vm.isOwner) ...[
+                            const SizedBox(height: 10),
+                            _InfoRow(
+                              label: 'Specialty',
+                              value: vm.specialtyName,
+                            ),
+                            if (vm.salary > 0) ...[
                               const SizedBox(height: 10),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: ShiftIQColors.primaryBlue.withAlpha(
-                                    25,
-                                  ),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: ShiftIQColors.primaryBlue,
-                                  ),
-                                ),
-                                child: Text(
-                                  vm.roleDisplay,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: ShiftIQColors.primaryBlue,
-                                  ),
-                                ),
+                              _InfoRow(
+                                label: 'Base Salary',
+                                value: 'S/ ${vm.salary.toStringAsFixed(2)}',
                               ),
                             ],
-                          ),
-                        ),
+                          ],
+                        ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
 
-                      // Personal Information Card
-                      Card(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(
-                            color: ShiftIQColors.borderSlate,
-                          ),
-                        ),
-                        color: Colors.white,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Row(
+                      // Language Card
+                      _ProfileSectionCard(
+                        icon: Icons.translate_rounded,
+                        title: 'Language (i18n)',
+                        children: [
+                          ValueListenableBuilder<Locale>(
+                            valueListenable: appLocaleNotifier,
+                            builder: (context, currentLocale, _) {
+                              final isSpanish =
+                                  currentLocale.languageCode == 'es';
+                              return Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
                                 children: [
-                                  Icon(
-                                    Icons.badge_outlined,
-                                    color: ShiftIQColors.primaryBlue,
-                                    size: 20,
+                                  ChoiceChip(
+                                    label: Text(loc.translate('spanish_pe')),
+                                    selected: isSpanish,
+                                    selectedColor:
+                                        ShiftIQColors.primaryBlue.withAlpha(24),
+                                    onSelected: (selected) {
+                                      if (selected) {
+                                        appLocaleNotifier.value =
+                                            const Locale('es', 'PE');
+                                        if (getIt.isRegistered<SessionStorage>()) {
+                                          getIt<SessionStorage>()
+                                              .saveLocale('es');
+                                        }
+                                      }
+                                    },
                                   ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Información Personal',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                  ChoiceChip(
+                                    label: Text(loc.translate('english_us')),
+                                    selected: !isSpanish,
+                                    selectedColor:
+                                        ShiftIQColors.primaryBlue.withAlpha(24),
+                                    onSelected: (selected) {
+                                      if (selected) {
+                                        appLocaleNotifier.value =
+                                            const Locale('en', 'US');
+                                        if (getIt.isRegistered<SessionStorage>()) {
+                                          getIt<SessionStorage>()
+                                              .saveLocale('en');
+                                        }
+                                      }
+                                    },
                                   ),
                                 ],
-                              ),
-                              const Divider(height: 24),
-                              _buildInfoRow('Documento', vm.documentDisplay),
-                              const SizedBox(height: 12),
-                              _buildInfoRow('Teléfono Móvil', vm.phoneDisplay),
-                              const SizedBox(height: 12),
-                              _buildInfoRow('Correo', vm.userEmail),
-                            ],
+                              );
+                            },
                           ),
-                        ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 22),
 
-                      // Assigned Workshop & Branch Card
-                      Card(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(
-                            color: ShiftIQColors.borderSlate,
+                      SizedBox(
+                        height: 50,
+                        child: FilledButton.icon(
+                          key: const Key('btn_edit_profile'),
+                          onPressed: _showEditProfileBottomSheet,
+                          icon: const Icon(Icons.edit_outlined),
+                          label: Text(
+                            loc.translate('edit_profile'),
+                            style: const TextStyle(fontWeight: FontWeight.w700),
                           ),
-                        ),
-                        color: Colors.white,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    vm.isOwner
-                                        ? Icons.business_outlined
-                                        : Icons.storefront_outlined,
-                                    color: ShiftIQColors.primaryBlue,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    vm.isOwner
-                                        ? 'Empresa y Taller Matriz (Dueño)'
-                                        : 'Sede de Taller Asignada',
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const Divider(height: 24),
-                              if (vm.isOwner) ...[
-                                _buildInfoRow('Taller Matriz', 'Wagner Motors'),
-                                const SizedBox(height: 12),
-                                _buildInfoRow(
-                                  'Fundador / Propietario',
-                                  vm.displayName,
-                                ),
-                                const SizedBox(height: 12),
-                                _buildInfoRow('RUC Empresa', '20601234567'),
-                                const SizedBox(height: 12),
-                                _buildInfoRow(
-                                  'Sede Principal',
-                                  vm.activeBranchName,
-                                ),
-                                const SizedBox(height: 12),
-                                _buildInfoRow(
-                                  'Gobernanza',
-                                  'Multisede / Administración Total',
-                                ),
-                              ] else ...[
-                                _buildInfoRow(
-                                  'Sede Actual',
-                                  vm.activeBranchName,
-                                ),
-                                const SizedBox(height: 12),
-                                _buildInfoRow(
-                                  'Dirección',
-                                  'Av. Tomas Marsano Nro. 890, Surquillo',
-                                ),
-                                const SizedBox(height: 12),
-                                _buildInfoRow(
-                                  'Especialidad Técnica',
-                                  vm.specialtyName,
-                                ),
-                                const SizedBox(height: 12),
-                                _buildInfoRow(
-                                  'Salario Base Asignado',
-                                  'S/ ${vm.salary.toStringAsFixed(2)}',
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Language & Localization Settings Card
-                      Card(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(
-                            color: ShiftIQColors.borderSlate,
-                          ),
-                        ),
-                        color: Colors.white,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Row(
-                                children: [
-                                  Icon(
-                                    Icons.translate_outlined,
-                                    color: ShiftIQColors.primaryBlue,
-                                    size: 20,
-                                  ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Idioma de la Aplicación (i18n)',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const Divider(height: 20),
-                              ValueListenableBuilder<Locale>(
-                                valueListenable: appLocaleNotifier,
-                                builder: (context, currentLocale, _) {
-                                  final isSpanish =
-                                      currentLocale.languageCode == 'es';
-                                  return Wrap(
-                                    spacing: 8,
-                                    runSpacing: 8,
-                                    children: [
-                                      ChoiceChip(
-                                        avatar: const Text(
-                                          '🇵🇪',
-                                          style: TextStyle(fontSize: 14),
-                                        ),
-                                        label: Text(
-                                          loc.translate('spanish_pe'),
-                                        ),
-                                        selected: isSpanish,
-                                        selectedColor: ShiftIQColors.primaryBlue
-                                            .withAlpha(25),
-                                        onSelected: (selected) {
-                                          if (selected) {
-                                            appLocaleNotifier.value =
-                                                const Locale('es', 'PE');
-                                            getIt<SessionStorage>().saveLocale(
-                                              'es',
-                                            );
-                                          }
-                                        },
-                                      ),
-                                      ChoiceChip(
-                                        avatar: const Text(
-                                          '🇺🇸',
-                                          style: TextStyle(fontSize: 14),
-                                        ),
-                                        label: Text(
-                                          loc.translate('english_us'),
-                                        ),
-                                        selected: !isSpanish,
-                                        selectedColor: ShiftIQColors.primaryBlue
-                                            .withAlpha(25),
-                                        onSelected: (selected) {
-                                          if (selected) {
-                                            appLocaleNotifier.value =
-                                                const Locale('en', 'US');
-                                            getIt<SessionStorage>().saveLocale(
-                                              'en',
-                                            );
-                                          }
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Edit Profile Button
-                      ElevatedButton.icon(
-                        key: const Key('btn_edit_profile'),
-                        onPressed: _showEditProfileBottomSheet,
-                        icon: const Icon(Icons.edit_outlined),
-                        label: const Text(
-                          'EDITAR DATOS PERSONALES',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: ShiftIQColors.primaryBlue,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: ShiftIQColors.primaryBlue,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
                           ),
                         ),
                       ),
                       const SizedBox(height: 12),
 
-                      // Logout Button
-                      OutlinedButton.icon(
-                        key: const Key('btn_logout'),
-                        onPressed: _confirmLogout,
-                        icon: const Icon(
-                          Icons.logout,
-                          color: ShiftIQColors.severityCrimson,
-                        ),
-                        label: const Text(
-                          'CERRAR SESIÓN DEL TALLER',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
+                      SizedBox(
+                        height: 50,
+                        child: OutlinedButton.icon(
+                          key: const Key('btn_logout'),
+                          onPressed: _confirmLogout,
+                          icon: const Icon(
+                            Icons.logout_rounded,
                             color: ShiftIQColors.severityCrimson,
                           ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(
-                            color: ShiftIQColors.severityCrimson,
+                          label: Text(
+                            loc.translate('logout_upper'),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: ShiftIQColors.severityCrimson,
+                            ),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(
+                              color: ShiftIQColors.severityCrimson,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
                           ),
                         ),
                       ),
@@ -654,18 +471,71 @@ class _ProfilePageState extends State<ProfilePage> {
       },
     );
   }
+}
 
-  Widget _buildInfoRow(String label, String value) {
+class _ProfileSectionCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final List<Widget> children;
+
+  const _ProfileSectionCard({
+    required this.icon,
+    required this.title,
+    required this.children,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: ShiftIQColors.primaryBlue, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: ShiftIQColors.graphiteText,
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 22, color: Color(0xFFE2E8F0)),
+          ...children,
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _InfoRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Flexible(
           child: Text(
             label,
-            style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+            style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 12),
         Flexible(
           child: Text(
             value,
