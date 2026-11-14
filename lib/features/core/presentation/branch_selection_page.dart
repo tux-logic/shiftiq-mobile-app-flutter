@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:shiftiq_mobile_app_flutter/core/auth/mobile_role_scope.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
@@ -8,6 +9,8 @@ import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/widgets/au
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/branch_location_picker.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/branch_map_view.dart';
 import 'package:shiftiq_mobile_app_flutter/features/main/presentation/main_page.dart';
 
 /// Modern multi-branch selector for workshop staff and owners/admins.
@@ -22,6 +25,7 @@ class BranchSelectionPage extends StatefulWidget {
 
 class _BranchSelectionPageState extends State<BranchSelectionPage> {
   late final BranchSelectionViewModel _viewModel;
+  bool _showMap = false;
 
   @override
   void initState() {
@@ -63,6 +67,7 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
     final addressController = TextEditingController();
     final phoneController = TextEditingController();
     final formKey = GlobalKey<FormState>();
+    LatLng? pickedCoordinates;
 
     showModalBottomSheet(
       context: context,
@@ -145,6 +150,10 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
                     prefixIcon: Icons.phone_outlined,
                   ).copyWith(labelText: loc.translate('branch_phone')),
                 ),
+                const SizedBox(height: 14),
+                BranchLocationPicker(
+                  onLocationPicked: (point) => pickedCoordinates = point,
+                ),
                 const SizedBox(height: 20),
                 AuthPrimaryButton(
                   label: loc.translate('new_branch'),
@@ -159,6 +168,8 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
                       name: nameController.text.trim(),
                       address: addressController.text.trim(),
                       phone: phoneController.text.trim(),
+                      latitude: pickedCoordinates?.latitude,
+                      longitude: pickedCoordinates?.longitude,
                     );
                     if (success && mounted) {
                       messenger.showSnackBar(
@@ -288,14 +299,27 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          isOwnerAdmin
-                              ? 'Manage operations and analytics across your branches.'
-                              : 'Select your assigned branch to start your shift.',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.white70,
-                          ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                isOwnerAdmin
+                                    ? 'Manage operations and analytics across your branches.'
+                                    : 'Select your assigned branch to start your shift.',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            _ViewModeToggle(
+                              showMap: _showMap,
+                              onChanged: (mapMode) =>
+                                  setState(() => _showMap = mapMode),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -305,7 +329,13 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
 
               // Body content
               Expanded(
-                child: _buildBody(context, vm, loc),
+                child: _showMap
+                    ? BranchMapView(
+                        branches: vm.branches,
+                        selectedBranch: vm.selectedBranch,
+                        onEnterBranch: _onBranchSelected,
+                      )
+                    : _buildBody(context, vm, loc),
               ),
             ],
           ),
@@ -564,6 +594,78 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _ViewModeToggle extends StatelessWidget {
+  final bool showMap;
+  final ValueChanged<bool> onChanged;
+
+  const _ViewModeToggle({
+    required this.showMap,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(20),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withAlpha(35)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _ToggleChip(
+            key: const Key('toggle_branch_list'),
+            icon: Icons.view_agenda_outlined,
+            selected: !showMap,
+            onTap: () => onChanged(false),
+          ),
+          _ToggleChip(
+            key: const Key('toggle_branch_map'),
+            icon: Icons.map_outlined,
+            selected: showMap,
+            onTap: () => onChanged(true),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ToggleChip extends StatelessWidget {
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ToggleChip({
+    super.key,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Icon(
+          icon,
+          size: 16,
+          color: selected ? const Color(0xFF0F172A) : Colors.white70,
+        ),
       ),
     );
   }
