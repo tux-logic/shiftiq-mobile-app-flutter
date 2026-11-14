@@ -83,6 +83,8 @@ class GetUserBranchesUseCase {
         address: 'Av. Javier Prado Este 4500, Santiago de Surco, Lima',
         district: 'Santiago de Surco',
         phone: '+51987654320',
+        latitude: -12.0865,
+        longitude: -76.9760,
         active: true,
       ),
       Branch(
@@ -93,6 +95,8 @@ class GetUserBranchesUseCase {
         address: 'Av. Tomas Marsano Nro. 890 Villa Victoria, Surquillo, Lima',
         district: 'Surquillo',
         phone: '+51987654321',
+        latitude: -12.1111,
+        longitude: -77.0124,
         active: true,
       ),
     ];
@@ -108,6 +112,9 @@ class GetUserBranchesUseCase {
     required String name,
     required String address,
     required String phone,
+    String? coverImageUrl,
+    double? latitude,
+    double? longitude,
   }) {
     return repository.createBranch(
       workshopId: workshopId,
@@ -115,6 +122,9 @@ class GetUserBranchesUseCase {
       name: name,
       address: address,
       phone: phone,
+      coverImageUrl: coverImageUrl,
+      latitude: latitude,
+      longitude: longitude,
     );
   }
 
@@ -124,6 +134,9 @@ class GetUserBranchesUseCase {
     required String name,
     required String address,
     required String phone,
+    String? coverImageUrl,
+    double? latitude,
+    double? longitude,
   }) {
     return repository.updateBranch(
       branchId: branchId,
@@ -131,6 +144,9 @@ class GetUserBranchesUseCase {
       name: name,
       address: address,
       phone: phone,
+      coverImageUrl: coverImageUrl,
+      latitude: latitude,
+      longitude: longitude,
     );
   }
 }

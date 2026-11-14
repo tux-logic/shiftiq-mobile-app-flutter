@@ -83,6 +83,9 @@ class CoreRepositoryImpl implements CoreRepository {
     required String name,
     required String address,
     required String phone,
+    String? coverImageUrl,
+    double? latitude,
+    double? longitude,
   }) async {
     final json = await branchApi.createBranch(
       workshopId: workshopId,
@@ -90,6 +93,9 @@ class CoreRepositoryImpl implements CoreRepository {
       name: name,
       address: address,
       phone: phone,
+      coverImageUrl: coverImageUrl,
+      latitude: latitude,
+      longitude: longitude,
     );
     return BranchDto.fromJson(json).toDomain();
   }
@@ -101,6 +107,9 @@ class CoreRepositoryImpl implements CoreRepository {
     required String name,
     required String address,
     required String phone,
+    String? coverImageUrl,
+    double? latitude,
+    double? longitude,
   }) async {
     final json = await branchApi.updateBranch(
       branchId: branchId,
@@ -108,6 +117,9 @@ class CoreRepositoryImpl implements CoreRepository {
       name: name,
       address: address,
       phone: phone,
+      coverImageUrl: coverImageUrl,
+      latitude: latitude,
+      longitude: longitude,
     );
     return BranchDto.fromJson(json).toDomain();
   }

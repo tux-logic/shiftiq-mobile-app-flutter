@@ -39,6 +39,9 @@ class BranchSelectionViewModel extends ChangeNotifier {
     required String name,
     required String address,
     required String phone,
+    String? coverImageUrl,
+    double? latitude,
+    double? longitude,
   }) async {
     isLoading = true;
     errorMessage = null;
@@ -51,6 +54,9 @@ class BranchSelectionViewModel extends ChangeNotifier {
         name: name,
         address: address,
         phone: phone,
+        coverImageUrl: coverImageUrl,
+        latitude: latitude,
+        longitude: longitude,
       );
       branches = [...branches, newBranch];
       isLoading = false;
