@@ -26,7 +26,7 @@ class LoginViewModel extends ChangeNotifier {
 
   Future<bool> login(String email, String password) async {
     if (email.trim().isEmpty || password.isEmpty) {
-      errorMessage = 'Por favor complete todos los campos requeridos.';
+      errorMessage = 'Please complete all required fields.';
       notifyListeners();
       return false;
     }

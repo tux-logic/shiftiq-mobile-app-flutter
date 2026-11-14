@@ -17,7 +17,9 @@ import 'package:shiftiq_mobile_app_flutter/features/auth/domain/auth_repository.
 import 'package:shiftiq_mobile_app_flutter/features/auth/infrastructure/repositories/auth_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/infrastructure/remote/auth_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/infrastructure/remote/user_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/forgot_password_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/register_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/create_workshop.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_user_branches.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_user_profile_context.dart';
@@ -184,6 +186,22 @@ void setupDependencies() {
 
   getIt.registerFactory<LoginViewModel>(
     () => LoginViewModel(loginUseCase: getIt<LoginWithPasswordUseCase>()),
+  );
+
+  getIt.registerFactory<ForgotPasswordViewModel>(
+    () => ForgotPasswordViewModel(
+      requestRecoveryUseCase: getIt<RequestPasswordRecoveryUseCase>(),
+      resetPasswordUseCase: getIt<ResetPasswordUseCase>(),
+    ),
+  );
+
+  getIt.registerFactory<RegisterViewModel>(
+    () => RegisterViewModel(
+      sendOtpUseCase: getIt<SendOtpUseCase>(),
+      verifyOtpUseCase: getIt<VerifyOtpUseCase>(),
+      signUpUserUseCase: getIt<SignUpUserUseCase>(),
+      loginUseCase: getIt<LoginWithPasswordUseCase>(),
+    ),
   );
 
   // 3. Core Context (Workshops, Branches, Profiles)
