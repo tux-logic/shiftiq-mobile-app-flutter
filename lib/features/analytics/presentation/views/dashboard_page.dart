@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:shiftiq_mobile_app_flutter/core/auth/mobile_role_scope.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/controllers/dashboard_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/activity_bar_chart.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/dtc_alert_banner.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/kpi_metric_card.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/quick_actions_row.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/revenue_trend_chart.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/billing_dashboard_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/controllers/appointments_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/views/customer_directory_page.dart';
 
+/// Minimalist, reactive branch analytics and operations dashboard.
 class DashboardPage extends StatefulWidget {
   final DashboardViewModel? viewModel;
   final VoidCallback? onNavigateToOrders;
@@ -45,88 +50,100 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
+  bool get _isOwnerAdmin {
+    if (!getIt.isRegistered<SessionStorage>()) return false;
+    return RoleRouter.resolveScope(getIt<SessionStorage>().roles) ==
+        MobileRoleScope.ownerAdmin;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+
     return ListenableBuilder(
       listenable: _viewModel,
       builder: (context, _) {
-        final viewModel = _viewModel;
-        final isOwner = getIt<SessionStorage>().roles.contains('ROLE_OWNER') ||
-            getIt<SessionStorage>().roles.contains('OWNER');
+        final vm = _viewModel;
+        final isOwnerAdmin = _isOwnerAdmin;
+        final summary = vm.summary;
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
           appBar: AppBar(
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                InkWell(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const BranchSelectionPage(),
-                      ),
-                    );
-                  },
-                  borderRadius: BorderRadius.circular(6),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 2),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            viewModel.activeBranchName,
+            backgroundColor: const Color(0xFF0F172A),
+            foregroundColor: Colors.white,
+            elevation: 0,
+            titleSpacing: 16,
+            title: InkWell(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const BranchSelectionPage(),
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(10),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            vm.activeBranchName,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
                               color: Colors.white,
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 4),
-                        const Icon(
-                          Icons.keyboard_arrow_down,
-                          size: 18,
-                          color: Colors.white70,
-                        ),
-                      ],
+                          Text(
+                            isOwnerAdmin
+                                ? loc.translate('executive_dashboard')
+                                : loc.translate('operational_dashboard'),
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.white60,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 18,
+                      color: Colors.white70,
+                    ),
+                  ],
                 ),
-                Text(
-                  isOwner
-                      ? AppLocalizations.of(context).translate('executive_dashboard')
-                      : AppLocalizations.of(context).translate('operational_dashboard'),
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: Colors.white70,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
+              ),
             ),
             actions: [
               IconButton(
-                tooltip: AppLocalizations.of(context).translate('tooltip_customer_directory'),
-                icon: const Icon(Icons.people_alt_outlined),
+                tooltip: loc.translate('tooltip_customer_directory'),
+                icon: const Icon(Icons.people_outline_rounded, size: 22),
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) => CustomerDirectoryPage(
-                        branchId: viewModel.activeBranchId,
+                        branchId: vm.activeBranchId,
                         viewModel: getIt<AppointmentsViewModel>(),
                       ),
                     ),
                   );
                 },
               ),
-              if (isOwner)
+              if (isOwnerAdmin)
                 IconButton(
-                  tooltip: AppLocalizations.of(context).translate('tooltip_billing'),
-                  icon: const Icon(Icons.receipt_long),
+                  tooltip: loc.translate('tooltip_billing'),
+                  icon: const Icon(Icons.receipt_long_outlined, size: 21),
                   onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -136,303 +153,333 @@ class _DashboardPageState extends State<DashboardPage> {
                   },
                 ),
               IconButton(
-                tooltip: AppLocalizations.of(context).translate('tooltip_change_branch'),
-                icon: const Icon(Icons.storefront_outlined),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const BranchSelectionPage(),
-                    ),
-                  );
-                },
-              ),
-              IconButton(
-                tooltip: AppLocalizations.of(context).translate('tooltip_refresh_kpis'),
-                icon: const Icon(Icons.refresh),
-                onPressed: viewModel.isLoading ? null : viewModel.refresh,
-              ),
-              IconButton(
-                tooltip: AppLocalizations.of(context).translate('tooltip_profile'),
+                tooltip: loc.translate('tooltip_profile'),
                 icon: const CircleAvatar(
                   radius: 14,
                   backgroundColor: Colors.white24,
-                  child: Icon(Icons.person, size: 18, color: Colors.white),
+                  child: Icon(
+                    Icons.person_outline_rounded,
+                    size: 17,
+                    color: Colors.white,
+                  ),
                 ),
                 onPressed: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const ProfilePage(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const ProfilePage()),
                   );
                 },
               ),
+              const SizedBox(width: 4),
             ],
           ),
           body: RefreshIndicator(
-            onRefresh: viewModel.refresh,
+            onRefresh: vm.refresh,
             color: ShiftIQColors.primaryBlue,
-            child: viewModel.isLoading && viewModel.summary == null
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      color: ShiftIQColors.primaryBlue,
-                    ),
-                  )
-                : SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // DTC Telemetry Alerts Banner
-                        if (viewModel.summary != null)
-                          DtcAlertBanner(
-                            alertCount: viewModel.summary!.dtcAlertsCount,
-                            onDetailsPressed: widget.onNavigateToIot,
-                          ),
-
-                        const SizedBox(height: 12),
-
-                        // Section Title
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 240),
+              child: vm.isLoading && summary == null
+                  ? const Center(
+                      key: ValueKey('loading'),
+                      child: CircularProgressIndicator(
+                        color: ShiftIQColors.primaryBlue,
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      key: const ValueKey('content'),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween<double>(begin: 0.0, end: 1.0),
+                        duration: const Duration(milliseconds: 380),
+                        curve: Curves.easeOutCubic,
+                        builder: (context, t, child) {
+                          return Opacity(
+                            opacity: t,
+                            child: Transform.translate(
+                              offset: Offset(0, (1 - t) * 10),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'MÉTRICAS CLAVE (KPIs DE HOY)',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
-                                color: Color(0xFF64748B),
+                            if (summary != null &&
+                                summary.dtcAlertsCount > 0) ...[
+                              DtcAlertBanner(
+                                alertCount: summary.dtcAlertsCount,
+                                onDetailsPressed: widget.onNavigateToIot,
                               ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: ShiftIQColors.preventiveGreen.withAlpha(25),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 6,
-                                    height: 6,
-                                    decoration: const BoxDecoration(
-                                      color: ShiftIQColors.preventiveGreen,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  const Text(
-                                    'EN VIVO',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: ShiftIQColors.preventiveGreen,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-
-                        // KPI 2x2 Grid
-                        GridView.count(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          children: [
-                            if (isOwner)
-                              KpiMetricCard(
-                                title: AppLocalizations.of(context).translate('month_revenue'),
-                                value: viewModel.summary?.formattedRevenue ?? 'S/ 0.00',
-                                subtitle: AppLocalizations.of(context).translate('month_revenue_sub'),
-                                icon: Icons.trending_up,
-                                accentColor: ShiftIQColors.preventiveGreen,
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) => const BillingDashboardPage(),
-                                    ),
-                                  );
-                                },
-                              )
-                            else
-                              KpiMetricCard(
-                                title: AppLocalizations.of(context).translate('bays_in_service'),
-                                value: AppLocalizations.of(context).translate('bays_active_label'),
-                                subtitle: AppLocalizations.of(context).translate('bays_active_subtitle'),
-                                icon: Icons.car_repair_outlined,
-                                accentColor: ShiftIQColors.preventiveGreen,
-                                onTap: widget.onNavigateToOrders,
-                              ),
-                            KpiMetricCard(
-                              title: AppLocalizations.of(context).translate('work_orders_kpi'),
-                              value: '${viewModel.summary?.completedWorkOrdersCount ?? 0} OTs',
-                              subtitle: '4 ${AppLocalizations.of(context).translate('active_bay_sub')}',
-                              icon: Icons.build_circle_outlined,
-                              accentColor: ShiftIQColors.primaryBlue,
-                              onTap: widget.onNavigateToOrders,
-                            ),
-                            KpiMetricCard(
-                              title: AppLocalizations.of(context).translate('today_appointments_kpi'),
-                              value: '${viewModel.summary?.totalAppointmentsCount ?? 0} ${AppLocalizations.of(context).translate('appointments_tab')}',
-                              subtitle: '2 ${AppLocalizations.of(context).translate('pending_appointments_sub')}',
-                              icon: Icons.calendar_today_outlined,
-                              accentColor: ShiftIQColors.secondaryTeal,
-                              onTap: widget.onNavigateToAppointments,
-                            ),
-                            KpiMetricCard(
-                              title: AppLocalizations.of(context).translate('critical_stock_kpi'),
-                              value: '${viewModel.summary?.lowStockAlertsCount ?? 0} Lotes',
-                              subtitle: AppLocalizations.of(context).translate('reorder_today'),
-                              icon: Icons.warning_amber_rounded,
-                              accentColor: ShiftIQColors.severityAmber,
-                              onTap: widget.onNavigateToInventory,
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        // Quick Actions
-                        QuickActionsRow(
-                          onNewOrder: widget.onNavigateToOrders,
-                          onNewAppointment: widget.onNavigateToAppointments,
-                          onNewBatch: widget.onNavigateToInventory,
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        // Recent Work Orders Card Summary
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: ShiftIQColors.borderSlate),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text(
-                                    'Órdenes de Trabajo Activas',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                      color: ShiftIQColors.graphiteText,
-                                    ),
-                                  ),
-                                  TextButton(
-                                    onPressed: widget.onNavigateToOrders,
-                                    child: const Text(
-                                      'Ver Todas',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: ShiftIQColors.primaryBlue,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              if (_viewModel.recentWorkOrders.isEmpty) ...[
-                                const Divider(height: 12),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 14),
-                                  child: Center(
-                                    child: Text(
-                                      'No hay órdenes de trabajo activas en esta sede.',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Color(0xFF64748B),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ] else ...[
-                                for (var i = 0; i < _viewModel.recentWorkOrders.length; i++) ...[
-                                  const Divider(height: 12),
-                                  _buildOrderPreviewItem(
-                                    code: _viewModel.recentWorkOrders[i].formattedNumber.isNotEmpty
-                                        ? _viewModel.recentWorkOrders[i].formattedNumber
-                                        : 'OT-${_viewModel.recentWorkOrders[i].internalNumber}',
-                                    vehicle: '${_viewModel.recentWorkOrders[i].vehicleModel} (${_viewModel.recentWorkOrders[i].vehiclePlate})',
-                                    service: _viewModel.recentWorkOrders[i].diagnosticSummary.isNotEmpty
-                                        ? _viewModel.recentWorkOrders[i].diagnosticSummary
-                                        : 'Revisión General',
-                                    status: _viewModel.recentWorkOrders[i].status.label,
-                                    statusColor: _viewModel.recentWorkOrders[i].status.color,
-                                  ),
-                                ],
-                              ],
+                              const SizedBox(height: 16),
                             ],
-                          ),
+
+                            // Minimalist 2x2 KPI grid
+                            GridView.count(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                              childAspectRatio: 1.18,
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              children: [
+                                if (isOwnerAdmin)
+                                  KpiMetricCard(
+                                    title: loc.translate('month_revenue'),
+                                    value: summary?.formattedRevenue ??
+                                        'S/ 0.00',
+                                    numericValue: summary?.totalRevenue ?? 0.0,
+                                    valueFormatter: (v) =>
+                                        'S/ ${NumberFormat('#,##0.00', 'en_US').format(v)}',
+                                    icon: Icons.trending_up_rounded,
+                                    accentColor: ShiftIQColors.preventiveGreen,
+                                    onTap: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              const BillingDashboardPage(),
+                                        ),
+                                      );
+                                    },
+                                  )
+                                else
+                                  KpiMetricCard(
+                                    title: loc.translate('bays_in_service'),
+                                    value: loc.translate('bays_active_label'),
+                                    icon: Icons.car_repair_outlined,
+                                    accentColor: ShiftIQColors.preventiveGreen,
+                                    onTap: widget.onNavigateToOrders,
+                                  ),
+                                KpiMetricCard(
+                                  title: loc.translate('work_orders_kpi'),
+                                  value:
+                                      '${summary?.completedWorkOrdersCount ?? 0}',
+                                  numericValue: (summary
+                                              ?.completedWorkOrdersCount ??
+                                          0)
+                                      .toDouble(),
+                                  valueFormatter: (v) => '${v.round()}',
+                                  subtitle: loc.translate('orders_tab'),
+                                  icon: Icons.build_circle_outlined,
+                                  accentColor: ShiftIQColors.primaryBlue,
+                                  onTap: widget.onNavigateToOrders,
+                                ),
+                                KpiMetricCard(
+                                  title:
+                                      loc.translate('today_appointments_kpi'),
+                                  value:
+                                      '${summary?.totalAppointmentsCount ?? 0}',
+                                  numericValue:
+                                      (summary?.totalAppointmentsCount ?? 0)
+                                          .toDouble(),
+                                  valueFormatter: (v) => '${v.round()}',
+                                  subtitle: loc.translate('appointments_tab'),
+                                  icon: Icons.calendar_today_outlined,
+                                  accentColor: ShiftIQColors.secondaryTeal,
+                                  onTap: widget.onNavigateToAppointments,
+                                ),
+                                KpiMetricCard(
+                                  title: loc.translate('critical_stock_kpi'),
+                                  value: '${summary?.lowStockAlertsCount ?? 0}',
+                                  numericValue:
+                                      (summary?.lowStockAlertsCount ?? 0)
+                                          .toDouble(),
+                                  valueFormatter: (v) => '${v.round()}',
+                                  subtitle: loc.translate('reorder_today'),
+                                  icon: Icons.inventory_2_outlined,
+                                  accentColor: ShiftIQColors.severityAmber,
+                                  onTap: widget.onNavigateToInventory,
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            // Animated Analytics Charts
+                            if (isOwnerAdmin || vm.snapshots.isNotEmpty) ...[
+                              RevenueTrendChart(
+                                snapshots: vm.snapshots,
+                                selectedRangeDays: vm.selectedRangeDays,
+                                onRangeChanged: vm.setRangeDays,
+                              ),
+                              const SizedBox(height: 12),
+                              ActivityBarChart(snapshots: vm.snapshots),
+                              const SizedBox(height: 18),
+                            ],
+
+                            QuickActionsRow(
+                              onNewOrder: widget.onNavigateToOrders,
+                              onNewAppointment: widget.onNavigateToAppointments,
+                              onNewBatch: widget.onNavigateToInventory,
+                            ),
+
+                            const SizedBox(height: 18),
+
+                            // Clean Recent Work Orders Card
+                            Container(
+                              padding: const EdgeInsets.all(18),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
+                                  color: const Color(0xFFE8EDF4),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF0F172A)
+                                        .withValues(alpha: 0.03),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        loc.translate('active_work_orders'),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 15,
+                                          color: ShiftIQColors.graphiteText,
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: widget.onNavigateToOrders,
+                                        child: Text(
+                                          loc.translate('view_all'),
+                                          style: const TextStyle(
+                                            fontSize: 12.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: ShiftIQColors.primaryBlue,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  if (vm.recentWorkOrders.isEmpty)
+                                    const Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 16),
+                                      child: Center(
+                                        child: Text(
+                                          'No hay órdenes activas en esta sede.',
+                                          style: TextStyle(
+                                            fontSize: 12.5,
+                                            color: Color(0xFF94A3B8),
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    ...vm.recentWorkOrders.map(
+                                      (order) => Padding(
+                                        padding: const EdgeInsets.only(top: 12),
+                                        child: _OrderPreviewRow(
+                                          code: order.formattedNumber.isNotEmpty
+                                              ? order.formattedNumber
+                                              : 'OT-${order.internalNumber}',
+                                          vehicle:
+                                              '${order.vehicleModel} (${order.vehiclePlate})',
+                                          service: order
+                                                  .diagnosticSummary.isNotEmpty
+                                              ? order.diagnosticSummary
+                                              : 'Revisión general',
+                                          status: order.status.label,
+                                          statusColor: order.status.color,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+            ),
           ),
         );
       },
     );
   }
+}
 
-  Widget _buildOrderPreviewItem({
-    required String code,
-    required String vehicle,
-    required String service,
-    required String status,
-    required Color statusColor,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$code · $vehicle',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
-                ),
-                Text(
-                  service,
-                  style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                ),
-              ],
-            ),
+class _OrderPreviewRow extends StatelessWidget {
+  final String code;
+  final String vehicle;
+  final String service;
+  final String status;
+  final Color statusColor;
+
+  const _OrderPreviewRow({
+    required this.code,
+    required this.vehicle,
+    required this.service,
+    required this.status,
+    required this.statusColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: statusColor,
+            shape: BoxShape.circle,
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: statusColor.withAlpha(20),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              status,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: statusColor,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$code · $vehicle',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13.5,
+                  color: ShiftIQColors.graphiteText,
+                ),
               ),
+              const SizedBox(height: 2),
+              Text(
+                service,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+          decoration: BoxDecoration(
+            color: statusColor.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            status,
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+              color: statusColor,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

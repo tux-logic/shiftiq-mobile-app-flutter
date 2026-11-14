@@ -306,6 +306,8 @@ void setupDependencies() {
   getIt.registerFactory<DashboardViewModel>(
     () => DashboardViewModel(
       getBranchSummaryUseCase: getIt<GetBranchSummaryUseCase>(),
+      getBranchFinancialAnalyticsUseCase:
+          getIt<GetBranchFinancialAnalyticsUseCase>(),
       manageWorkOrders: getIt<ManageWorkOrders>(),
       sessionStorage: getIt<SessionStorage>(),
     ),
