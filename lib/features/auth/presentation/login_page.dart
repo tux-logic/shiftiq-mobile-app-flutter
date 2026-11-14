@@ -86,8 +86,9 @@ class _LoginPageState extends State<LoginPage> {
           subtitle: loc.translate('auth_welcome_subtitle'),
           footer: Column(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   Text(
                     loc.translate('auth_no_account'),
