@@ -69,122 +69,191 @@ class _DashboardPageState extends State<DashboardPage> {
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
-          appBar: AppBar(
-            backgroundColor: const Color(0xFF0F172A),
-            foregroundColor: Colors.white,
-            elevation: 0,
-            titleSpacing: 16,
-            title: InkWell(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const BranchSelectionPage(),
+          body: Column(
+            children: [
+              // Unified gradient header matching BranchSelectionPage
+              Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF0F172A), ShiftIQColors.primaryBlue],
                   ),
-                );
-              },
-              borderRadius: BorderRadius.circular(10),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            vm.activeBranchName,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                          ),
-                          Text(
-                            isOwnerAdmin
-                                ? loc.translate('executive_dashboard')
-                                : loc.translate('operational_dashboard'),
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Colors.white60,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      size: 18,
-                      color: Colors.white70,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            actions: [
-              IconButton(
-                tooltip: loc.translate('tooltip_customer_directory'),
-                icon: const Icon(Icons.people_outline_rounded, size: 22),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => CustomerDirectoryPage(
-                        branchId: vm.activeBranchId,
-                        viewModel: getIt<AppointmentsViewModel>(),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              if (isOwnerAdmin)
-                IconButton(
-                  tooltip: loc.translate('tooltip_billing'),
-                  icon: const Icon(Icons.receipt_long_outlined, size: 21),
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const BillingDashboardPage(),
-                      ),
-                    );
-                  },
-                ),
-              IconButton(
-                tooltip: loc.translate('tooltip_profile'),
-                icon: const CircleAvatar(
-                  radius: 14,
-                  backgroundColor: Colors.white24,
-                  child: Icon(
-                    Icons.person_outline_rounded,
-                    size: 17,
-                    color: Colors.white,
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(24),
                   ),
                 ),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const ProfilePage()),
-                  );
-                },
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 10, 14, 18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withAlpha(22),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: Colors.white.withAlpha(45),
+                                ),
+                              ),
+                              child: Text(
+                                isOwnerAdmin
+                                    ? 'OWNER / ADMIN'
+                                    : 'WORKSHOP STAFF',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.6,
+                                ),
+                              ),
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  tooltip: loc
+                                      .translate('tooltip_customer_directory'),
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => CustomerDirectoryPage(
+                                          branchId: vm.activeBranchId,
+                                          viewModel:
+                                              getIt<AppointmentsViewModel>(),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.people_outline_rounded,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                  style: IconButton.styleFrom(
+                                    backgroundColor: Colors.white.withAlpha(22),
+                                  ),
+                                ),
+                                if (isOwnerAdmin) ...[
+                                  const SizedBox(width: 6),
+                                  IconButton(
+                                    tooltip: loc.translate('tooltip_billing'),
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              const BillingDashboardPage(),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(
+                                      Icons.receipt_long_outlined,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                    style: IconButton.styleFrom(
+                                      backgroundColor:
+                                          Colors.white.withAlpha(22),
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(width: 6),
+                                IconButton(
+                                  tooltip: loc.translate('tooltip_profile'),
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => const ProfilePage(),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.person_outline_rounded,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                  style: IconButton.styleFrom(
+                                    backgroundColor: Colors.white.withAlpha(22),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        InkWell(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const BranchSelectionPage(),
+                              ),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(10),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  vm.activeBranchName,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                    letterSpacing: -0.3,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                                size: 22,
+                                color: Colors.white70,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          isOwnerAdmin
+                              ? loc.translate('executive_dashboard')
+                              : loc.translate('operational_dashboard'),
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-              const SizedBox(width: 4),
-            ],
-          ),
-          body: RefreshIndicator(
-            onRefresh: vm.refresh,
-            color: ShiftIQColors.primaryBlue,
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 240),
-              child: vm.isLoading && summary == null
-                  ? const Center(
-                      key: ValueKey('loading'),
-                      child: CircularProgressIndicator(
-                        color: ShiftIQColors.primaryBlue,
-                      ),
-                    )
-                  : SingleChildScrollView(
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: vm.refresh,
+                  color: ShiftIQColors.primaryBlue,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 240),
+                    child: vm.isLoading && summary == null
+                        ? const Center(
+                            key: ValueKey('loading'),
+                            child: CircularProgressIndicator(
+                              color: ShiftIQColors.primaryBlue,
+                            ),
+                          )
+                        : SingleChildScrollView(
                       key: const ValueKey('content'),
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
@@ -400,7 +469,10 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                       ),
                     ),
-            ),
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },
