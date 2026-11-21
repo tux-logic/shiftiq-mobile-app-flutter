@@ -7,6 +7,7 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/entities/customer_registration.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/controllers/appointments_view_model.dart';
@@ -148,12 +149,12 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
 
               // List of customers
               Expanded(
-                child: RefreshIndicator(
-                  color: ShiftIQColors.primaryBlue,
+                child: ShiftIQPullToRefresh(
                   onRefresh: () => widget.viewModel.loadCustomers(
                     widget.branchId,
                     query: _searchController.text,
                   ),
+                  skeleton: const ShiftIQSkeletonCardList(),
                   child: ShiftIQContentTransition(
                     child: isLoading && customers.isEmpty
                         ? const ShiftIQSkeletonCardList(
