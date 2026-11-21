@@ -8,6 +8,7 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/model/aggregates/product.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/model/valueobjects/stock_status.dart';
@@ -380,9 +381,9 @@ class _InventoryPageState extends State<InventoryPage> {
 
               // Products List
               Expanded(
-                child: RefreshIndicator(
-                  color: ShiftIQColors.primaryBlue,
+                child: ShiftIQPullToRefresh(
                   onRefresh: () => _viewModel.loadProducts(_effectiveBranchId),
+                  skeleton: const ShiftIQSkeletonCardList(),
                   child: ShiftIQContentTransition(
                     child: isLoading && products.isEmpty
                         ? const ShiftIQSkeletonCardList(
