@@ -6,6 +6,7 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
@@ -201,9 +202,9 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
   Widget _buildOrdersTab(WorkOrdersViewModel vm, WorkOrderStatus? status) {
     final orders = vm.ordersForStatus(status);
 
-    return RefreshIndicator(
+    return ShiftIQPullToRefresh(
       onRefresh: vm.refresh,
-      color: ShiftIQColors.primaryBlue,
+      skeleton: const ShiftIQSkeletonCardList(),
       child: ShiftIQContentTransition(
         child: vm.isLoading && orders.isEmpty
             ? const ShiftIQSkeletonCardList(key: ValueKey('orders_loading'))
