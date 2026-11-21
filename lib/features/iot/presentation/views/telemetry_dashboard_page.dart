@@ -6,8 +6,10 @@ import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_top_progress_bar.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/domain/iot_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/controllers/telemetry_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/views/dtc_detail_page.dart';
@@ -251,14 +253,17 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> {
                   ),
                 ),
 
+              ShiftIQTopProgressBar(isLoading: isLoading),
+
               // Alerts List with Pull-to-Refresh
               Expanded(
                 child: RefreshIndicator(
                   color: ShiftIQColors.primaryBlue,
                   onRefresh: () => _viewModel.loadDtcAlerts(_effectiveBranchId),
-                  child: isLoading && alerts.isEmpty
-                      ? const Center(child: CircularProgressIndicator())
-                      : alerts.isEmpty
+                  child: ShiftIQContentTransition(
+                    child: isLoading && alerts.isEmpty
+                        ? const SizedBox.shrink(key: ValueKey('iot_loading'))
+                        : alerts.isEmpty
                           ? ListView(
                               physics: const AlwaysScrollableScrollPhysics(),
                               padding: const EdgeInsets.fromLTRB(32, 64, 32, 120),
@@ -301,6 +306,7 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> {
                                 );
                               },
                             ),
+                  ),
                 ),
               ),
             ],
