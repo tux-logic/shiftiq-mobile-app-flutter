@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/models/product.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/presentation/controllers/inventory_view_model.dart';
 
@@ -247,22 +248,8 @@ class _RegisterBatchModalState extends State<RegisterBatchModal> {
               // Submit Button
               SizedBox(
                 width: double.infinity,
-                child: FilledButton.icon(
+                child: FilledButton(
                   onPressed: _isLoading ? null : _submit,
-                  icon: _isLoading
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.add_shopping_cart_outlined),
-                  label: Text(
-                    _isLoading ? 'Registrando...' : 'Ingresar Lote al Inventario',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
                   style: FilledButton.styleFrom(
                     backgroundColor: ShiftIQColors.primaryBlue,
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -270,6 +257,22 @@ class _RegisterBatchModalState extends State<RegisterBatchModal> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
+                  child: _isLoading
+                      ? const ShiftIQInlineProgress(
+                          label: 'Registrando lote...',
+                          fontSize: 13.5,
+                        )
+                      : const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add_shopping_cart_outlined, size: 18),
+                            SizedBox(width: 8),
+                            Text(
+                              'Ingresar Lote al Inventario',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
                 ),
               ),
             ],
