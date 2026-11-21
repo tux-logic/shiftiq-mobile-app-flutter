@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:shiftiq_mobile_app_flutter/core/services/nominatim_geocoding_service.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_top_progress_bar.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/minimalist_map_config.dart';
 
 /// Visual vector map pin picker with address search (Nominatim) and
@@ -207,27 +208,15 @@ class _BranchLocationPickerState extends State<BranchLocationPicker> {
               size: 19,
               color: Color(0xFF64748B),
             ),
-            suffixIcon: _isSearching
-                ? const Padding(
-                    padding: EdgeInsets.all(12),
-                    child: SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: ShiftIQColors.primaryBlue,
-                      ),
-                    ),
+            suffixIcon: _searchController.text.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.close_rounded, size: 18),
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() => _searchResults = const []);
+                    },
                   )
-                : (_searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.close_rounded, size: 18),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _searchResults = const []);
-                        },
-                      )
-                    : null),
+                : null,
             isDense: true,
             filled: true,
             fillColor: ShiftIQColors.warmNeutral,
@@ -250,6 +239,14 @@ class _BranchLocationPickerState extends State<BranchLocationPicker> {
             ),
           ),
         ),
+        if (_isSearching)
+          const Padding(
+            padding: EdgeInsets.only(top: 4),
+            child: ClipRRect(
+              borderRadius: BorderRadius.all(Radius.circular(2)),
+              child: ShiftIQTopProgressBar(isLoading: true, height: 2),
+            ),
+          ),
         if (_searchResults.isNotEmpty) ...[
           const SizedBox(height: 6),
           Container(
