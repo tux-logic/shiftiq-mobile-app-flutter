@@ -46,6 +46,11 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# OpenSpec
+/openspec/
+/.agents/
+skills-lock.json
 config.bat
 node_modules
 
