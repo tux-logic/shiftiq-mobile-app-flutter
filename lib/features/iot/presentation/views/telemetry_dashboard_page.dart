@@ -6,6 +6,7 @@ import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_kanban_tab_bar.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
@@ -33,8 +34,16 @@ class TelemetryDashboardPage extends StatefulWidget {
   State<TelemetryDashboardPage> createState() => _TelemetryDashboardPageState();
 }
 
-class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> {
+class _TelemetryDashboardPageState extends State<TelemetryDashboardPage>
+    with SingleTickerProviderStateMixin {
+  static const List<DtcSeverity?> _tabSeverities = [
+    null,
+    DtcSeverity.critical,
+    DtcSeverity.moderate,
+  ];
+
   late final TelemetryViewModel _viewModel;
+  late final TabController _tabController;
   late final String _effectiveBranchId;
   String _branchName = 'Sede Principal';
 
@@ -42,6 +51,8 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> {
   void initState() {
     super.initState();
     _viewModel = widget.viewModel ?? getIt<TelemetryViewModel>();
+    _tabController = TabController(length: _tabSeverities.length, vsync: this);
+    _tabController.addListener(_handleTabChanged);
     final session = getIt.isRegistered<SessionStorage>() ? getIt<SessionStorage>() : null;
     _effectiveBranchId = widget.branchId ?? session?.activeBranchId ?? ApiConstants.defaultBranchId;
     _branchName = session?.activeBranchName ?? ApiConstants.defaultBranchName;
@@ -49,6 +60,21 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _viewModel.loadDtcAlerts(_effectiveBranchId);
     });
+  }
+
+  void _handleTabChanged() {
+    if (_tabController.indexIsChanging) return;
+    _viewModel.filterBySeverity(
+      _tabSeverities[_tabController.index],
+      _effectiveBranchId,
+    );
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_handleTabChanged);
+    _tabController.dispose();
+    super.dispose();
   }
 
   void _openDtcDetail(DtcAlert alert) {
@@ -115,7 +141,6 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> {
             child: ListenableBuilder(
         listenable: _viewModel,
         builder: (context, _) {
-          final alerts = _viewModel.alerts;
           final isLoading = _viewModel.isLoading;
           final error = _viewModel.errorMessage;
 
@@ -183,43 +208,29 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> {
                 ),
               ),
 
-              // Minimalist Severity Filter Pills (no counters)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildFilterPill(
-                        label: 'Todas',
-                        isSelected: _viewModel.selectedSeverity == null,
-                        onTap: () =>
-                            _viewModel.filterBySeverity(null, _effectiveBranchId),
-                      ),
-                      const SizedBox(width: 8),
-                      _buildFilterPill(
-                        label: 'Críticas',
-                        isSelected:
-                            _viewModel.selectedSeverity == DtcSeverity.critical,
-                        onTap: () => _viewModel.filterBySeverity(
-                          DtcSeverity.critical,
-                          _effectiveBranchId,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      _buildFilterPill(
-                        label: 'Moderadas',
-                        isSelected:
-                            _viewModel.selectedSeverity == DtcSeverity.moderate,
-                        onTap: () => _viewModel.filterBySeverity(
-                          DtcSeverity.moderate,
-                          _effectiveBranchId,
-                        ),
-                      ),
-                    ],
+              // Minimalist Kanban TabBar for DTC Severity
+              ShiftIQKanbanTabBar(
+                controller: _tabController,
+                tabs: [
+                  ShiftIQKanbanTabItem(
+                    label: 'Todas',
+                    count: _viewModel.alertsForSeverity(null).length,
                   ),
-                ),
+                  ShiftIQKanbanTabItem(
+                    label: 'Críticas',
+                    count: _viewModel
+                        .alertsForSeverity(DtcSeverity.critical)
+                        .length,
+                  ),
+                  ShiftIQKanbanTabItem(
+                    label: 'Moderadas',
+                    count: _viewModel
+                        .alertsForSeverity(DtcSeverity.moderate)
+                        .length,
+                  ),
+                ],
               ),
+              const SizedBox(height: 8),
 
               if (error != null)
                 Container(
@@ -255,58 +266,13 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> {
                   ),
                 ),
 
-              // Alerts List with Pull-to-Refresh
+              // Swipeable Kanban TabBarView
               Expanded(
-                child: ShiftIQPullToRefresh(
-                  onRefresh: () => _viewModel.loadDtcAlerts(_effectiveBranchId),
-                  skeleton: _buildDtcSkeletonList(),
-                  child: ShiftIQContentTransition(
-                    child: isLoading && alerts.isEmpty
-                        ? _buildDtcSkeletonList()
-                        : alerts.isEmpty
-                          ? ListView(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              padding: const EdgeInsets.fromLTRB(32, 64, 32, 120),
-                              children: [
-                                const Center(
-                                  child: ShiftIQEmptyStateIcon(),
-                                ),
-                                const SizedBox(height: 16),
-                                const Text(
-                                  'Sin códigos DTC activos en la flota',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 15.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: ShiftIQColors.graphiteText,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                const Text(
-                                  'Los vehículos escaneados operan en parámetros normales',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Color(0xFF64748B),
-                                  ),
-                                ),
-                              ],
-                            )
-                          : ListView.builder(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              padding: const EdgeInsets.fromLTRB(16, 4, 16, 120),
-                              itemCount: alerts.length,
-                              itemBuilder: (context, index) {
-                                final alert = alerts[index];
-                                return DtcAlertCard(
-                                  alert: alert,
-                                  onTap: () => _openDtcDetail(alert),
-                                  onOpenWorkOrder: () =>
-                                      _openWorkOrderFromDtc(alert),
-                                );
-                              },
-                            ),
-                  ),
+                child: TabBarView(
+                  controller: _tabController,
+                  children: _tabSeverities
+                      .map((severity) => _buildAlertsTab(isLoading, severity))
+                      .toList(),
                 ),
               ),
             ],
@@ -315,6 +281,58 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> {
       ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAlertsTab(bool isLoading, DtcSeverity? severity) {
+    final tabAlerts = _viewModel.alertsForSeverity(severity);
+    return ShiftIQPullToRefresh(
+      onRefresh: () => _viewModel.loadDtcAlerts(_effectiveBranchId),
+      skeleton: _buildDtcSkeletonList(),
+      child: ShiftIQContentTransition(
+        child: isLoading && tabAlerts.isEmpty
+            ? _buildDtcSkeletonList()
+            : tabAlerts.isEmpty
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(32, 64, 32, 120),
+                    children: const [
+                      Center(child: ShiftIQEmptyStateIcon()),
+                      SizedBox(height: 16),
+                      Text(
+                        'Sin códigos DTC activos en la flota',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w700,
+                          color: ShiftIQColors.graphiteText,
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      Text(
+                        'Todos los vehículos conectados operan dentro de parámetros',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  )
+                : ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 120),
+                    itemCount: tabAlerts.length,
+                    itemBuilder: (context, index) {
+                      final alert = tabAlerts[index];
+                      return DtcAlertCard(
+                        alert: alert,
+                        onTap: () => _openDtcDetail(alert),
+                        onOpenWorkOrder: () => _openWorkOrderFromDtc(alert),
+                      );
+                    },
+                  ),
       ),
     );
   }
@@ -332,47 +350,6 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> {
           alert: dummies[index],
           onTap: () {},
           onOpenWorkOrder: () {},
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFilterPill({
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF0F172A) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFF0F172A)
-                : ShiftIQColors.borderSlate,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFF0F172A).withAlpha(28),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ]
-              : null,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12.5,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-            color: isSelected ? Colors.white : const Color(0xFF475569),
-          ),
         ),
       ),
     );

@@ -15,6 +15,7 @@ class TelemetryViewModel extends ChangeNotifier {
 
   bool _isLoading = false;
   String? _errorMessage;
+  List<DtcAlert> _allAlerts = [];
   List<DtcAlert> _alerts = [];
   DtcSeverity? _selectedSeverity;
   DtcStatus? _selectedStatus = DtcStatus.active;
@@ -31,11 +32,17 @@ class TelemetryViewModel extends ChangeNotifier {
   List<LiveSensorReading> get liveSensors => _liveSensors;
   bool get isDongleConnected => _isDongleConnected;
 
+  /// Returns DTC alerts filtered by [severity] from the loaded status cache.
+  List<DtcAlert> alertsForSeverity(DtcSeverity? severity) {
+    if (severity == null) return _allAlerts;
+    return _allAlerts.where((a) => a.severity == severity).toList();
+  }
+
   int get criticalCount =>
-      _alerts.where((a) => a.severity == DtcSeverity.critical && a.isActive).length;
+      _allAlerts.where((a) => a.severity == DtcSeverity.critical && a.isActive).length;
   int get moderateCount =>
-      _alerts.where((a) => a.severity == DtcSeverity.moderate && a.isActive).length;
-  int get activeCount => _alerts.where((a) => a.isActive).length;
+      _allAlerts.where((a) => a.severity == DtcSeverity.moderate && a.isActive).length;
+  int get activeCount => _allAlerts.where((a) => a.isActive).length;
 
   Future<void> loadDtcAlerts(String branchId) async {
     _isLoading = true;
@@ -43,11 +50,11 @@ class TelemetryViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _alerts = await getDtcAlerts.execute(
+      _allAlerts = await getDtcAlerts.execute(
         branchId: branchId,
-        severity: _selectedSeverity,
         status: _selectedStatus,
       );
+      _applySeverityFilter();
     } catch (e) {
       _errorMessage = 'Error loading DTC telemetry alerts: $e';
     } finally {
@@ -56,9 +63,15 @@ class TelemetryViewModel extends ChangeNotifier {
     }
   }
 
+  void _applySeverityFilter() {
+    _alerts = alertsForSeverity(_selectedSeverity);
+  }
+
   Future<void> filterBySeverity(DtcSeverity? severity, String branchId) async {
+    if (_selectedSeverity == severity) return;
     _selectedSeverity = severity;
-    await loadDtcAlerts(branchId);
+    _applySeverityFilter();
+    notifyListeners();
   }
 
   Future<void> filterByStatus(DtcStatus? status, String branchId) async {

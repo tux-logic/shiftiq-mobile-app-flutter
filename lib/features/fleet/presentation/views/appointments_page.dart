@@ -5,6 +5,7 @@ import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_kanban_tab_bar.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
@@ -35,8 +36,17 @@ class AppointmentsPage extends StatefulWidget {
   State<AppointmentsPage> createState() => _AppointmentsPageState();
 }
 
-class _AppointmentsPageState extends State<AppointmentsPage> {
+class _AppointmentsPageState extends State<AppointmentsPage>
+    with SingleTickerProviderStateMixin {
+  static const List<AppointmentStatus?> _tabStatuses = [
+    null,
+    AppointmentStatus.pending,
+    AppointmentStatus.confirmed,
+    AppointmentStatus.completed,
+  ];
+
   late final AppointmentsViewModel _viewModel;
+  late final TabController _tabController;
   late final String _effectiveBranchId;
   String _branchName = 'Sede Principal';
 
@@ -44,6 +54,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   void initState() {
     super.initState();
     _viewModel = widget.viewModel ?? getIt<AppointmentsViewModel>();
+    _tabController = TabController(length: _tabStatuses.length, vsync: this);
+    _tabController.addListener(_handleTabChanged);
     final session = getIt.isRegistered<SessionStorage>() ? getIt<SessionStorage>() : null;
     _effectiveBranchId = widget.branchId ?? session?.activeBranchId ?? ApiConstants.defaultBranchId;
     _branchName = session?.activeBranchName ?? ApiConstants.defaultBranchName;
@@ -52,6 +64,21 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       _viewModel.loadAppointments(_effectiveBranchId);
       _viewModel.loadCustomers(_effectiveBranchId);
     });
+  }
+
+  void _handleTabChanged() {
+    if (_tabController.indexIsChanging) return;
+    _viewModel.filterByStatus(
+      _tabStatuses[_tabController.index],
+      _effectiveBranchId,
+    );
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_handleTabChanged);
+    _tabController.dispose();
+    super.dispose();
   }
 
   void _openCreateAppointment() {
@@ -119,7 +146,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             child: ListenableBuilder(
         listenable: _viewModel,
         builder: (context, _) {
-          final appointments = _viewModel.appointments;
           final isLoading = _viewModel.isLoading;
           final error = _viewModel.errorMessage;
 
@@ -132,35 +158,33 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                     _viewModel.selectDate(date, _effectiveBranchId),
               ),
 
-              // Minimalist Filter Pills
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildFilterPill(
-                        loc.translate('all_appointments'),
-                        null,
-                      ),
-                      const SizedBox(width: 8),
-                      _buildFilterPill(
-                        loc.translate('pending_appointments'),
-                        AppointmentStatus.pending,
-                      ),
-                      const SizedBox(width: 8),
-                      _buildFilterPill(
-                        loc.translate('confirmed_appointments'),
-                        AppointmentStatus.confirmed,
-                      ),
-                      const SizedBox(width: 8),
-                      _buildFilterPill(
-                        loc.translate('completed_appointments'),
-                        AppointmentStatus.completed,
-                      ),
-                    ],
+              // Minimalist Kanban TabBar
+              ShiftIQKanbanTabBar(
+                controller: _tabController,
+                tabs: [
+                  ShiftIQKanbanTabItem(
+                    label: loc.translate('all_appointments'),
+                    count: _viewModel.appointmentsForStatus(null).length,
                   ),
-                ),
+                  ShiftIQKanbanTabItem(
+                    label: loc.translate('pending_appointments'),
+                    count: _viewModel
+                        .appointmentsForStatus(AppointmentStatus.pending)
+                        .length,
+                  ),
+                  ShiftIQKanbanTabItem(
+                    label: loc.translate('confirmed_appointments'),
+                    count: _viewModel
+                        .appointmentsForStatus(AppointmentStatus.confirmed)
+                        .length,
+                  ),
+                  ShiftIQKanbanTabItem(
+                    label: loc.translate('completed_appointments'),
+                    count: _viewModel
+                        .appointmentsForStatus(AppointmentStatus.completed)
+                        .length,
+                  ),
+                ],
               ),
 
               if (error != null)
@@ -197,80 +221,13 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                   ),
                 ),
 
-              // Appointment List
+              // Swipeable Kanban TabBarView
               Expanded(
-                child: ShiftIQPullToRefresh(
-                  onRefresh: () => _viewModel.loadAppointments(_effectiveBranchId),
-                  skeleton: _buildAppointmentSkeletonList(),
-                  child: ShiftIQContentTransition(
-                    child: isLoading && appointments.isEmpty
-                        ? _buildAppointmentSkeletonList()
-                        : appointments.isEmpty
-                          ? ListView(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              padding: const EdgeInsets.fromLTRB(32, 64, 32, 120),
-                              children: [
-                                const Center(
-                                  child: ShiftIQEmptyStateIcon(),
-                                ),
-                                const SizedBox(height: 16),
-                                const Text(
-                                  'No hay citas agendadas para esta fecha',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 15.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: ShiftIQColors.graphiteText,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                const Text(
-                                  'Selecciona otro día o agenda una nueva cita para comenzar',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Color(0xFF64748B),
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                Center(
-                                  child: ShiftIQPrimaryPillButton(
-                                    label: loc.translate(
-                                      'schedule_appointment_bay',
-                                    ),
-                                    icon: Icons.add_rounded,
-                                    onPressed: _openCreateAppointment,
-                                  ),
-                                ),
-                              ],
-                            )
-                          : ListView.builder(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
-                              itemCount: appointments.length,
-                              itemBuilder: (context, index) {
-                                final appointment = appointments[index];
-                                return AppointmentCard(
-                                  appointment: appointment,
-                                  onOpenWorkOrder: () =>
-                                      _openWorkOrderFromAppointment(appointment),
-                                  onConfirm: () => _viewModel.confirmAppointment(
-                                    appointment.id,
-                                    _effectiveBranchId,
-                                  ),
-                                  onCancel: () => _viewModel.cancelAppointment(
-                                    appointment.id,
-                                    _effectiveBranchId,
-                                  ),
-                                  onComplete: () =>
-                                      _viewModel.completeAppointment(
-                                    appointment.id,
-                                    _effectiveBranchId,
-                                  ),
-                                );
-                              },
-                            ),
-                  ),
+                child: TabBarView(
+                  controller: _tabController,
+                  children: _tabStatuses
+                      .map((status) => _buildAppointmentsTab(loc, isLoading, status))
+                      .toList(),
                 ),
               ),
             ],
@@ -299,6 +256,82 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
     );
   }
 
+  Widget _buildAppointmentsTab(
+    AppLocalizations loc,
+    bool isLoading,
+    AppointmentStatus? status,
+  ) {
+    final tabAppointments = _viewModel.appointmentsForStatus(status);
+    return ShiftIQPullToRefresh(
+      onRefresh: () => _viewModel.loadAppointments(_effectiveBranchId),
+      skeleton: _buildAppointmentSkeletonList(),
+      child: ShiftIQContentTransition(
+        child: isLoading && tabAppointments.isEmpty
+            ? _buildAppointmentSkeletonList()
+            : tabAppointments.isEmpty
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(32, 64, 32, 120),
+                    children: [
+                      const Center(child: ShiftIQEmptyStateIcon()),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'No hay citas agendadas para esta fecha',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w700,
+                          color: ShiftIQColors.graphiteText,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Selecciona otro día o agenda una nueva cita para comenzar',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF64748B),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Center(
+                        child: ShiftIQPrimaryPillButton(
+                          label: loc.translate('schedule_appointment_bay'),
+                          icon: Icons.add_rounded,
+                          onPressed: _openCreateAppointment,
+                        ),
+                      ),
+                    ],
+                  )
+                : ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 120),
+                    itemCount: tabAppointments.length,
+                    itemBuilder: (context, index) {
+                      final appointment = tabAppointments[index];
+                      return AppointmentCard(
+                        appointment: appointment,
+                        onOpenWorkOrder: () =>
+                            _openWorkOrderFromAppointment(appointment),
+                        onConfirm: () => _viewModel.confirmAppointment(
+                          appointment.id,
+                          _effectiveBranchId,
+                        ),
+                        onCancel: () => _viewModel.cancelAppointment(
+                          appointment.id,
+                          _effectiveBranchId,
+                        ),
+                        onComplete: () => _viewModel.completeAppointment(
+                          appointment.id,
+                          _effectiveBranchId,
+                        ),
+                      );
+                    },
+                  ),
+      ),
+    );
+  }
+
   Widget _buildAppointmentSkeletonList() {
     final dummies = ShiftIQSkeletonDummies.appointments();
     return ShiftIQSkeletonizer(
@@ -314,45 +347,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
           onConfirm: () {},
           onCancel: () {},
           onComplete: () {},
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFilterPill(String label, AppointmentStatus? status) {
-    final isSelected = _viewModel.selectedStatusFilter == status;
-
-    return GestureDetector(
-      onTap: () => _viewModel.filterByStatus(status, _effectiveBranchId),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF0F172A) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFF0F172A)
-                : ShiftIQColors.borderSlate,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFF0F172A).withAlpha(28),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ]
-              : null,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12.5,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-            color: isSelected ? Colors.white : const Color(0xFF475569),
-          ),
         ),
       ),
     );
