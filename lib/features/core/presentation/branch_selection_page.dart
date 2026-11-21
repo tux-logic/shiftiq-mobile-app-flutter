@@ -7,6 +7,7 @@ import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart';
@@ -400,8 +401,9 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
     }
 
     if (vm.branches.isEmpty) {
-      return RefreshIndicator(
+      return ShiftIQPullToRefresh(
         onRefresh: vm.loadBranches,
+        skeleton: const ShiftIQSkeletonBranchList(),
         child: ListView(
           padding: const EdgeInsets.all(28),
           children: [
@@ -455,8 +457,9 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
     }
 
     final isOwnerAdmin = _roleScope == MobileRoleScope.ownerAdmin;
-    return RefreshIndicator(
+    return ShiftIQPullToRefresh(
       onRefresh: vm.loadBranches,
+      skeleton: const ShiftIQSkeletonBranchList(),
       child: ListView.separated(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
         itemCount: vm.branches.length,
