@@ -5,6 +5,7 @@ import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/analytics_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/controllers/dashboard_view_model.dart';
@@ -224,9 +225,9 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ),
               Expanded(
-                child: RefreshIndicator(
+                child: ShiftIQPullToRefresh(
                   onRefresh: vm.refresh,
-                  color: ShiftIQColors.primaryBlue,
+                  skeleton: const ShiftIQSkeletonDashboard(),
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 240),
                     child: vm.isLoading && summary == null
