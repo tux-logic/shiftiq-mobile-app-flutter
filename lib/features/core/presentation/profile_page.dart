@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_toast.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 
 /// Redesigned user profile screen displaying live backend identity and branch context.
 class ProfilePage extends StatefulWidget {
@@ -126,7 +129,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     onPressed: () async {
                       if (!formKey.currentState!.validate()) return;
                       final nav = Navigator.of(bottomSheetContext);
-                      final messenger = ScaffoldMessenger.of(context);
 
                       final success = await _viewModel.updateProfile(
                         firstName: firstNameController.text,
@@ -136,18 +138,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
                       if (success) {
                         nav.pop();
-                        messenger.showSnackBar(
-                          SnackBar(
-                            content: Text(_viewModel.successMessage ?? 'Saved'),
-                            backgroundColor: ShiftIQColors.preventiveGreen,
-                          ),
-                        );
-                      } else {
-                        messenger.showSnackBar(
-                          SnackBar(
-                            content: Text(_viewModel.error ?? 'Error'),
-                            backgroundColor: ShiftIQColors.severityCrimson,
-                          ),
+                      } else if (mounted) {
+                        ShiftIQToast.show(
+                          context,
+                          message: _viewModel.error ?? 'Error',
+                          type: ShiftIQToastType.error,
                         );
                       }
                     },
@@ -217,28 +212,29 @@ class _ProfilePageState extends State<ProfilePage> {
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
-          appBar: AppBar(
-            backgroundColor: const Color(0xFF0F172A),
-            foregroundColor: Colors.white,
-            title: Text(
-              loc.translate('profile_title'),
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
-            actions: [
-              IconButton(
-                tooltip: loc.translate('tooltip_refresh'),
-                icon: const Icon(Icons.refresh_rounded),
-                onPressed: vm.isLoading ? null : vm.init,
-              ),
-            ],
-          ),
-          body: vm.isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(
-                    color: ShiftIQColors.primaryBlue,
+          body: Column(
+            children: [
+              ShiftIQPageHeader(
+                title: loc.translate('profile_title'),
+                subtitle: vm.roleDisplay,
+                showBackButton: Navigator.of(context).canPop(),
+                actions: [
+                  ShiftIQLiquidIconButton(
+                    tooltip: loc.translate('tooltip_refresh'),
+                    icon: Icons.refresh_rounded,
+                    onDarkBackground: true,
+                    onPressed: vm.isLoading ? null : vm.init,
                   ),
-                )
-              : SingleChildScrollView(
+                ],
+              ),
+              Expanded(
+                child: vm.isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: ShiftIQColors.primaryBlue,
+                        ),
+                      )
+                    : SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -334,10 +330,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
                       // Branch & Role Context Card
                       _ProfileSectionCard(
-                        icon: vm.isOwner
+                        icon: vm.isOwnerAdmin
                             ? Icons.business_outlined
                             : Icons.storefront_outlined,
-                        title: vm.isOwner
+                        title: vm.isOwnerAdmin
                             ? 'Organization & Active Branch'
                             : 'Assigned Branch',
                         children: [
@@ -345,7 +341,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             label: 'Active Branch',
                             value: vm.activeBranchName,
                           ),
-                          if (!vm.isOwner) ...[
+                          if (!vm.isOwnerAdmin) ...[
                             const SizedBox(height: 10),
                             _InfoRow(
                               label: 'Specialty',
@@ -467,6 +463,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
                 ),
+              ),
+            ],
+          ),
         );
       },
     );

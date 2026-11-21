@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:shiftiq_mobile_app_flutter/core/auth/mobile_role_scope.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/core_dto.dart';
@@ -55,6 +56,12 @@ class ProfileViewModel extends ChangeNotifier {
         roles.contains('OWNER');
   }
 
+  bool get isOwnerAdmin {
+    final roles = _profileContext?.roles ?? sessionStorage.roles;
+    return _profileContext?.owner != null ||
+        RoleRouter.resolveScope(roles) == MobileRoleScope.ownerAdmin;
+  }
+
   bool get isEmployee {
     final roles = _profileContext?.roles ?? sessionStorage.roles;
     return _profileContext?.employee != null ||
@@ -73,15 +80,16 @@ class ProfileViewModel extends ChangeNotifier {
   }
 
   String get roleDisplay {
-    final roles = _profileContext?.roles ?? [];
+    final contextRoles = _profileContext?.roles ?? const <String>[];
+    final roles = contextRoles.isNotEmpty ? contextRoles : sessionStorage.roles;
     if (roles.contains('ROLE_OWNER') || roles.contains('OWNER')) {
       return 'Propietario / Gerente General (Owner)';
     }
-    if (roles.contains('ROLE_EMPLOYEE') || roles.contains('EMPLOYEE')) {
-      return 'Mecánico Especialista (B2B Staff)';
-    }
     if (roles.contains('ROLE_ADMIN') || roles.contains('ADMIN')) {
       return 'Administrador de Plataforma';
+    }
+    if (roles.contains('ROLE_EMPLOYEE') || roles.contains('EMPLOYEE')) {
+      return 'Mecánico Especialista (B2B Staff)';
     }
     return 'Personal del Taller';
   }

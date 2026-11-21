@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
+import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/controllers/billing_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/voucher_detail_page.dart';
@@ -144,14 +146,6 @@ class _CheckoutVoucherPageState extends State<CheckoutVoucherPage> {
     );
 
     if (emitted != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '¡Comprobante ${emitted.fullCode} emitido a SUNAT exitosamente!',
-          ),
-          backgroundColor: AppColors.success,
-        ),
-      );
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -174,13 +168,17 @@ class _CheckoutVoucherPageState extends State<CheckoutVoucherPage> {
         final loc = AppLocalizations.of(context);
 
         return Scaffold(
-          appBar: AppBar(
-            title: Text(loc.translate('liquidation_billing_title')),
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-          ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+          backgroundColor: ShiftIQColors.warmNeutral,
+          body: Column(
+            children: [
+              ShiftIQPageHeader(
+                title: loc.translate('liquidation_billing_title'),
+                subtitle: 'Emisión de comprobante SUNAT',
+                showBackButton: true,
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
             child: Form(
               key: _formKey,
               child: Column(
@@ -467,6 +465,9 @@ class _CheckoutVoucherPageState extends State<CheckoutVoucherPage> {
                 ],
               ),
             ),
+          ),
+              ),
+            ],
           ),
         );
       },

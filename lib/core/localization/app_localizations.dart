@@ -194,7 +194,7 @@ class AppLocalizations {
       // Telemetría / OBD2
       'telemetry_tab': 'Telemetría',
       'dtc_alerts': 'Alertas DTC / OBD-II',
-      'live_telemetry': 'Sensores en Vivo',
+      'live_telemetry': 'Último Snapshot',
       'mark_resolved': 'Marcar Resuelto',
       'freeze_frame': 'Freeze Frame',
       'dtc_resolved_success': 'Código DTC marcado como RESUELTO',
@@ -478,7 +478,7 @@ class AppLocalizations {
       // Telemetría / OBD2
       'telemetry_tab': 'Telemetry',
       'dtc_alerts': 'DTC / OBD-II Alerts',
-      'live_telemetry': 'Live Sensors',
+      'live_telemetry': 'Latest Snapshot',
       'mark_resolved': 'Mark Resolved',
       'freeze_frame': 'Freeze Frame',
       'dtc_resolved_success': 'DTC code marked as RESOLVED',

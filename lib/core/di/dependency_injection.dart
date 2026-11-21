@@ -308,6 +308,8 @@ void setupDependencies() {
       getBranchSummaryUseCase: getIt<GetBranchSummaryUseCase>(),
       getBranchFinancialAnalyticsUseCase:
           getIt<GetBranchFinancialAnalyticsUseCase>(),
+      getNetworkAnalyticsSummaryUseCase:
+          getIt<GetNetworkAnalyticsSummaryUseCase>(),
       manageWorkOrders: getIt<ManageWorkOrders>(),
       sessionStorage: getIt<SessionStorage>(),
     ),

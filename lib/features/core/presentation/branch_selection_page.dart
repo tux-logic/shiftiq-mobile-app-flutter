@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:shiftiq_mobile_app_flutter/core/auth/mobile_role_scope.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/branch_cover_picker.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/branch_list_card.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/branch_location_picker.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/branch_map_view.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/main/presentation/main_page.dart';
 
-/// Modern multi-branch selector for workshop staff and owners/admins.
+/// Multi-branch selector preserving the ShiftIQ navy-blue palette with
+/// animated map pins and a list/map toggle.
 class BranchSelectionPage extends StatefulWidget {
   final BranchSelectionViewModel? viewModel;
 
@@ -25,7 +30,7 @@ class BranchSelectionPage extends StatefulWidget {
 
 class _BranchSelectionPageState extends State<BranchSelectionPage> {
   late final BranchSelectionViewModel _viewModel;
-  bool _showMap = false;
+  bool _showMap = true;
 
   @override
   void initState() {
@@ -46,13 +51,6 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
   Future<void> _onBranchSelected(Branch branch) async {
     final success = await _viewModel.selectBranch(branch);
     if (success && mounted) {
-      final loc = AppLocalizations.of(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${loc.translate('branch_selected')}: ${branch.name}'),
-          backgroundColor: ShiftIQColors.preventiveGreen,
-        ),
-      );
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const MainPage()),
         (route) => false,
@@ -60,14 +58,31 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
     }
   }
 
-  void _showCreateBranchModal(BuildContext context, String workshopId) {
+  void _showBranchFormModal(
+    BuildContext context, {
+    required String workshopId,
+    Branch? existingBranch,
+  }) {
     final loc = AppLocalizations.of(context);
-    final codeController = TextEditingController();
-    final nameController = TextEditingController();
-    final addressController = TextEditingController();
-    final phoneController = TextEditingController();
+    final isEditing = existingBranch != null;
+    final codeController = TextEditingController(
+      text: existingBranch?.code ?? '',
+    );
+    final nameController = TextEditingController(
+      text: existingBranch?.name ?? '',
+    );
+    final addressController = TextEditingController(
+      text: existingBranch?.address ?? '',
+    );
+    final phoneController = TextEditingController(
+      text: existingBranch?.phone ?? '',
+    );
     final formKey = GlobalKey<FormState>();
-    LatLng? pickedCoordinates;
+    String? coverImageUrl = existingBranch?.coverImageUrl;
+    LatLng? pickedCoordinates =
+        existingBranch != null && existingBranch.hasCoordinates
+            ? LatLng(existingBranch.latitude!, existingBranch.longitude!)
+            : null;
 
     showModalBottomSheet(
       context: context,
@@ -94,7 +109,9 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      loc.translate('register_new_branch'),
+                      isEditing
+                          ? 'Edit Branch'
+                          : loc.translate('register_new_branch'),
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
@@ -107,7 +124,17 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
+                BranchCoverPicker(
+                  initialImageUrl: coverImageUrl,
+                  onUploadImage: (bytes, fileName) =>
+                      _viewModel.uploadBranchCoverImage(
+                    fileBytes: bytes,
+                    fileName: fileName,
+                  ),
+                  onImageChanged: (url) => coverImageUrl = url,
+                ),
+                const SizedBox(height: 14),
                 TextFormField(
                   controller: nameController,
                   decoration: authInputDecoration(
@@ -152,31 +179,47 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
                 ),
                 const SizedBox(height: 14),
                 BranchLocationPicker(
+                  initialLatitude: pickedCoordinates?.latitude,
+                  initialLongitude: pickedCoordinates?.longitude,
                   onLocationPicked: (point) => pickedCoordinates = point,
+                  onAddressResolved: (resolved) {
+                    if (addressController.text.trim().isEmpty) {
+                      addressController.text = resolved;
+                    }
+                  },
                 ),
                 const SizedBox(height: 20),
-                AuthPrimaryButton(
-                  label: loc.translate('new_branch'),
-                  isLoading: false,
+                ShiftIQLiquidButton(
+                  label: isEditing
+                      ? loc.translate('save')
+                      : loc.translate('new_branch'),
+                  expand: true,
+                  height: 48,
+                  borderRadius: 14,
                   onPressed: () async {
                     if (!formKey.currentState!.validate()) return;
-                    final messenger = ScaffoldMessenger.of(context);
                     Navigator.pop(ctx);
-                    final success = await _viewModel.createBranch(
-                      workshopId: workshopId,
-                      code: codeController.text.trim().toUpperCase(),
-                      name: nameController.text.trim(),
-                      address: addressController.text.trim(),
-                      phone: phoneController.text.trim(),
-                      latitude: pickedCoordinates?.latitude,
-                      longitude: pickedCoordinates?.longitude,
-                    );
-                    if (success && mounted) {
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text(loc.translate('save')),
-                          backgroundColor: ShiftIQColors.preventiveGreen,
-                        ),
+                    if (isEditing) {
+                      await _viewModel.updateBranch(
+                        branchId: existingBranch.id,
+                        code: codeController.text.trim().toUpperCase(),
+                        name: nameController.text.trim(),
+                        address: addressController.text.trim(),
+                        phone: phoneController.text.trim(),
+                        coverImageUrl: coverImageUrl,
+                        latitude: pickedCoordinates?.latitude,
+                        longitude: pickedCoordinates?.longitude,
+                      );
+                    } else {
+                      await _viewModel.createBranch(
+                        workshopId: workshopId,
+                        code: codeController.text.trim().toUpperCase(),
+                        name: nameController.text.trim(),
+                        address: addressController.text.trim(),
+                        phone: phoneController.text.trim(),
+                        coverImageUrl: coverImageUrl,
+                        latitude: pickedCoordinates?.latitude,
+                        longitude: pickedCoordinates?.longitude,
                       );
                     }
                   },
@@ -202,26 +245,23 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
-          floatingActionButton: canCreateBranch
-              ? FloatingActionButton.extended(
+          floatingActionButton: !_showMap && canCreateBranch
+              ? ShiftIQLiquidButton(
                   key: const Key('btn_add_branch'),
-                  heroTag: 'fab_add_branch',
-                  onPressed: () => _showCreateBranchModal(
+                  icon: Icons.add_rounded,
+                  label: loc.translate('new_branch'),
+                  height: 46,
+                  borderRadius: 18,
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  onPressed: () => _showBranchFormModal(
                     context,
-                    vm.branches.first.workshopId,
-                  ),
-                  backgroundColor: ShiftIQColors.primaryBlue,
-                  foregroundColor: Colors.white,
-                  icon: const Icon(Icons.add_rounded),
-                  label: Text(
-                    loc.translate('new_branch'),
-                    style: const TextStyle(fontWeight: FontWeight.w700),
+                    workshopId: vm.branches.first.workshopId,
                   ),
                 )
               : null,
           body: Column(
             children: [
-              // Modern dark-navy header
+              // Signature ShiftIQ compact dark-navy gradient header
               Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
@@ -231,95 +271,67 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
                     colors: [Color(0xFF0F172A), ShiftIQColors.primaryBlue],
                   ),
                   borderRadius: BorderRadius.vertical(
-                    bottom: Radius.circular(24),
+                    bottom: Radius.circular(22),
                   ),
                 ),
                 child: SafeArea(
                   bottom: false,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 16, 22),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    padding: const EdgeInsets.fromLTRB(18, 12, 14, 16),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withAlpha(22),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: Colors.white.withAlpha(45),
-                                ),
-                              ),
-                              child: Text(
-                                isOwnerAdmin
-                                    ? 'OWNER / ADMIN'
-                                    : 'WORKSHOP STAFF',
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                loc.translate('select_branch'),
                                 style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
                                   color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.6,
+                                  letterSpacing: -0.3,
                                 ),
                               ),
-                            ),
-                            IconButton(
-                              key: const Key('btn_profile'),
-                              tooltip: loc.translate('tooltip_profile'),
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const ProfilePage(),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(
-                                Icons.person_outline_rounded,
-                                color: Colors.white,
-                              ),
-                              style: IconButton.styleFrom(
-                                backgroundColor: Colors.white.withAlpha(22),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 14),
-                        Text(
-                          loc.translate('select_branch'),
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                isOwnerAdmin
-                                    ? 'Manage operations and analytics across your branches.'
-                                    : 'Select your assigned branch to start your shift.',
+                              const SizedBox(height: 2),
+                              Text(
+                                '${vm.branches.length} ${vm.branches.length == 1 ? 'branch' : 'branches'} available',
                                 style: const TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 12,
                                   color: Colors.white70,
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            _ViewModeToggle(
-                              showMap: _showMap,
-                              onChanged: (mapMode) =>
-                                  setState(() => _showMap = mapMode),
-                            ),
-                          ],
+                            ],
+                          ),
+                        ),
+                        _ViewModeToggle(
+                          showMap: _showMap,
+                          onChanged: (mapMode) =>
+                              setState(() => _showMap = mapMode),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          key: const Key('btn_profile'),
+                          tooltip: loc.translate('tooltip_profile'),
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const ProfilePage(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.person_outline_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.white.withAlpha(22),
+                            minimumSize: const Size(38, 38),
+                            padding: const EdgeInsets.all(8),
+                          ),
                         ),
                       ],
                     ),
@@ -327,15 +339,9 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
                 ),
               ),
 
-              // Body content
+              // Main content area: full map or branch list
               Expanded(
-                child: _showMap
-                    ? BranchMapView(
-                        branches: vm.branches,
-                        selectedBranch: vm.selectedBranch,
-                        onEnterBranch: _onBranchSelected,
-                      )
-                    : _buildBody(context, vm, loc),
+                child: _buildContent(context, vm, loc),
               ),
             ],
           ),
@@ -344,7 +350,7 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
     );
   }
 
-  Widget _buildBody(
+  Widget _buildContent(
     BuildContext context,
     BranchSelectionViewModel vm,
     AppLocalizations loc,
@@ -398,10 +404,8 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
           padding: const EdgeInsets.all(28),
           children: [
             const SizedBox(height: 48),
-            const Icon(
-              Icons.storefront_outlined,
-              size: 64,
-              color: Color(0xFF94A3B8),
+            const Center(
+              child: ShiftIQEmptyStateIcon(),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -420,178 +424,57 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
               style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
             ),
             const SizedBox(height: 20),
-            OutlinedButton.icon(
-              onPressed: vm.loadBranches,
-              icon: const Icon(Icons.refresh_rounded),
-              label: Text(loc.translate('refresh')),
+            Center(
+              child: OutlinedButton.icon(
+                onPressed: vm.loadBranches,
+                icon: const Icon(Icons.refresh_rounded),
+                label: Text(loc.translate('refresh')),
+              ),
             ),
           ],
         ),
       );
     }
 
+    if (_showMap) {
+      final canCreateBranch =
+          _roleScope == MobileRoleScope.ownerAdmin && vm.branches.isNotEmpty;
+      return BranchMapView(
+        branches: vm.branches,
+        selectedBranch: vm.selectedBranch,
+        onEnterBranch: _onBranchSelected,
+        onCreateBranch: canCreateBranch
+            ? () => _showBranchFormModal(
+                  context,
+                  workshopId: vm.branches.first.workshopId,
+                )
+            : null,
+      );
+    }
+
+    final isOwnerAdmin = _roleScope == MobileRoleScope.ownerAdmin;
     return RefreshIndicator(
       onRefresh: vm.loadBranches,
       child: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(16, 18, 16, 90),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
         itemCount: vm.branches.length,
         separatorBuilder: (_, _) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           final branch = vm.branches[index];
           final isCurrent = vm.selectedBranch?.id == branch.id;
-
-          return Material(
-            key: Key('branch_card_${branch.code}'),
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            child: InkWell(
-              onTap: () => _onBranchSelected(branch),
-              borderRadius: BorderRadius.circular(18),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: isCurrent
-                        ? ShiftIQColors.primaryBlue
-                        : const Color(0xFFE2E8F0),
-                    width: isCurrent ? 1.8 : 1,
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: ShiftIQColors.primaryBlue.withAlpha(18),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(
-                            Icons.store_mall_directory_outlined,
-                            color: ShiftIQColors.primaryBlue,
-                            size: 22,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                branch.name,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: ShiftIQColors.graphiteText,
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                branch.code,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF64748B),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: branch.active
-                                ? ShiftIQColors.preventiveGreen.withAlpha(24)
-                                : ShiftIQColors.severityCrimson.withAlpha(24),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            branch.active ? 'ACTIVE' : 'INACTIVE',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: branch.active
-                                  ? ShiftIQColors.preventiveGreen
-                                  : ShiftIQColors.severityCrimson,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on_outlined,
-                          size: 16,
-                          color: Color(0xFF64748B),
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            branch.address,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF475569),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (branch.phone != null && branch.phone!.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.phone_outlined,
-                            size: 16,
-                            color: Color(0xFF64748B),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            branch.phone!,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF475569),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                    const SizedBox(height: 14),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 44,
-                      child: FilledButton.icon(
-                        key: Key('btn_enter_branch_${branch.code}'),
-                        onPressed: () => _onBranchSelected(branch),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: ShiftIQColors.primaryBlue,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-                        label: Text(
-                          loc.translate('enter_this_branch'),
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          return BranchListCard(
+            branch: branch,
+            isFocused: true,
+            isCurrentSession: isCurrent,
+            onTap: () => _onBranchSelected(branch),
+            onEnter: () => _onBranchSelected(branch),
+            onEdit: isOwnerAdmin
+                ? () => _showBranchFormModal(
+                      context,
+                      workshopId: branch.workshopId,
+                      existingBranch: branch,
+                    )
+                : null,
           );
         },
       ),
@@ -621,16 +504,16 @@ class _ViewModeToggle extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _ToggleChip(
-            key: const Key('toggle_branch_list'),
-            icon: Icons.view_agenda_outlined,
-            selected: !showMap,
-            onTap: () => onChanged(false),
-          ),
-          _ToggleChip(
             key: const Key('toggle_branch_map'),
             icon: Icons.map_outlined,
             selected: showMap,
             onTap: () => onChanged(true),
+          ),
+          _ToggleChip(
+            key: const Key('toggle_branch_list'),
+            icon: Icons.view_agenda_outlined,
+            selected: !showMap,
+            onTap: () => onChanged(false),
           ),
         ],
       ),

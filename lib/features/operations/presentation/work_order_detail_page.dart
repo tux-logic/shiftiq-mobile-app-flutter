@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/auth/mobile_role_scope.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
+import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_order_detail_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
@@ -24,6 +28,12 @@ class WorkOrderDetailPage extends StatefulWidget {
 class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
   late final WorkOrderDetailViewModel _viewModel;
 
+  bool get _isOwnerAdmin {
+    if (!getIt.isRegistered<SessionStorage>()) return false;
+    return RoleRouter.resolveScope(getIt<SessionStorage>().roles) ==
+        MobileRoleScope.ownerAdmin;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -36,8 +46,8 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
   void _showAddTaskDialog(BuildContext context) {
     final loc = AppLocalizations.of(context);
     final descController = TextEditingController();
-    final priceController = TextEditingController(text: '80.00');
-    final mechanicController = TextEditingController(text: 'Luis Ramos');
+    final priceController = TextEditingController();
+    final mechanicController = TextEditingController();
 
     showDialog(
       context: context,
@@ -194,18 +204,25 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
-          appBar: AppBar(
-            title: Text(order.formattedNumber),
-            actions: [
-              IconButton(
-                tooltip: AppLocalizations.of(context).translate('tooltip_refresh'),
-                icon: const Icon(Icons.refresh),
-                onPressed: () => vm.loadOrder(order.id),
+          body: Column(
+            children: [
+              ShiftIQPageHeader(
+                title: order.formattedNumber,
+                subtitle: '${order.vehicleModel} · ${order.vehiclePlate}',
+                showBackButton: true,
+                actions: [
+                  ShiftIQLiquidIconButton(
+                    tooltip: AppLocalizations.of(context)
+                        .translate('tooltip_refresh'),
+                    icon: Icons.refresh_rounded,
+                    onDarkBackground: true,
+                    onPressed: () => vm.loadOrder(order.id),
+                  ),
+                ],
               ),
-            ],
-          ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -470,17 +487,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                       );
 
                       if (confirmed == true) {
-                        final ok = await vm.completeOrder();
-                        if (ok && context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Orden finalizada y liquidada exitosamente',
-                              ),
-                              backgroundColor: ShiftIQColors.preventiveGreen,
-                            ),
-                          );
-                        }
+                        await vm.completeOrder();
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -534,61 +541,66 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      final items = <VoucherItem>[];
-                      for (final task in order.tasks) {
-                        items.add(
-                          VoucherItem.create(
-                            id: 'svc-${task.id}',
-                            description: task.description,
-                            itemType: VoucherItemType.service,
-                            quantity: 1,
-                            unitPrice: task.price,
-                          ),
-                        );
-                        for (final p in task.products) {
+                  if (_isOwnerAdmin) ...[
+                    const SizedBox(height: 12),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        final items = <VoucherItem>[];
+                        for (final task in order.tasks) {
                           items.add(
                             VoucherItem.create(
-                              id: 'sp-${p.id}',
-                              description: p.productName,
-                              itemType: VoucherItemType.sparePart,
-                              quantity: p.quantity,
-                              unitPrice: p.unitPrice,
+                              id: 'svc-${task.id}',
+                              description: task.description,
+                              itemType: VoucherItemType.service,
+                              quantity: 1,
+                              unitPrice: task.price,
                             ),
                           );
+                          for (final p in task.products) {
+                            items.add(
+                              VoucherItem.create(
+                                id: 'sp-${p.id}',
+                                description: p.productName,
+                                itemType: VoucherItemType.sparePart,
+                                quantity: p.quantity,
+                                unitPrice: p.unitPrice,
+                              ),
+                            );
+                          }
                         }
-                      }
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => CheckoutVoucherPage(
-                            branchId: order.branchId,
-                            workOrderId: order.id,
-                            initialCustomerName: order.customerName,
-                            initialPlate: order.vehiclePlate,
-                            initialItems: items.isNotEmpty ? items : null,
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CheckoutVoucherPage(
+                              branchId: order.branchId,
+                              workOrderId: order.id,
+                              initialCustomerName: order.customerName,
+                              initialPlate: order.vehiclePlate,
+                              initialItems: items.isNotEmpty ? items : null,
+                            ),
                           ),
+                        );
+                      },
+                      icon: const Icon(Icons.receipt_long),
+                      label: Text(loc.translate('emit_voucher_btn')),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ShiftIQColors.primaryBlue,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size.fromHeight(48),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                      );
-                    },
-                    icon: const Icon(Icons.receipt_long),
-                    label: Text(loc.translate('emit_voucher_btn')),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ShiftIQColors.primaryBlue,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size.fromHeight(48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                  ),
+                  ],
                 ],
 
                 const SizedBox(height: 20),
               ],
             ),
+          ),
+              ),
+            ],
           ),
         );
       },

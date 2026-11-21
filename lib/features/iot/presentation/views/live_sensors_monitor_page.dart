@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/controllers/telemetry_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/widgets/sensor_gauge_card.dart';
 
@@ -34,66 +35,53 @@ class _LiveSensorsMonitorPageState extends State<LiveSensorsMonitorPage> {
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
-          appBar: AppBar(
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Telemetría en Vivo OBD-II',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'Vehículo ${widget.vehiclePlate} · Dongle ELM327',
-                  style: const TextStyle(fontSize: 11, color: Colors.white70),
-                ),
-              ],
-            ),
-            actions: [
-              IconButton(
-                tooltip: AppLocalizations.of(context).translate('tooltip_refresh_sensors'),
-                icon: const Icon(Icons.refresh),
-                onPressed: () =>
-                    widget.viewModel.loadLiveSensors(widget.vehiclePlate),
+          body: Column(
+            children: [
+              ShiftIQPageHeader(
+                title: 'Último Snapshot OBD-II',
+                subtitle: 'Vehículo ${widget.vehiclePlate} · Lectura registrada',
+                showBackButton: true,
               ),
-            ],
-          ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+              Expanded(
+                child: RefreshIndicator(
+                  color: ShiftIQColors.primaryBlue,
+                  onRefresh: () =>
+                      widget.viewModel.loadLiveSensors(widget.vehiclePlate),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 36),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Dongle Connection Banner
+                // Snapshot Info Banner
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
                   decoration: BoxDecoration(
-                    color: ShiftIQColors.preventiveGreen.withAlpha(20),
-                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: ShiftIQColors.preventiveGreen.withAlpha(80),
+                      color: ShiftIQColors.borderSlate,
                     ),
                   ),
-                  child: Row(
+                  child: const Row(
                     children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: ShiftIQColors.preventiveGreen,
-                          shape: BoxShape.circle,
-                        ),
+                      Icon(
+                        Icons.history_toggle_off_rounded,
+                        size: 16,
+                        color: ShiftIQColors.primaryBlue,
                       ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Dongle ELM327 Bluetooth Conectado',
+                      SizedBox(width: 8),
+                      Text(
+                        'Último snapshot sincronizado',
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: ShiftIQColors.preventiveGreen,
+                          fontWeight: FontWeight.w700,
+                          color: ShiftIQColors.graphiteText,
                         ),
                       ),
-                      const Spacer(),
-                      const Text(
-                        'Frecuencia: 5 Hz',
+                      Spacer(),
+                      Text(
+                        'Desliza para actualizar',
                         style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
                       ),
                     ],
@@ -103,7 +91,7 @@ class _LiveSensorsMonitorPageState extends State<LiveSensorsMonitorPage> {
 
                 // Section Title
                 const Text(
-                  'PARÁMETROS DEL MOTOR EN TIEMPO REAL',
+                  'LECTURAS DEL ÚLTIMO SNAPSHOT',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -115,7 +103,33 @@ class _LiveSensorsMonitorPageState extends State<LiveSensorsMonitorPage> {
 
                 // Grid of Sensor Gauges
                 if (sensors.isEmpty)
-                  const Center(child: CircularProgressIndicator())
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 48),
+                    child: Center(
+                      child: Column(
+                        children: [
+                          const ShiftIQEmptyStateIcon(),
+                          const SizedBox(height: 14),
+                          const Text(
+                            'Sin snapshots registrados',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: ShiftIQColors.graphiteText,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Desliza hacia abajo para consultar nuevas lecturas',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
                 else
                   GridView.builder(
                     shrinkWrap: true,
@@ -134,6 +148,10 @@ class _LiveSensorsMonitorPageState extends State<LiveSensorsMonitorPage> {
                   ),
               ],
             ),
+          ),
+                ),
+              ),
+            ],
           ),
         );
       },

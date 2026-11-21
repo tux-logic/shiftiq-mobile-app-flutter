@@ -84,14 +84,7 @@ class _CreateProductModalState extends State<CreateProductModal> {
     setState(() => _isLoading = false);
 
     if (success) {
-      final loc = AppLocalizations.of(context);
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(loc.translate('product_registered_success')),
-          backgroundColor: ShiftIQColors.preventiveGreen,
-        ),
-      );
     }
   }
 

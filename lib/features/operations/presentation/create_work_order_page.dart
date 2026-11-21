@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_toast.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
@@ -83,23 +84,15 @@ class _CreateWorkOrderPageState extends State<CreateWorkOrderPage> {
       );
 
       if (mounted) {
-        final loc = AppLocalizations.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(loc.translate('work_order_created_success')),
-            backgroundColor: ShiftIQColors.preventiveGreen,
-          ),
-        );
         Navigator.of(context).pop(true);
       }
     } catch (e) {
       if (mounted) {
         final loc = AppLocalizations.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${loc.translate('error_creating_order')}: ${e.toString()}'),
-            backgroundColor: ShiftIQColors.severityCrimson,
-          ),
+        ShiftIQToast.show(
+          context,
+          message: '${loc.translate('error_creating_order')}: ${e.toString()}',
+          type: ShiftIQToastType.error,
         );
       }
     } finally {

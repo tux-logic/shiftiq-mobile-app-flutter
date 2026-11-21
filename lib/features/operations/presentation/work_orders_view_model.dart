@@ -20,8 +20,15 @@ class WorkOrdersViewModel extends ChangeNotifier {
   String? _error;
   String? get error => _error;
 
+  List<WorkOrder> _allOrders = [];
   List<WorkOrder> _orders = [];
   List<WorkOrder> get orders => _orders;
+
+  /// Returns orders filtered by [status] without mutating [statusFilter].
+  List<WorkOrder> ordersForStatus(WorkOrderStatus? status) {
+    if (status == null) return _allOrders;
+    return _allOrders.where((o) => o.status == status).toList();
+  }
 
   WorkOrderStatus? _statusFilter;
   WorkOrderStatus? get statusFilter => _statusFilter;
@@ -47,15 +54,10 @@ class WorkOrdersViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final fetchedOrders = await manageWorkOrders.getWorkOrders(
+      _allOrders = await manageWorkOrders.getWorkOrders(
         branchId: _activeBranchId,
       );
-
-      if (_statusFilter != null) {
-        _orders = fetchedOrders.where((o) => o.status == _statusFilter).toList();
-      } else {
-        _orders = fetchedOrders;
-      }
+      _applyFilter();
     } catch (e) {
       _error = 'Error loading work orders: ${e.toString()}';
     } finally {
@@ -64,11 +66,19 @@ class WorkOrdersViewModel extends ChangeNotifier {
     }
   }
 
+  void _applyFilter() {
+    if (_statusFilter != null) {
+      _orders = _allOrders.where((o) => o.status == _statusFilter).toList();
+    } else {
+      _orders = _allOrders;
+    }
+  }
+
   Future<void> setFilter(WorkOrderStatus? filter) async {
     if (_statusFilter == filter) return;
     _statusFilter = filter;
+    _applyFilter();
     notifyListeners();
-    await loadOrders();
   }
 
   Future<void> refresh() => loadOrders();

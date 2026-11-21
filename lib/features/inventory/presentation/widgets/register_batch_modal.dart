@@ -91,14 +91,6 @@ class _RegisterBatchModalState extends State<RegisterBatchModal> {
 
     if (success) {
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Lote ingresado correctamente. Nuevo stock: ${widget.product.currentStock + quantity} ${widget.product.unitOfMeasure}',
-          ),
-          backgroundColor: ShiftIQColors.preventiveGreen,
-        ),
-      );
     }
   }
 

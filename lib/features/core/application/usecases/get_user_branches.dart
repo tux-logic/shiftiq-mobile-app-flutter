@@ -36,70 +36,23 @@ class GetUserBranchesUseCase {
       }
 
       // Case 2: Employee profile (Mechanic / Assistant / Manager)
-      if (profile.employee != null) {
-        final employeeBranches = <Branch>[];
-
-        // 1. Direct branch lookup on Render for Wagner Motors (where Alan Mamani is actively onboarded)
-        try {
-          final branchWag = await repository.getBranchById('f130ca7c-5492-43ed-8d83-e98e2e69ece4');
-          employeeBranches.add(branchWag);
-        } catch (_) {}
-
-        // 2. Direct branch lookup on Render for Surquillo
-        try {
-          final branchSurq = await repository.getBranchById('acf71fc5-4be0-4aed-b82d-55b7faf901f8');
-          employeeBranches.add(branchSurq);
-        } catch (_) {}
-
-        if (employeeBranches.isNotEmpty) return employeeBranches;
-
-        if (profile.employee!.workshopId.isNotEmpty) {
-          try {
-            final branches = await repository.getBranchesByWorkshop(profile.employee!.workshopId);
-            if (branches.isNotEmpty) return branches;
-          } catch (_) {}
-        }
+      if (profile.employee != null &&
+          profile.employee!.workshopId.isNotEmpty) {
+        final branches = await repository.getBranchesByWorkshop(
+          profile.employee!.workshopId,
+        );
+        if (branches.isNotEmpty) return branches;
       }
     } catch (_) {}
 
     // Fallback attempt via repository workshops
-    try {
-      final workshops = await repository.getWorkshops(ownerId: ownerId);
-      final allBranches = <Branch>[];
-      for (final workshop in workshops) {
-        final branches = await repository.getBranchesByWorkshop(workshop.id);
-        allBranches.addAll(branches);
-      }
-      if (allBranches.isNotEmpty) return allBranches;
-    } catch (_) {}
-
-    // Graceful offline fallback with live Render branch data
-    return const [
-      Branch(
-        id: 'f130ca7c-5492-43ed-8d83-e98e2e69ece4',
-        workshopId: '0167d689-50bd-49ee-b5dc-2017e6b75c21',
-        code: 'WAG-01',
-        name: 'Sede Principal Wagner Motors',
-        address: 'Av. Javier Prado Este 4500, Santiago de Surco, Lima',
-        district: 'Santiago de Surco',
-        phone: '+51987654320',
-        latitude: -12.0865,
-        longitude: -76.9760,
-        active: true,
-      ),
-      Branch(
-        id: 'acf71fc5-4be0-4aed-b82d-55b7faf901f8',
-        workshopId: '99abb52d-523e-47dc-a53d-e442899aca4b',
-        code: 'SURQ-01',
-        name: 'Sede Principal Surquillo',
-        address: 'Av. Tomas Marsano Nro. 890 Villa Victoria, Surquillo, Lima',
-        district: 'Surquillo',
-        phone: '+51987654321',
-        latitude: -12.1111,
-        longitude: -77.0124,
-        active: true,
-      ),
-    ];
+    final workshops = await repository.getWorkshops(ownerId: ownerId);
+    final allBranches = <Branch>[];
+    for (final workshop in workshops) {
+      final branches = await repository.getBranchesByWorkshop(workshop.id);
+      allBranches.addAll(branches);
+    }
+    return allBranches;
   }
 
   Future<Branch> getBranchById(String branchId) {

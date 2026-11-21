@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_toast.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
-import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
+import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/controllers/billing_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/checkout_voucher_page.dart';
@@ -11,6 +15,7 @@ import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/v
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/widgets/quote_card.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/widgets/voucher_card.dart';
 
+/// Minimalist ShiftIQ billing dashboard for SUNAT vouchers and budget quotes.
 class BillingDashboardPage extends StatefulWidget {
   final String? branchId;
   final BillingViewModel? viewModel;
@@ -25,29 +30,36 @@ class BillingDashboardPage extends StatefulWidget {
   State<BillingDashboardPage> createState() => _BillingDashboardPageState();
 }
 
-class _BillingDashboardPageState extends State<BillingDashboardPage>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
+class _BillingDashboardPageState extends State<BillingDashboardPage> {
   late final BillingViewModel _viewModel;
   late final String _activeBranchId;
+  int _selectedTab = 0;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _viewModel = widget.viewModel ?? getIt<BillingViewModel>();
-    final session = getIt.isRegistered<SessionStorage>() ? getIt<SessionStorage>() : null;
-    _activeBranchId = widget.branchId ?? session?.activeBranchId ?? ApiConstants.defaultBranchId;
+    final session =
+        getIt.isRegistered<SessionStorage>() ? getIt<SessionStorage>() : null;
+    _activeBranchId = widget.branchId ??
+        session?.activeBranchId ??
+        ApiConstants.defaultBranchId;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _viewModel.loadBillingData(_activeBranchId);
     });
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+  void _openCheckout(BillingViewModel viewModel) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CheckoutVoucherPage(
+          branchId: _activeBranchId,
+          viewModel: viewModel,
+        ),
+      ),
+    );
   }
 
   @override
@@ -59,272 +71,463 @@ class _BillingDashboardPageState extends State<BillingDashboardPage>
         final loc = AppLocalizations.of(context);
 
         return Scaffold(
-          appBar: AppBar(
-            title: Text(loc.translate('billing_title')),
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-            bottom: TabBar(
-              controller: _tabController,
-              indicatorColor: AppColors.secondary,
-              labelColor: Colors.white,
-              unselectedLabelColor: Colors.white70,
-              tabs: [
-                Tab(
-                  icon: const Icon(Icons.receipt_long),
-                  text: '${loc.translate('vouchers')} (${viewModel.vouchers.length})',
-                ),
-                Tab(
-                  icon: const Icon(Icons.request_quote_outlined),
-                  text: '${loc.translate('quotes')} (${viewModel.quotes.length})',
-                ),
-              ],
-            ),
-          ),
-          body: TabBarView(
-            controller: _tabController,
+          backgroundColor: ShiftIQColors.warmNeutral,
+          body: Stack(
             children: [
-              // Tab 1: Comprobantes Electrónicos SUNAT
-              RefreshIndicator(
-                onRefresh: () => viewModel.loadBillingData(_activeBranchId),
-                child: ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    // KPI Banner: Facturación del Día
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: AppColors.primary.withValues(alpha: 0.2),
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Facturación Hoy',
-                                  style: TextStyle(
-                                    color: AppColors.textSecondary,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'S/ ${viewModel.totalBilledToday.toStringAsFixed(2)}',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.primary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: AppColors.warning.withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: AppColors.warning.withValues(alpha: 0.2),
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Por Cobrar',
-                                  style: TextStyle(
-                                    color: AppColors.textSecondary,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '${viewModel.pendingPaymentsCount} comprobantes',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.warning,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+              Column(
+                children: [
+                  ShiftIQPageHeader(
+                    title: loc.translate('billing_title'),
+                    subtitle: 'Comprobantes SUNAT y cotizaciones',
+                    showBackButton: true,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+                    child: _SegmentedBillingTabs(
+                      selectedIndex: _selectedTab,
+                      vouchersLabel:
+                          '${loc.translate('vouchers')} (${viewModel.vouchers.length})',
+                      quotesLabel:
+                          '${loc.translate('quotes')} (${viewModel.quotes.length})',
+                      onChanged: (index) => setState(() => _selectedTab = index),
                     ),
-                    const SizedBox(height: 16),
-
-                    // Type filter chips
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          FilterChip(
-                            label: Text(loc.translate('all')),
-                            selected: viewModel.selectedTypeFilter == null,
-                            onSelected: (_) =>
-                                viewModel.filterByType(null, _activeBranchId),
-                          ),
-                          const SizedBox(width: 8),
-                          FilterChip(
-                            label: Text(loc.translate('boletas_filter')),
-                            selected:
-                                viewModel.selectedTypeFilter == VoucherType.boleta,
-                            onSelected: (_) => viewModel.filterByType(
-                              VoucherType.boleta,
-                              _activeBranchId,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          FilterChip(
-                            label: Text(loc.translate('facturas_filter')),
-                            selected:
-                                viewModel.selectedTypeFilter == VoucherType.factura,
-                            onSelected: (_) => viewModel.filterByType(
-                              VoucherType.factura,
-                              _activeBranchId,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    if (viewModel.isLoading && viewModel.vouchers.isEmpty)
-                      const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(32),
-                          child: CircularProgressIndicator(),
-                        ),
-                      )
-                    else if (viewModel.vouchers.isEmpty)
-                      Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(32),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.receipt_outlined,
-                                size: 48,
-                                color: AppColors.textSecondary,
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'No se encontraron comprobantes emitidos',
-                                style: TextStyle(
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                    else
-                      ...viewModel.vouchers.map(
-                        (v) => VoucherCard(
-                          voucher: v,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => VoucherDetailPage(
-                                  voucherId: v.id,
-                                  branchId: _activeBranchId,
-                                  viewModel: viewModel,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                  ],
-                ),
+                  ),
+                  Expanded(
+                    child: _selectedTab == 0
+                        ? _buildVouchersTab(context, viewModel, loc)
+                        : _buildQuotesTab(context, viewModel),
+                  ),
+                ],
               ),
-
-              // Tab 2: Cotizaciones Presupuestarias
-              RefreshIndicator(
-                onRefresh: () => viewModel.loadBillingData(_activeBranchId),
-                child: ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    if (viewModel.isLoading && viewModel.quotes.isEmpty)
-                      const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(32),
-                          child: CircularProgressIndicator(),
-                        ),
-                      )
-                    else if (viewModel.quotes.isEmpty)
-                      Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(32),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.request_quote_outlined,
-                                size: 48,
-                                color: AppColors.textSecondary,
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'No hay cotizaciones registradas',
-                                style: TextStyle(
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                    else
-                      ...viewModel.quotes.map(
-                        (q) => QuoteCard(
-                          quote: q,
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Cotización ${q.quoteNumber} para ${q.customerName}',
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                  ],
+              Positioned(
+                right: 16,
+                bottom: 20 + MediaQuery.of(context).padding.bottom,
+                child: ShiftIQPrimaryPillButton(
+                  icon: Icons.add_rounded,
+                  label: loc.translate('emit_voucher_action'),
+                  onPressed: () => _openCheckout(viewModel),
                 ),
               ),
             ],
           ),
-          floatingActionButton: FloatingActionButton.extended(
-            heroTag: 'fab_billing_dashboard',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => CheckoutVoucherPage(
-                    branchId: _activeBranchId,
-                    viewModel: viewModel,
-                  ),
-                ),
-              );
-            },
-            backgroundColor: AppColors.success,
-            foregroundColor: Colors.white,
-            icon: const Icon(Icons.add),
-            label: Text(loc.translate('emit_voucher_action')),
-          ),
         );
       },
+    );
+  }
+
+  Widget _buildVouchersTab(
+    BuildContext context,
+    BillingViewModel viewModel,
+    AppLocalizations loc,
+  ) {
+    return RefreshIndicator(
+      color: ShiftIQColors.primaryBlue,
+      onRefresh: () => viewModel.loadBillingData(_activeBranchId),
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 96),
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _BillingKpiCard(
+                  icon: Icons.payments_outlined,
+                  accentColor: ShiftIQColors.primaryBlue,
+                  label: 'Facturación Hoy',
+                  value: 'S/ ${viewModel.totalBilledToday.toStringAsFixed(2)}',
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _BillingKpiCard(
+                  icon: Icons.pending_actions_outlined,
+                  accentColor: ShiftIQColors.severityOrange,
+                  label: 'Por Cobrar',
+                  value: '${viewModel.pendingPaymentsCount} comprobantes',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _BillingFilterPill(
+                  label: loc.translate('all'),
+                  selected: viewModel.selectedTypeFilter == null,
+                  onTap: () => viewModel.filterByType(null, _activeBranchId),
+                ),
+                const SizedBox(width: 8),
+                _BillingFilterPill(
+                  label: loc.translate('boletas_filter'),
+                  selected:
+                      viewModel.selectedTypeFilter == VoucherType.boleta,
+                  onTap: () => viewModel.filterByType(
+                    VoucherType.boleta,
+                    _activeBranchId,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                _BillingFilterPill(
+                  label: loc.translate('facturas_filter'),
+                  selected:
+                      viewModel.selectedTypeFilter == VoucherType.factura,
+                  onTap: () => viewModel.filterByType(
+                    VoucherType.factura,
+                    _activeBranchId,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          if (viewModel.isLoading && viewModel.vouchers.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 64),
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: ShiftIQColors.primaryBlue,
+                ),
+              ),
+            )
+          else if (viewModel.vouchers.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 56),
+              child: Center(
+                child: Column(
+                  children: [
+                    ShiftIQEmptyStateIcon(),
+                    SizedBox(height: 14),
+                    Text(
+                      'No se encontraron comprobantes emitidos',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: ShiftIQColors.graphiteText,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Desliza hacia abajo para actualizar o emite uno nuevo',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            ...viewModel.vouchers.map(
+              (v) => VoucherCard(
+                voucher: v,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => VoucherDetailPage(
+                        voucherId: v.id,
+                        branchId: _activeBranchId,
+                        viewModel: viewModel,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuotesTab(BuildContext context, BillingViewModel viewModel) {
+    return RefreshIndicator(
+      color: ShiftIQColors.primaryBlue,
+      onRefresh: () => viewModel.loadBillingData(_activeBranchId),
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 96),
+        children: [
+          if (viewModel.isLoading && viewModel.quotes.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 64),
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: ShiftIQColors.primaryBlue,
+                ),
+              ),
+            )
+          else if (viewModel.quotes.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 56),
+              child: Center(
+                child: Column(
+                  children: [
+                    ShiftIQEmptyStateIcon(),
+                    SizedBox(height: 14),
+                    Text(
+                      'No hay cotizaciones registradas',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: ShiftIQColors.graphiteText,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Desliza hacia abajo para actualizar',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            ...viewModel.quotes.map(
+              (q) => QuoteCard(
+                quote: q,
+                onTap: () {
+                  ShiftIQToast.show(
+                    context,
+                    message: 'Cotización ${q.quoteNumber} (${q.status.label})',
+                    type: ShiftIQToastType.info,
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SegmentedBillingTabs extends StatelessWidget {
+  final int selectedIndex;
+  final String vouchersLabel;
+  final String quotesLabel;
+  final ValueChanged<int> onChanged;
+
+  const _SegmentedBillingTabs({
+    required this.selectedIndex,
+    required this.vouchersLabel,
+    required this.quotesLabel,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: ShiftIQColors.borderSlate),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _SegmentButton(
+              icon: Icons.receipt_long_outlined,
+              label: vouchersLabel,
+              selected: selectedIndex == 0,
+              onTap: () => onChanged(0),
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: _SegmentButton(
+              icon: Icons.request_quote_outlined,
+              label: quotesLabel,
+              selected: selectedIndex == 1,
+              onTap: () => onChanged(1),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SegmentButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _SegmentButton({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+        decoration: BoxDecoration(
+          color: selected
+              ? ShiftIQColors.primaryBlue.withValues(alpha: 0.10)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: selected
+                  ? ShiftIQColors.primaryBlue
+                  : const Color(0xFF64748B),
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                  color: selected
+                      ? ShiftIQColors.primaryBlue
+                      : const Color(0xFF64748B),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BillingKpiCard extends StatelessWidget {
+  final IconData icon;
+  final Color accentColor;
+  final String label;
+  final String value;
+
+  const _BillingKpiCard({
+    required this.icon,
+    required this.accentColor,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: ShiftIQColors.borderSlate),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0F172A).withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, size: 15, color: accentColor),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 16.5,
+              fontWeight: FontWeight.w800,
+              color: ShiftIQColors.graphiteText,
+              fontFeatures: [FontFeature.tabularFigures()],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BillingFilterPill extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _BillingFilterPill({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFF0F172A) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected
+                ? const Color(0xFF0F172A)
+                : ShiftIQColors.borderSlate,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w600,
+            color: selected ? Colors.white : const Color(0xFF475569),
+          ),
+        ),
+      ),
     );
   }
 }

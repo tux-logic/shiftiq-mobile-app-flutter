@@ -3,7 +3,11 @@ import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
-import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
+import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/aggregates/appointment.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/valueobjects/appointment_status.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/controllers/appointments_view_model.dart';
@@ -92,35 +96,23 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
     return Scaffold(
-      backgroundColor: AppColors.neutralBg,
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              loc.translate('appointments_title'),
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              'Gestión de Bahías · $_branchName',
-              style: const TextStyle(fontSize: 11, color: Colors.white70),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip: loc.translate('tooltip_customer_directory'),
-            icon: const Icon(Icons.people_alt_outlined),
-            onPressed: _openDirectory,
+      backgroundColor: ShiftIQColors.warmNeutral,
+      body: Column(
+        children: [
+          ShiftIQPageHeader(
+            title: loc.translate('appointments_title'),
+            subtitle: 'Gestión de Bahías · $_branchName',
+            actions: [
+              ShiftIQLiquidIconButton(
+                tooltip: loc.translate('tooltip_customer_directory'),
+                icon: Icons.people_alt_outlined,
+                onDarkBackground: true,
+                onPressed: _openDirectory,
+              ),
+            ],
           ),
-          IconButton(
-            tooltip: loc.translate('tooltip_refresh'),
-            icon: const Icon(Icons.refresh),
-            onPressed: () => _viewModel.loadAppointments(_effectiveBranchId),
-          ),
-        ],
-      ),
-      body: ListenableBuilder(
+          Expanded(
+            child: ListenableBuilder(
         listenable: _viewModel,
         builder: (context, _) {
           final appointments = _viewModel.appointments;
@@ -136,96 +128,31 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                     _viewModel.selectDate(date, _effectiveBranchId),
               ),
 
-              // Filter Chips
-              Container(
-                color: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              // Minimalist Filter Pills
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      FilterChip(
-                        label: Text('${loc.translate('all_appointments')} (${appointments.length})'),
-                        selected: _viewModel.selectedStatusFilter == null,
-                        selectedColor: AppColors.primary.withAlpha(30),
-                        checkmarkColor: AppColors.primary,
-                        labelStyle: TextStyle(
-                          color: _viewModel.selectedStatusFilter == null
-                              ? AppColors.primary
-                              : AppColors.neutralDark,
-                          fontWeight: _viewModel.selectedStatusFilter == null
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                          fontSize: 12,
-                        ),
-                        onSelected: (_) =>
-                            _viewModel.filterByStatus(null, _effectiveBranchId),
+                      _buildFilterPill(
+                        loc.translate('all_appointments'),
+                        null,
                       ),
                       const SizedBox(width: 8),
-                      FilterChip(
-                        label: Text('${loc.translate('pending_appointments')} (${_viewModel.pendingCount})'),
-                        selected: _viewModel.selectedStatusFilter ==
-                            AppointmentStatus.pending,
-                        selectedColor: AppColors.stateWarning.withAlpha(40),
-                        checkmarkColor: AppColors.stateWarning,
-                        labelStyle: TextStyle(
-                          color: _viewModel.selectedStatusFilter ==
-                                  AppointmentStatus.pending
-                              ? AppColors.stateWarning
-                              : AppColors.neutralDark,
-                          fontWeight: _viewModel.selectedStatusFilter ==
-                                  AppointmentStatus.pending
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                          fontSize: 12,
-                        ),
-                        onSelected: (_) => _viewModel.filterByStatus(
-                          AppointmentStatus.pending,
-                          _effectiveBranchId,
-                        ),
+                      _buildFilterPill(
+                        loc.translate('pending_appointments'),
+                        AppointmentStatus.pending,
                       ),
                       const SizedBox(width: 8),
-                      FilterChip(
-                        label: Text('${loc.translate('confirmed_appointments')} (${_viewModel.confirmedCount})'),
-                        selected: _viewModel.selectedStatusFilter ==
-                            AppointmentStatus.confirmed,
-                        selectedColor: AppColors.stateSuccess.withAlpha(40),
-                        checkmarkColor: AppColors.stateSuccess,
-                        labelStyle: TextStyle(
-                          color: _viewModel.selectedStatusFilter ==
-                                  AppointmentStatus.confirmed
-                              ? AppColors.stateSuccess
-                              : AppColors.neutralDark,
-                          fontWeight: _viewModel.selectedStatusFilter ==
-                                  AppointmentStatus.confirmed
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                          fontSize: 12,
-                        ),
-                        onSelected: (_) => _viewModel.filterByStatus(
-                          AppointmentStatus.confirmed,
-                          _effectiveBranchId,
-                        ),
+                      _buildFilterPill(
+                        loc.translate('confirmed_appointments'),
+                        AppointmentStatus.confirmed,
                       ),
                       const SizedBox(width: 8),
-                      FilterChip(
-                        label: Text('${loc.translate('completed_appointments')} (${_viewModel.completedCount})'),
-                        selected: _viewModel.selectedStatusFilter ==
-                            AppointmentStatus.completed,
-                        selectedColor: AppColors.stateInfo.withAlpha(40),
-                        checkmarkColor: AppColors.stateInfo,
-                        labelStyle: TextStyle(
-                          color: _viewModel.selectedStatusFilter ==
-                                  AppointmentStatus.completed
-                              ? AppColors.stateInfo
-                              : AppColors.neutralDark,
-                          fontSize: 12,
-                        ),
-                        onSelected: (_) => _viewModel.filterByStatus(
-                          AppointmentStatus.completed,
-                          _effectiveBranchId,
-                        ),
+                      _buildFilterPill(
+                        loc.translate('completed_appointments'),
+                        AppointmentStatus.completed,
                       ),
                     ],
                   ),
@@ -234,19 +161,32 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
               if (error != null)
                 Container(
-                  color: AppColors.stateError.withAlpha(20),
+                  margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: ShiftIQColors.severityCrimson.withAlpha(18),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: ShiftIQColors.severityCrimson.withAlpha(50),
+                    ),
+                  ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline,
-                          color: AppColors.stateError, size: 18),
+                      const Icon(
+                        Icons.error_outline_rounded,
+                        color: ShiftIQColors.severityCrimson,
+                        size: 18,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           error,
                           style: const TextStyle(
-                              color: AppColors.stateError, fontSize: 12),
+                            color: ShiftIQColors.severityCrimson,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
@@ -255,84 +195,139 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
 
               // Appointment List
               Expanded(
-                child: isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : appointments.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                child: RefreshIndicator(
+                  color: ShiftIQColors.primaryBlue,
+                  onRefresh: () => _viewModel.loadAppointments(_effectiveBranchId),
+                  child: isLoading && appointments.isEmpty
+                      ? const Center(child: CircularProgressIndicator())
+                      : appointments.isEmpty
+                          ? ListView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              padding: const EdgeInsets.fromLTRB(32, 64, 32, 120),
                               children: [
-                                const Icon(
-                                  Icons.event_busy_outlined,
-                                  size: 48,
-                                  color: AppColors.neutralLight,
-                                ),
-                                const SizedBox(height: 12),
-                                const Text(
-                                  'No hay citas agendadas para esta fecha',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.neutralDark,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                const Text(
-                                  'Selecciona otro día o pulsa el botón para agendar una cita',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: AppColors.neutralLight,
-                                  ),
+                                const Center(
+                                  child: ShiftIQEmptyStateIcon(),
                                 ),
                                 const SizedBox(height: 16),
-                                FilledButton.icon(
-                                  onPressed: _openCreateAppointment,
-                                  icon: const Icon(Icons.add),
-                                  label: Text(loc.translate('schedule_appointment_bay')),
-                                  style: FilledButton.styleFrom(
-                                    backgroundColor: AppColors.primary,
+                                const Text(
+                                  'No hay citas agendadas para esta fecha',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 15.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: ShiftIQColors.graphiteText,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                const Text(
+                                  'Selecciona otro día o agenda una nueva cita para comenzar',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFF64748B),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                Center(
+                                  child: ShiftIQPrimaryPillButton(
+                                    label: loc.translate(
+                                      'schedule_appointment_bay',
+                                    ),
+                                    icon: Icons.add_rounded,
+                                    onPressed: _openCreateAppointment,
                                   ),
                                 ),
                               ],
+                            )
+                          : ListView.builder(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+                              itemCount: appointments.length,
+                              itemBuilder: (context, index) {
+                                final appointment = appointments[index];
+                                return AppointmentCard(
+                                  appointment: appointment,
+                                  onOpenWorkOrder: () =>
+                                      _openWorkOrderFromAppointment(appointment),
+                                  onConfirm: () => _viewModel.confirmAppointment(
+                                    appointment.id,
+                                    _effectiveBranchId,
+                                  ),
+                                  onCancel: () => _viewModel.cancelAppointment(
+                                    appointment.id,
+                                    _effectiveBranchId,
+                                  ),
+                                  onComplete: () =>
+                                      _viewModel.completeAppointment(
+                                    appointment.id,
+                                    _effectiveBranchId,
+                                  ),
+                                );
+                              },
                             ),
-                          )
-                        : ListView.builder(
-                            padding: const EdgeInsets.all(16),
-                            itemCount: appointments.length,
-                            itemBuilder: (context, index) {
-                              final appointment = appointments[index];
-                              return AppointmentCard(
-                                appointment: appointment,
-                                onOpenWorkOrder: () =>
-                                    _openWorkOrderFromAppointment(appointment),
-                                onConfirm: () => _viewModel.confirmAppointment(
-                                  appointment.id,
-                                  _effectiveBranchId,
-                                ),
-                                onCancel: () => _viewModel.cancelAppointment(
-                                  appointment.id,
-                                  _effectiveBranchId,
-                                ),
-                                onComplete: () =>
-                                    _viewModel.completeAppointment(
-                                  appointment.id,
-                                  _effectiveBranchId,
-                                ),
-                              );
-                            },
-                          ),
+                ),
               ),
             ],
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'fab_appointments',
-        onPressed: _openCreateAppointment,
-        icon: const Icon(Icons.add),
-        label: Text(loc.translate('new_appointment')),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+          ),
+        ],
+      ),
+      floatingActionButton: ListenableBuilder(
+        listenable: _viewModel,
+        builder: (context, _) {
+          if (_viewModel.appointments.isEmpty) {
+            return const SizedBox.shrink();
+          }
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 84),
+            child: ShiftIQPrimaryPillButton(
+              label: loc.translate('new_appointment'),
+              icon: Icons.add_rounded,
+              onPressed: _openCreateAppointment,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildFilterPill(String label, AppointmentStatus? status) {
+    final isSelected = _viewModel.selectedStatusFilter == status;
+
+    return GestureDetector(
+      onTap: () => _viewModel.filterByStatus(status, _effectiveBranchId),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF0F172A) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF0F172A)
+                : ShiftIQColors.borderSlate,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF0F172A).withAlpha(28),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12.5,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+            color: isSelected ? Colors.white : const Color(0xFF475569),
+          ),
+        ),
       ),
     );
   }

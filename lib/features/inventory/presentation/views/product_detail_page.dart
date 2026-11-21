@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/model/aggregates/product.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/model/entities/product_batch.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/presentation/controllers/inventory_view_model.dart';
@@ -56,41 +58,38 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
-          appBar: AppBar(
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  product.sku,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'Kardex y Lotes · ${product.category}',
-                  style: const TextStyle(fontSize: 11, color: Colors.white70),
-                ),
-              ],
-            ),
-            actions: [
-              IconButton(
-                tooltip: AppLocalizations.of(context).translate('tooltip_refresh'),
-                icon: const Icon(Icons.refresh),
-                onPressed: () => widget.viewModel.loadProductDetail(product.id),
+          body: Column(
+            children: [
+              ShiftIQPageHeader(
+                title: product.sku,
+                subtitle: 'Kardex y Lotes · ${product.category}',
+                showBackButton: true,
               ),
-            ],
-          ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header Card
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: ShiftIQColors.borderSlate),
-                  ),
+              Expanded(
+                child: RefreshIndicator(
+                  color: ShiftIQColors.primaryBlue,
+                  onRefresh: () => widget.viewModel.loadProductDetail(product.id),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 36),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header Card
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: ShiftIQColors.borderSlate),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF0F172A).withAlpha(9),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -231,11 +230,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     ),
                     child: Column(
                       children: [
-                        const Icon(
-                          Icons.inbox_outlined,
-                          size: 40,
-                          color: Color(0xFF94A3B8),
-                        ),
+                        const ShiftIQEmptyStateIcon(),
                         const SizedBox(height: 8),
                         const Text(
                           'No hay lotes registrados para este repuesto',
@@ -257,6 +252,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ...product.batches.map((batch) => _buildBatchCard(batch, product)),
               ],
             ),
+          ),
+                ),
+              ),
+            ],
           ),
         );
       },

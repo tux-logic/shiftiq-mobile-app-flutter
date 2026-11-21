@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_toast.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
+import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/entities/customer_registration.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/controllers/appointments_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/widgets/create_appointment_modal.dart';
@@ -57,152 +62,153 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
     return Scaffold(
-      backgroundColor: AppColors.neutralBg,
-      appBar: AppBar(
-        title: Text(
-          loc.translate('tooltip_customer_directory'),
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => widget.viewModel.loadCustomers(
-              widget.branchId,
-              query: _searchController.text,
-            ),
+      backgroundColor: ShiftIQColors.warmNeutral,
+      body: Column(
+        children: [
+          ShiftIQPageHeader(
+            title: loc.translate('tooltip_customer_directory'),
+            subtitle: 'Directorio de clientes y vehículos',
+            showBackButton: true,
           ),
-        ],
-      ),
-      body: ListenableBuilder(
-        listenable: widget.viewModel,
-        builder: (context, _) {
-          final customers = widget.viewModel.customers;
-          final isLoading = widget.viewModel.isLoading;
+          Expanded(
+            child: ListenableBuilder(
+              listenable: widget.viewModel,
+              builder: (context, _) {
+                final customers = widget.viewModel.customers;
+                final isLoading = widget.viewModel.isLoading;
 
-          return Column(
-            children: [
-              // Search bar
-              Container(
-                color: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: _onSearchChanged,
-                  decoration: InputDecoration(
-                    hintText: loc.translate('search_customer_hint'),
-                    prefixIcon: const Icon(Icons.search),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              _searchController.clear();
-                              _onSearchChanged('');
-                            },
-                          )
-                        : null,
-                    filled: true,
-                    fillColor: AppColors.neutralBg,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-              ),
-
-              // KPI Header
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  border: Border(
-                    bottom: BorderSide(color: AppColors.neutralBorder),
-                  ),
-                ),
-                child: Row(
+                return Column(
                   children: [
-                    const Icon(
-                      Icons.supervised_user_circle_outlined,
-                      size: 18,
-                      color: AppColors.primary,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${customers.length} Clientes / Vehículos Registrados',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.neutralDark,
+                    // Search bar
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: _onSearchChanged,
+                        decoration: InputDecoration(
+                          hintText: loc.translate('search_customer_hint'),
+                          prefixIcon: const Icon(
+                            Icons.search_rounded,
+                            color: Color(0xFF64748B),
+                          ),
+                          suffixIcon: _searchController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear_rounded),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    _onSearchChanged('');
+                                  },
+                                )
+                              : null,
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(
+                              color: ShiftIQColors.borderSlate,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(
+                              color: ShiftIQColors.borderSlate,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ],
-                ),
-              ),
+
+                    // Summary line
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(18, 4, 18, 8),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.supervised_user_circle_outlined,
+                            size: 16,
+                            color: ShiftIQColors.primaryBlue,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${customers.length} Clientes / Vehículos Registrados',
+                            style: const TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
 
               // List of customers
               Expanded(
-                child: isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : customers.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.person_search_outlined,
-                              size: 48,
-                              color: AppColors.neutralLight,
+                child: RefreshIndicator(
+                  color: ShiftIQColors.primaryBlue,
+                  onRefresh: () => widget.viewModel.loadCustomers(
+                    widget.branchId,
+                    query: _searchController.text,
+                  ),
+                  child: isLoading && customers.isEmpty
+                      ? const Center(child: CircularProgressIndicator())
+                      : customers.isEmpty
+                          ? ListView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              padding: const EdgeInsets.fromLTRB(32, 72, 32, 100),
+                              children: [
+                                const Center(
+                                  child: ShiftIQEmptyStateIcon(),
+                                ),
+                                const SizedBox(height: 12),
+                                const Text(
+                                  'No se encontraron clientes',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: ShiftIQColors.graphiteText,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _searchController.text.isNotEmpty
+                                      ? 'Prueba con otro término de búsqueda'
+                                      : 'No hay registros en esta sede',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : ListView.separated(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+                              itemCount: customers.length,
+                              separatorBuilder: (_, _) =>
+                                  const SizedBox(height: 10),
+                              itemBuilder: (context, index) {
+                                final customer = customers[index];
+                                return _buildCustomerCard(customer);
+                              },
                             ),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'No se encontraron clientes',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.neutralDark,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _searchController.text.isNotEmpty
-                                  ? 'Prueba con otro término de búsqueda'
-                                  : 'No hay registros en esta sede',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.neutralLight,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : ListView.separated(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: customers.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 10),
-                        itemBuilder: (context, index) {
-                          final customer = customers[index];
-                          return _buildCustomerCard(customer);
-                        },
-                      ),
+                ),
               ),
             ],
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'fab_customer_directory',
+          ),
+        ],
+      ),
+      floatingActionButton: ShiftIQPrimaryPillButton(
+        label: loc.translate('new_appointment'),
+        icon: Icons.add_rounded,
         onPressed: () => _openCreateAppointment(),
-        icon: const Icon(Icons.add),
-        label: Text(loc.translate('new_appointment')),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
       ),
     );
   }
@@ -270,14 +276,11 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
                             const SizedBox(width: 8),
                             InkWell(
                               onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Contactando al cliente ${customer.customerName} al ${customer.phone}...',
-                                    ),
-                                    backgroundColor: Colors.teal,
-                                    duration: const Duration(seconds: 2),
-                                  ),
+                                ShiftIQToast.show(
+                                  context,
+                                  message:
+                                      'Contactando a ${customer.customerName} (${customer.phone})',
+                                  type: ShiftIQToastType.info,
                                 );
                               },
                               child: Container(

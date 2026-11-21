@@ -33,23 +33,31 @@ class DtcAlertCard extends StatelessWidget {
         break;
     }
 
-    return Card(
-      elevation: 0,
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
           color: alert.isCritical
-              ? ShiftIQColors.severityCrimson.withAlpha(120)
+              ? ShiftIQColors.severityCrimson.withAlpha(110)
               : ShiftIQColors.borderSlate,
           width: alert.isCritical ? 1.5 : 1.0,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0F172A).withAlpha(9),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      color: Colors.white,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,8 +224,17 @@ class DtcAlertCard extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: ShiftIQColors.graphiteText,
                       side: const BorderSide(color: ShiftIQColors.borderSlate),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      textStyle: const TextStyle(fontSize: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 7,
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -226,9 +243,19 @@ class DtcAlertCard extends StatelessWidget {
                     icon: const Icon(Icons.post_add_outlined, size: 14),
                     label: Text(loc.translate('open_ot')),
                     style: FilledButton.styleFrom(
-                      backgroundColor: ShiftIQColors.primaryBlue,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      backgroundColor: const Color(0xFF0F172A),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 7,
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ],
@@ -236,6 +263,7 @@ class DtcAlertCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

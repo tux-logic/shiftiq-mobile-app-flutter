@@ -123,14 +123,7 @@ class _CreateAppointmentModalState extends State<CreateAppointmentModal> {
     if (!mounted) return;
 
     if (success) {
-      final loc = AppLocalizations.of(context);
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(loc.translate('appointment_scheduled_success')),
-          backgroundColor: AppColors.stateSuccess,
-        ),
-      );
     }
   }
 

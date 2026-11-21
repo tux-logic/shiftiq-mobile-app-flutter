@@ -83,6 +83,10 @@ class ApiConstants {
       '/api/v1/analytics/branches/$branchId/financial';
   static const String networkAnalyticsSummary =
       '/api/v1/analytics/network/summary';
+  static const String customerAnalyticsSummary =
+      '/api/v1/analytics/me/customer-summary';
+  static const String employeeAnalyticsSummary =
+      '/api/v1/analytics/me/employee-summary';
 
   // Operations Bounded Context
   static const String services = '/api/v1/services';

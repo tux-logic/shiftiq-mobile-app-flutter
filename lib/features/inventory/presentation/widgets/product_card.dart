@@ -19,18 +19,26 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
-    return Card(
-      elevation: 0,
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: ShiftIQColors.borderSlate),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: ShiftIQColors.borderSlate),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0F172A).withAlpha(9),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      color: Colors.white,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,10 +118,13 @@ class ProductCard extends StatelessWidget {
 
               // Financial Metrics Container
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: ShiftIQColors.surfaceVariant,
-                  borderRadius: BorderRadius.circular(10),
+                  color: ShiftIQColors.warmNeutral,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: ShiftIQColors.borderSlate.withAlpha(140),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -216,15 +227,25 @@ class ProductCard extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  OutlinedButton.icon(
+                  FilledButton.icon(
                     onPressed: onAddBatch,
-                    icon: const Icon(Icons.add, size: 14),
+                    icon: const Icon(Icons.add_rounded, size: 14),
                     label: Text(loc.translate('add_batch_btn')),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: ShiftIQColors.primaryBlue,
-                      side: const BorderSide(color: ShiftIQColors.primaryBlue),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF0F172A),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      minimumSize: Size.zero,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 7,
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ],
@@ -232,6 +253,7 @@ class ProductCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_toast.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/forgot_password_view_model.dart';
@@ -45,11 +46,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
     if (success && mounted) {
       final loc = AppLocalizations.of(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(loc.translate('forgot_success_msg')),
-          backgroundColor: ShiftIQColors.preventiveGreen,
-        ),
+      ShiftIQToast.show(
+        context,
+        message: loc.translate('forgot_success_msg'),
+        type: ShiftIQToastType.success,
       );
       Navigator.of(context).pop();
     }

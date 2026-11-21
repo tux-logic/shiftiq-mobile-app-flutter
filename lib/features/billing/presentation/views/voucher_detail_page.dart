@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_toast.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
+import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/controllers/billing_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/widgets/fiscal_summary_card.dart';
@@ -36,7 +40,6 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
 
   void _showPaymentModal(BuildContext context) {
     PaymentMethod selected = PaymentMethod.cash;
-    final loc = AppLocalizations.of(context);
 
     showModalBottomSheet(
       context: context,
@@ -90,7 +93,6 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
                       onPressed: vm.isLoading
                           ? null
                           : () async {
-                              final scaffold = ScaffoldMessenger.of(context);
                               final navigator = Navigator.of(modalCtx);
                               final success = await _viewModel.processPayment(
                                 voucherId: widget.voucherId,
@@ -99,12 +101,6 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
                               );
                               if (success && mounted) {
                                 navigator.pop();
-                                scaffold.showSnackBar(
-                                  SnackBar(
-                                    content: Text(loc.translate('payment_recorded_success')),
-                                    backgroundColor: AppColors.success,
-                                  ),
-                                );
                               }
                             },
                       style: ElevatedButton.styleFrom(
@@ -146,11 +142,21 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
 
         if (voucher == null) {
           return Scaffold(
-            appBar: AppBar(title: Text(loc.translate('voucher_detail'))),
-            body: Center(
-              child: Text(
-                viewModel.errorMessage ?? 'No se encontró el comprobante',
-              ),
+            backgroundColor: ShiftIQColors.warmNeutral,
+            body: Column(
+              children: [
+                ShiftIQPageHeader(
+                  title: loc.translate('voucher_detail'),
+                  showBackButton: true,
+                ),
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      viewModel.errorMessage ?? 'No se encontró el comprobante',
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         }
@@ -158,28 +164,33 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
         final isPaid = voucher.status == VoucherStatus.paid;
 
         return Scaffold(
-          appBar: AppBar(
-            title: Text('${voucher.voucherType.label} ${voucher.fullCode}'),
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.share_outlined),
-                tooltip: AppLocalizations.of(context).translate('tooltip_share_whatsapp'),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Enlace de descarga de ${voucher.fullCode} copiado al portapapeles',
-                      ),
-                    ),
-                  );
-                },
+          backgroundColor: ShiftIQColors.warmNeutral,
+          body: Column(
+            children: [
+              ShiftIQPageHeader(
+                title: '${voucher.voucherType.label} ${voucher.fullCode}',
+                subtitle: voucher.customerName,
+                showBackButton: true,
+                actions: [
+                  ShiftIQLiquidIconButton(
+                    icon: Icons.share_outlined,
+                    tooltip: AppLocalizations.of(context)
+                        .translate('tooltip_share_whatsapp'),
+                    onDarkBackground: true,
+                    onPressed: () {
+                      ShiftIQToast.show(
+                        context,
+                        message:
+                            'Enlace de ${voucher.fullCode} copiado al portapapeles',
+                        type: ShiftIQToastType.info,
+                      );
+                    },
+                  ),
+                ],
               ),
-            ],
-          ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -403,12 +414,11 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
+                          ShiftIQToast.show(
+                            context,
+                            message:
                                 'Enviando ticket a impresora térmica Bluetooth...',
-                              ),
-                            ),
+                            type: ShiftIQToastType.info,
                           );
                         },
                         icon: const Icon(Icons.print_outlined),
@@ -419,12 +429,11 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
+                          ShiftIQToast.show(
+                            context,
+                            message:
                                 'Descargando PDF oficial SUNAT (${voucher.fullCode}.pdf)...',
-                              ),
-                            ),
+                            type: ShiftIQToastType.info,
                           );
                         },
                         icon: const Icon(Icons.download),
@@ -440,6 +449,9 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
                 const SizedBox(height: 20),
               ],
             ),
+          ),
+              ),
+            ],
           ),
         );
       },
