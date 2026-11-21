@@ -8,6 +8,7 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton_dummies.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
@@ -199,15 +200,32 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
     );
   }
 
+  Widget _buildWorkOrderSkeletonList() {
+    final dummies = ShiftIQSkeletonDummies.workOrders();
+    return ShiftIQSkeletonizer(
+      key: const ValueKey('orders_loading'),
+      enabled: true,
+      child: ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 116),
+        itemCount: dummies.length,
+        itemBuilder: (_, index) => WorkOrderCard(
+          workOrder: dummies[index],
+          onTap: () {},
+        ),
+      ),
+    );
+  }
+
   Widget _buildOrdersTab(WorkOrdersViewModel vm, WorkOrderStatus? status) {
     final orders = vm.ordersForStatus(status);
 
     return ShiftIQPullToRefresh(
       onRefresh: vm.refresh,
-      skeleton: const ShiftIQSkeletonCardList(),
+      skeleton: _buildWorkOrderSkeletonList(),
       child: ShiftIQContentTransition(
         child: vm.isLoading && orders.isEmpty
-            ? const ShiftIQSkeletonCardList(key: ValueKey('orders_loading'))
+            ? _buildWorkOrderSkeletonList()
             : orders.isEmpty
               ? ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
