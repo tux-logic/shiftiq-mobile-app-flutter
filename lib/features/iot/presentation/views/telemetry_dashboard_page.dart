@@ -11,6 +11,7 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton_dummies.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/domain/iot_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/controllers/telemetry_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/views/dtc_detail_page.dart';
@@ -258,12 +259,10 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> {
               Expanded(
                 child: ShiftIQPullToRefresh(
                   onRefresh: () => _viewModel.loadDtcAlerts(_effectiveBranchId),
-                  skeleton: const ShiftIQSkeletonCardList(),
+                  skeleton: _buildDtcSkeletonList(),
                   child: ShiftIQContentTransition(
                     child: isLoading && alerts.isEmpty
-                        ? const ShiftIQSkeletonCardList(
-                            key: ValueKey('iot_loading'),
-                          )
+                        ? _buildDtcSkeletonList()
                         : alerts.isEmpty
                           ? ListView(
                               physics: const AlwaysScrollableScrollPhysics(),
@@ -316,6 +315,24 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> {
       ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDtcSkeletonList() {
+    final dummies = ShiftIQSkeletonDummies.dtcAlerts();
+    return ShiftIQSkeletonizer(
+      key: const ValueKey('iot_loading'),
+      enabled: true,
+      child: ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+        itemCount: dummies.length,
+        itemBuilder: (_, index) => DtcAlertCard(
+          alert: dummies[index],
+          onTap: () {},
+          onOpenWorkOrder: () {},
+        ),
       ),
     );
   }
