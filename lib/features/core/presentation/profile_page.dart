@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_toast.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
@@ -228,13 +230,12 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
               Expanded(
-                child: vm.isLoading
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                          color: ShiftIQColors.primaryBlue,
-                        ),
-                      )
-                    : SingleChildScrollView(
+                child: ShiftIQContentTransition(
+                  child: vm.isLoading &&
+                          vm.profileContext == null &&
+                          vm.userEmail.isEmpty
+                      ? const ShiftIQSkeletonDetail(key: ValueKey('profile_loading'))
+                      : SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -462,6 +463,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       const SizedBox(height: 24),
                     ],
                   ),
+                ),
                 ),
               ),
             ],

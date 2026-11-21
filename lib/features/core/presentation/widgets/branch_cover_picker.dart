@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 
 /// Callback that uploads raw image bytes and returns the resulting public URL.
 typedef CoverImageUploader = Future<String> Function(
@@ -203,29 +204,11 @@ class _BranchCoverPickerState extends State<BranchCoverPicker> {
 
                   if (_isUploading)
                     Container(
-                      color: const Color(0xFF0F172A).withValues(alpha: 0.55),
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.62),
                       child: const Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: Colors.white,
-                              ),
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              'Uploading image...',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
+                        child: ShiftIQInlineProgress(
+                          label: 'Subiendo imagen...',
+                          fontSize: 12.5,
                         ),
                       ),
                     ),

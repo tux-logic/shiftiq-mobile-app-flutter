@@ -5,6 +5,9 @@ import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton_dummies.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/analytics_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/controllers/dashboard_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/activity_bar_chart.dart';
@@ -223,38 +226,55 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ),
               Expanded(
-                child: RefreshIndicator(
+                child: ShiftIQPullToRefresh(
                   onRefresh: vm.refresh,
-                  color: ShiftIQColors.primaryBlue,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 240),
-                    child: vm.isLoading && summary == null
-                        ? const Center(
-                            key: ValueKey('loading'),
-                            child: CircularProgressIndicator(
-                              color: ShiftIQColors.primaryBlue,
-                            ),
-                          )
-                        : SingleChildScrollView(
-                      key: const ValueKey('content'),
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(16, 18, 16, 108),
-                      child: TweenAnimationBuilder<double>(
-                        tween: Tween<double>(begin: 0.0, end: 1.0),
-                        duration: const Duration(milliseconds: 380),
-                        curve: Curves.easeOutCubic,
-                        builder: (context, t, child) {
-                          return Opacity(
-                            opacity: t,
-                            child: Transform.translate(
-                              offset: Offset(0, (1 - t) * 10),
-                              child: child,
-                            ),
-                          );
-                        },
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
+                  skeleton: ShiftIQSkeletonizer(
+                    enabled: true,
+                    child: _buildDashboardScrollBody(
+                      context,
+                      vm,
+                      ShiftIQSkeletonDummies.analyticsSummary,
+                      loc,
+                      isSkeleton: true,
+                    ),
+                  ),
+                  child: ShiftIQSkeletonizer(
+                    enabled: vm.isLoading && summary == null,
+                    child: _buildDashboardScrollBody(
+                      context,
+                      vm,
+                      (vm.isLoading && summary == null)
+                          ? ShiftIQSkeletonDummies.analyticsSummary
+                          : summary,
+                      loc,
+                      isSkeleton: vm.isLoading && summary == null,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDashboardScrollBody(
+    BuildContext context,
+    DashboardViewModel vm,
+    BranchAnalyticsSummary? summary,
+    AppLocalizations loc, {
+    bool isSkeleton = false,
+  }) {
+    final isOwnerAdmin = _isOwnerAdmin;
+
+    return SingleChildScrollView(
+      key: ValueKey(isSkeleton ? 'dashboard_skeleton' : 'dashboard_content'),
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 108),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
                             if (summary != null &&
                                 summary.dtcAlertsCount > 0) ...[
                               DtcAlertBanner(
@@ -397,15 +417,6 @@ class _DashboardPageState extends State<DashboardPage> {
                             ),
                           ],
                         ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

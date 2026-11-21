@@ -8,6 +8,9 @@ import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton_dummies.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/controllers/billing_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/checkout_voucher_page.dart';
@@ -120,9 +123,9 @@ class _BillingDashboardPageState extends State<BillingDashboardPage> {
     BillingViewModel viewModel,
     AppLocalizations loc,
   ) {
-    return RefreshIndicator(
-      color: ShiftIQColors.primaryBlue,
+    return ShiftIQPullToRefresh(
       onRefresh: () => viewModel.loadBillingData(_activeBranchId),
+      skeleton: const ShiftIQSkeletonCardList(itemCount: 3),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 96),
@@ -183,12 +186,12 @@ class _BillingDashboardPageState extends State<BillingDashboardPage> {
           ),
           const SizedBox(height: 14),
           if (viewModel.isLoading && viewModel.vouchers.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 64),
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: ShiftIQColors.primaryBlue,
-                ),
+            ShiftIQSkeletonizer(
+              enabled: true,
+              child: Column(
+                children: ShiftIQSkeletonDummies.vouchers()
+                    .map((v) => VoucherCard(voucher: v, onTap: () {}))
+                    .toList(),
               ),
             )
           else if (viewModel.vouchers.isEmpty)
@@ -245,20 +248,20 @@ class _BillingDashboardPageState extends State<BillingDashboardPage> {
   }
 
   Widget _buildQuotesTab(BuildContext context, BillingViewModel viewModel) {
-    return RefreshIndicator(
-      color: ShiftIQColors.primaryBlue,
+    return ShiftIQPullToRefresh(
       onRefresh: () => viewModel.loadBillingData(_activeBranchId),
+      skeleton: const ShiftIQSkeletonCardList(itemCount: 3),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 96),
         children: [
           if (viewModel.isLoading && viewModel.quotes.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 64),
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: ShiftIQColors.primaryBlue,
-                ),
+            ShiftIQSkeletonizer(
+              enabled: true,
+              child: Column(
+                children: ShiftIQSkeletonDummies.quotes()
+                    .map((q) => QuoteCard(quote: q, onTap: () {}))
+                    .toList(),
               ),
             )
           else if (viewModel.quotes.isEmpty)

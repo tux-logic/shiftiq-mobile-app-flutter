@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_toast.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
@@ -241,13 +242,9 @@ class _CreateWorkOrderPageState extends State<CreateWorkOrderPage> {
                   ),
                 ),
                 child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
+                    ? const ShiftIQInlineProgress(
+                        label: 'ABRIENDO ORDEN...',
+                        fontSize: 13,
                       )
                     : const Row(
                         mainAxisAlignment: MainAxisAlignment.center,

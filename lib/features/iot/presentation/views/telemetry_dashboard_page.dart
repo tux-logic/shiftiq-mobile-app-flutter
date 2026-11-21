@@ -6,8 +6,12 @@ import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton_dummies.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/domain/iot_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/controllers/telemetry_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/views/dtc_detail_page.dart';
@@ -253,12 +257,13 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> {
 
               // Alerts List with Pull-to-Refresh
               Expanded(
-                child: RefreshIndicator(
-                  color: ShiftIQColors.primaryBlue,
+                child: ShiftIQPullToRefresh(
                   onRefresh: () => _viewModel.loadDtcAlerts(_effectiveBranchId),
-                  child: isLoading && alerts.isEmpty
-                      ? const Center(child: CircularProgressIndicator())
-                      : alerts.isEmpty
+                  skeleton: _buildDtcSkeletonList(),
+                  child: ShiftIQContentTransition(
+                    child: isLoading && alerts.isEmpty
+                        ? _buildDtcSkeletonList()
+                        : alerts.isEmpty
                           ? ListView(
                               physics: const AlwaysScrollableScrollPhysics(),
                               padding: const EdgeInsets.fromLTRB(32, 64, 32, 120),
@@ -301,6 +306,7 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> {
                                 );
                               },
                             ),
+                  ),
                 ),
               ),
             ],
@@ -309,6 +315,24 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> {
       ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDtcSkeletonList() {
+    final dummies = ShiftIQSkeletonDummies.dtcAlerts();
+    return ShiftIQSkeletonizer(
+      key: const ValueKey('iot_loading'),
+      enabled: true,
+      child: ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+        itemCount: dummies.length,
+        itemBuilder: (_, index) => DtcAlertCard(
+          alert: dummies[index],
+          onTap: () {},
+          onOpenWorkOrder: () {},
+        ),
       ),
     );
   }

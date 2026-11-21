@@ -4,8 +4,12 @@ import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.d
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton_dummies.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/entities/customer_registration.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/controllers/appointments_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/widgets/create_appointment_modal.dart';
@@ -146,15 +150,16 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
 
               // List of customers
               Expanded(
-                child: RefreshIndicator(
-                  color: ShiftIQColors.primaryBlue,
+                child: ShiftIQPullToRefresh(
                   onRefresh: () => widget.viewModel.loadCustomers(
                     widget.branchId,
                     query: _searchController.text,
                   ),
-                  child: isLoading && customers.isEmpty
-                      ? const Center(child: CircularProgressIndicator())
-                      : customers.isEmpty
+                  skeleton: _buildCustomerSkeletonList(),
+                  child: ShiftIQContentTransition(
+                    child: isLoading && customers.isEmpty
+                        ? _buildCustomerSkeletonList()
+                        : customers.isEmpty
                           ? ListView(
                               physics: const AlwaysScrollableScrollPhysics(),
                               padding: const EdgeInsets.fromLTRB(32, 72, 32, 100),
@@ -196,6 +201,7 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
                                 return _buildCustomerCard(customer);
                               },
                             ),
+                  ),
                 ),
               ),
             ],
@@ -209,6 +215,20 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
         label: loc.translate('new_appointment'),
         icon: Icons.add_rounded,
         onPressed: () => _openCreateAppointment(),
+      ),
+    );
+  }
+
+  Widget _buildCustomerSkeletonList() {
+    final dummies = ShiftIQSkeletonDummies.customers();
+    return ShiftIQSkeletonizer(
+      key: const ValueKey('cust_loading'),
+      enabled: true,
+      child: ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+        itemCount: dummies.length,
+        itemBuilder: (_, index) => _buildCustomerCard(dummies[index]),
       ),
     );
   }

@@ -6,6 +6,10 @@ import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.d
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton_dummies.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_view_model.dart';
@@ -341,7 +345,9 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
 
               // Main content area: full map or branch list
               Expanded(
-                child: _buildContent(context, vm, loc),
+                child: ShiftIQContentTransition(
+                  child: _buildContent(context, vm, loc),
+                ),
               ),
             ],
           ),
@@ -355,10 +361,8 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
     BranchSelectionViewModel vm,
     AppLocalizations loc,
   ) {
-    if (vm.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: ShiftIQColors.primaryBlue),
-      );
+    if (vm.isLoading && vm.branches.isEmpty) {
+      return _buildBranchSkeletonList();
     }
 
     if (vm.errorMessage != null) {
@@ -398,8 +402,9 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
     }
 
     if (vm.branches.isEmpty) {
-      return RefreshIndicator(
+      return ShiftIQPullToRefresh(
         onRefresh: vm.loadBranches,
+        skeleton: _buildBranchSkeletonList(),
         child: ListView(
           padding: const EdgeInsets.all(28),
           children: [
@@ -453,8 +458,9 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
     }
 
     final isOwnerAdmin = _roleScope == MobileRoleScope.ownerAdmin;
-    return RefreshIndicator(
+    return ShiftIQPullToRefresh(
       onRefresh: vm.loadBranches,
+      skeleton: _buildBranchSkeletonList(),
       child: ListView.separated(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
         itemCount: vm.branches.length,
@@ -477,6 +483,27 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
                 : null,
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildBranchSkeletonList() {
+    final dummies = ShiftIQSkeletonDummies.branches();
+    return ShiftIQSkeletonizer(
+      key: const ValueKey('branches_loading'),
+      enabled: true,
+      child: ListView.separated(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+        itemCount: dummies.length,
+        separatorBuilder: (_, _) => const SizedBox(height: 12),
+        itemBuilder: (_, index) => BranchListCard(
+          branch: dummies[index],
+          isFocused: false,
+          isCurrentSession: false,
+          onTap: () {},
+          onEnter: () {},
+        ),
       ),
     );
   }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/controllers/telemetry_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/widgets/sensor_gauge_card.dart';
 
@@ -43,10 +45,10 @@ class _LiveSensorsMonitorPageState extends State<LiveSensorsMonitorPage> {
                 showBackButton: true,
               ),
               Expanded(
-                child: RefreshIndicator(
-                  color: ShiftIQColors.primaryBlue,
+                child: ShiftIQPullToRefresh(
                   onRefresh: () =>
                       widget.viewModel.loadLiveSensors(widget.vehiclePlate),
+                  skeleton: const ShiftIQSkeletonCardList(itemCount: 3),
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 36),

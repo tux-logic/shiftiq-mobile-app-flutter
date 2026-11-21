@@ -3,8 +3,12 @@ import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton_dummies.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
@@ -196,19 +200,33 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
     );
   }
 
+  Widget _buildWorkOrderSkeletonList() {
+    final dummies = ShiftIQSkeletonDummies.workOrders();
+    return ShiftIQSkeletonizer(
+      key: const ValueKey('orders_loading'),
+      enabled: true,
+      child: ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 116),
+        itemCount: dummies.length,
+        itemBuilder: (_, index) => WorkOrderCard(
+          workOrder: dummies[index],
+          onTap: () {},
+        ),
+      ),
+    );
+  }
+
   Widget _buildOrdersTab(WorkOrdersViewModel vm, WorkOrderStatus? status) {
     final orders = vm.ordersForStatus(status);
 
-    return RefreshIndicator(
+    return ShiftIQPullToRefresh(
       onRefresh: vm.refresh,
-      color: ShiftIQColors.primaryBlue,
-      child: vm.isLoading && orders.isEmpty
-          ? const Center(
-              child: CircularProgressIndicator(
-                color: ShiftIQColors.primaryBlue,
-              ),
-            )
-          : orders.isEmpty
+      skeleton: _buildWorkOrderSkeletonList(),
+      child: ShiftIQContentTransition(
+        child: vm.isLoading && orders.isEmpty
+            ? _buildWorkOrderSkeletonList()
+            : orders.isEmpty
               ? ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(24, 24, 24, 116),
@@ -269,6 +287,7 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
                     );
                   },
                 ),
+      ),
     );
   }
 }
