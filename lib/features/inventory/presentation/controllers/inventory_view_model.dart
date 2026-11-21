@@ -14,6 +14,7 @@ class InventoryViewModel extends ChangeNotifier {
 
   bool _isLoading = false;
   String? _errorMessage;
+  List<Product> _allProducts = [];
   List<Product> _products = [];
   String _selectedCategory = 'TODOS';
   StockStatus? _selectedStatusFilter;
@@ -28,11 +29,23 @@ class InventoryViewModel extends ChangeNotifier {
   String get searchQuery => _searchQuery;
   Product? get selectedProduct => _selectedProduct;
 
-  int get totalProductsCount => _products.length;
-  int get lowStockCount => _products.where((p) => p.isLowStock).length;
-  int get outOfStockCount => _products.where((p) => p.isOutOfStock).length;
+  /// Returns products filtered by [status] from the loaded category/query cache.
+  List<Product> productsForStatus(StockStatus? status) {
+    if (status == null) return _allProducts;
+    if (status == StockStatus.lowStock) {
+      return _allProducts.where((p) => p.isLowStock).toList();
+    }
+    if (status == StockStatus.outOfStock) {
+      return _allProducts.where((p) => p.isOutOfStock).toList();
+    }
+    return _allProducts.where((p) => p.isOptimalStock).toList();
+  }
+
+  int get totalProductsCount => _allProducts.length;
+  int get lowStockCount => _allProducts.where((p) => p.isLowStock).length;
+  int get outOfStockCount => _allProducts.where((p) => p.isOutOfStock).length;
   double get totalValuation =>
-      _products.fold(0.0, (acc, p) => acc + p.totalInventoryValue);
+      _allProducts.fold(0.0, (acc, p) => acc + p.totalInventoryValue);
   String get formattedTotalValuation => 'S/ ${totalValuation.toStringAsFixed(2)}';
 
   Future<void> loadProducts(String branchId) async {
@@ -41,12 +54,12 @@ class InventoryViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _products = await manageProducts.getProducts(
+      _allProducts = await manageProducts.getProducts(
         branchId: branchId,
         category: _selectedCategory == 'TODOS' ? null : _selectedCategory,
         query: _searchQuery,
-        status: _selectedStatusFilter,
       );
+      _applyStatusFilter();
     } catch (e) {
       _errorMessage = 'Error al cargar inventario: $e';
     } finally {
@@ -55,14 +68,20 @@ class InventoryViewModel extends ChangeNotifier {
     }
   }
 
+  void _applyStatusFilter() {
+    _products = productsForStatus(_selectedStatusFilter);
+  }
+
   Future<void> selectCategory(String category, String branchId) async {
     _selectedCategory = category;
     await loadProducts(branchId);
   }
 
   Future<void> filterByStatus(StockStatus? status, String branchId) async {
+    if (_selectedStatusFilter == status) return;
     _selectedStatusFilter = status;
-    await loadProducts(branchId);
+    _applyStatusFilter();
+    notifyListeners();
   }
 
   Future<void> search(String query, String branchId) async {

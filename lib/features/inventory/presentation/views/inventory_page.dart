@@ -5,6 +5,7 @@ import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_kanban_tab_bar.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
@@ -33,8 +34,16 @@ class InventoryPage extends StatefulWidget {
   State<InventoryPage> createState() => _InventoryPageState();
 }
 
-class _InventoryPageState extends State<InventoryPage> {
+class _InventoryPageState extends State<InventoryPage>
+    with SingleTickerProviderStateMixin {
+  static const List<StockStatus?> _tabStatuses = [
+    null,
+    StockStatus.lowStock,
+    StockStatus.outOfStock,
+  ];
+
   late final InventoryViewModel _viewModel;
+  late final TabController _tabController;
   late final String _effectiveBranchId;
   String _branchName = 'Sede Principal';
 
@@ -53,6 +62,8 @@ class _InventoryPageState extends State<InventoryPage> {
   void initState() {
     super.initState();
     _viewModel = widget.viewModel ?? getIt<InventoryViewModel>();
+    _tabController = TabController(length: _tabStatuses.length, vsync: this);
+    _tabController.addListener(_handleTabChanged);
     final session = getIt.isRegistered<SessionStorage>() ? getIt<SessionStorage>() : null;
     _effectiveBranchId = widget.branchId ?? session?.activeBranchId ?? ApiConstants.defaultBranchId;
     _branchName = session?.activeBranchName ?? ApiConstants.defaultBranchName;
@@ -62,8 +73,18 @@ class _InventoryPageState extends State<InventoryPage> {
     });
   }
 
+  void _handleTabChanged() {
+    if (_tabController.indexIsChanging) return;
+    _viewModel.filterByStatus(
+      _tabStatuses[_tabController.index],
+      _effectiveBranchId,
+    );
+  }
+
   @override
   void dispose() {
+    _tabController.removeListener(_handleTabChanged);
+    _tabController.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -184,7 +205,6 @@ class _InventoryPageState extends State<InventoryPage> {
             child: ListenableBuilder(
         listenable: _viewModel,
         builder: (context, _) {
-          final products = _viewModel.products;
           final isLoading = _viewModel.isLoading;
           final error = _viewModel.errorMessage;
 
@@ -268,43 +288,29 @@ class _InventoryPageState extends State<InventoryPage> {
                 ),
               ),
 
-              // Single Clean Stock Status Pill Row
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildFilterPill(
-                        label: 'Todos',
-                        isSelected: _viewModel.selectedStatusFilter == null,
-                        onTap: () =>
-                            _viewModel.filterByStatus(null, _effectiveBranchId),
-                      ),
-                      const SizedBox(width: 8),
-                      _buildFilterPill(
-                        label: 'Stock Crítico',
-                        isSelected: _viewModel.selectedStatusFilter ==
-                            StockStatus.lowStock,
-                        onTap: () => _viewModel.filterByStatus(
-                          StockStatus.lowStock,
-                          _effectiveBranchId,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      _buildFilterPill(
-                        label: 'Agotado',
-                        isSelected: _viewModel.selectedStatusFilter ==
-                            StockStatus.outOfStock,
-                        onTap: () => _viewModel.filterByStatus(
-                          StockStatus.outOfStock,
-                          _effectiveBranchId,
-                        ),
-                      ),
-                    ],
+              // Minimalist Kanban TabBar for Stock Status
+              ShiftIQKanbanTabBar(
+                controller: _tabController,
+                tabs: [
+                  ShiftIQKanbanTabItem(
+                    label: 'Todos',
+                    count: _viewModel.productsForStatus(null).length,
                   ),
-                ),
+                  ShiftIQKanbanTabItem(
+                    label: 'Stock Crítico',
+                    count: _viewModel
+                        .productsForStatus(StockStatus.lowStock)
+                        .length,
+                  ),
+                  ShiftIQKanbanTabItem(
+                    label: 'Agotado',
+                    count: _viewModel
+                        .productsForStatus(StockStatus.outOfStock)
+                        .length,
+                  ),
+                ],
               ),
+              const SizedBox(height: 8),
 
               // Quiet Summary Line (Active Category + Total Valuation)
               Padding(
@@ -380,65 +386,13 @@ class _InventoryPageState extends State<InventoryPage> {
                   ),
                 ),
 
-              // Products List
+              // Swipeable Kanban TabBarView
               Expanded(
-                child: ShiftIQPullToRefresh(
-                  onRefresh: () => _viewModel.loadProducts(_effectiveBranchId),
-                  skeleton: _buildProductSkeletonList(),
-                  child: ShiftIQContentTransition(
-                    child: isLoading && products.isEmpty
-                        ? _buildProductSkeletonList()
-                        : products.isEmpty
-                          ? ListView(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              padding: const EdgeInsets.fromLTRB(32, 64, 32, 120),
-                              children: [
-                                const Center(
-                                  child: ShiftIQEmptyStateIcon(),
-                                ),
-                                const SizedBox(height: 16),
-                                const Text(
-                                  'No se encontraron repuestos',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 15.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: ShiftIQColors.graphiteText,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                const Text(
-                                  'Prueba con otra categoría o añade uno nuevo',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Color(0xFF64748B),
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                Center(
-                                  child: ShiftIQPrimaryPillButton(
-                                    label: loc.translate('register_new_product'),
-                                    icon: Icons.add_rounded,
-                                    onPressed: _openCreateProduct,
-                                  ),
-                                ),
-                              ],
-                            )
-                          : ListView.builder(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
-                              itemCount: products.length,
-                              itemBuilder: (context, index) {
-                                final product = products[index];
-                                return ProductCard(
-                                  product: product,
-                                  onTap: () => _openProductDetail(product),
-                                  onAddBatch: () => _openRegisterBatch(product),
-                                );
-                              },
-                            ),
-                  ),
+                child: TabBarView(
+                  controller: _tabController,
+                  children: _tabStatuses
+                      .map((status) => _buildProductsTab(loc, isLoading, status))
+                      .toList(),
                 ),
               ),
             ],
@@ -463,6 +417,70 @@ class _InventoryPageState extends State<InventoryPage> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildProductsTab(
+    AppLocalizations loc,
+    bool isLoading,
+    StockStatus? status,
+  ) {
+    final tabProducts = _viewModel.productsForStatus(status);
+    return ShiftIQPullToRefresh(
+      onRefresh: () => _viewModel.loadProducts(_effectiveBranchId),
+      skeleton: _buildProductSkeletonList(),
+      child: ShiftIQContentTransition(
+        child: isLoading && tabProducts.isEmpty
+            ? _buildProductSkeletonList()
+            : tabProducts.isEmpty
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(32, 64, 32, 120),
+                    children: [
+                      const Center(child: ShiftIQEmptyStateIcon()),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'No se encontraron repuestos',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w700,
+                          color: ShiftIQColors.graphiteText,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Prueba con otra categoría o añade uno nuevo',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF64748B),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Center(
+                        child: ShiftIQPrimaryPillButton(
+                          label: loc.translate('register_new_product'),
+                          icon: Icons.add_rounded,
+                          onPressed: _openCreateProduct,
+                        ),
+                      ),
+                    ],
+                  )
+                : ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 120),
+                    itemCount: tabProducts.length,
+                    itemBuilder: (context, index) {
+                      final product = tabProducts[index];
+                      return ProductCard(
+                        product: product,
+                        onTap: () => _openProductDetail(product),
+                        onAddBatch: () => _openRegisterBatch(product),
+                      );
+                    },
+                  ),
       ),
     );
   }
