@@ -25,6 +25,7 @@ class AppointmentsViewModel extends ChangeNotifier {
   String? _errorMessage;
   late DateTime _selectedDate;
   AppointmentStatus? _selectedStatusFilter;
+  List<Appointment> _allAppointments = [];
   List<Appointment> _appointments = [];
   List<CustomerRegistration> _customers = [];
   String _customerSearchQuery = '';
@@ -37,9 +38,15 @@ class AppointmentsViewModel extends ChangeNotifier {
   List<CustomerRegistration> get customers => _customers;
   String get customerSearchQuery => _customerSearchQuery;
 
-  int get pendingCount => _appointments.where((a) => a.isPending).length;
-  int get confirmedCount => _appointments.where((a) => a.isConfirmed).length;
-  int get completedCount => _appointments.where((a) => a.isCompleted).length;
+  /// Returns appointments for [status] from the loaded date cache.
+  List<Appointment> appointmentsForStatus(AppointmentStatus? status) {
+    if (status == null) return _allAppointments;
+    return _allAppointments.where((a) => a.status == status).toList();
+  }
+
+  int get pendingCount => _allAppointments.where((a) => a.isPending).length;
+  int get confirmedCount => _allAppointments.where((a) => a.isConfirmed).length;
+  int get completedCount => _allAppointments.where((a) => a.isCompleted).length;
 
   Future<void> loadAppointments(String branchId) async {
     _isLoading = true;
@@ -47,11 +54,11 @@ class AppointmentsViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _appointments = await getAppointmentsQuery.execute(
+      _allAppointments = await getAppointmentsQuery.execute(
         branchId: branchId,
         date: _selectedDate,
-        status: _selectedStatusFilter,
       );
+      _applyStatusFilter();
     } catch (e) {
       _errorMessage = 'Error al cargar citas de la sede: $e';
     } finally {
@@ -60,14 +67,20 @@ class AppointmentsViewModel extends ChangeNotifier {
     }
   }
 
+  void _applyStatusFilter() {
+    _appointments = appointmentsForStatus(_selectedStatusFilter);
+  }
+
   Future<void> selectDate(DateTime date, String branchId) async {
     _selectedDate = DateTime(date.year, date.month, date.day);
     await loadAppointments(branchId);
   }
 
   Future<void> filterByStatus(AppointmentStatus? status, String branchId) async {
+    if (_selectedStatusFilter == status) return;
     _selectedStatusFilter = status;
-    await loadAppointments(branchId);
+    _applyStatusFilter();
+    notifyListeners();
   }
 
   Future<void> confirmAppointment(String appointmentId, String branchId) async {
