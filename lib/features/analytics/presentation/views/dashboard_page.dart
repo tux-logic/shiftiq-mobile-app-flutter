@@ -5,6 +5,7 @@ import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_top_progress_bar.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/analytics_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/controllers/dashboard_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/activity_bar_chart.dart';
@@ -222,6 +223,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                 ),
               ),
+              ShiftIQTopProgressBar(isLoading: vm.isLoading),
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: vm.refresh,
@@ -229,12 +231,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 240),
                     child: vm.isLoading && summary == null
-                        ? const Center(
-                            key: ValueKey('loading'),
-                            child: CircularProgressIndicator(
-                              color: ShiftIQColors.primaryBlue,
-                            ),
-                          )
+                        ? const SizedBox.shrink(key: ValueKey('loading'))
                         : SingleChildScrollView(
                       key: const ValueKey('content'),
                       physics: const AlwaysScrollableScrollPhysics(),
