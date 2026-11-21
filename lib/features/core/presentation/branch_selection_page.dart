@@ -7,7 +7,7 @@ import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
-import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_top_progress_bar.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_view_model.dart';
@@ -341,7 +341,6 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
                 ),
               ),
 
-              ShiftIQTopProgressBar(isLoading: vm.isLoading),
               // Main content area: full map or branch list
               Expanded(
                 child: ShiftIQContentTransition(
@@ -361,7 +360,7 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
     AppLocalizations loc,
   ) {
     if (vm.isLoading && vm.branches.isEmpty) {
-      return const SizedBox.shrink(key: ValueKey('branches_loading'));
+      return const ShiftIQSkeletonBranchList(key: ValueKey('branches_loading'));
     }
 
     if (vm.errorMessage != null) {
