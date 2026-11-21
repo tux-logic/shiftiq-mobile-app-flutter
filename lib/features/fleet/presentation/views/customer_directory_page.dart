@@ -4,8 +4,10 @@ import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.d
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_top_progress_bar.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/entities/customer_registration.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/controllers/appointments_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/widgets/create_appointment_modal.dart';
@@ -144,6 +146,8 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
                       ),
                     ),
 
+              ShiftIQTopProgressBar(isLoading: isLoading),
+
               // List of customers
               Expanded(
                 child: RefreshIndicator(
@@ -152,9 +156,10 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
                     widget.branchId,
                     query: _searchController.text,
                   ),
-                  child: isLoading && customers.isEmpty
-                      ? const Center(child: CircularProgressIndicator())
-                      : customers.isEmpty
+                  child: ShiftIQContentTransition(
+                    child: isLoading && customers.isEmpty
+                        ? const SizedBox.shrink(key: ValueKey('cust_loading'))
+                        : customers.isEmpty
                           ? ListView(
                               physics: const AlwaysScrollableScrollPhysics(),
                               padding: const EdgeInsets.fromLTRB(32, 72, 32, 100),
@@ -196,6 +201,7 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
                                 return _buildCustomerCard(customer);
                               },
                             ),
+                  ),
                 ),
               ),
             ],
