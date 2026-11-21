@@ -10,6 +10,7 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton_dummies.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/aggregates/appointment.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/valueobjects/appointment_status.dart';
@@ -200,12 +201,10 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
               Expanded(
                 child: ShiftIQPullToRefresh(
                   onRefresh: () => _viewModel.loadAppointments(_effectiveBranchId),
-                  skeleton: const ShiftIQSkeletonCardList(),
+                  skeleton: _buildAppointmentSkeletonList(),
                   child: ShiftIQContentTransition(
                     child: isLoading && appointments.isEmpty
-                        ? const ShiftIQSkeletonCardList(
-                            key: ValueKey('appts_loading'),
-                          )
+                        ? _buildAppointmentSkeletonList()
                         : appointments.isEmpty
                           ? ListView(
                               physics: const AlwaysScrollableScrollPhysics(),
@@ -296,6 +295,26 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildAppointmentSkeletonList() {
+    final dummies = ShiftIQSkeletonDummies.appointments();
+    return ShiftIQSkeletonizer(
+      key: const ValueKey('appts_loading'),
+      enabled: true,
+      child: ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+        itemCount: dummies.length,
+        itemBuilder: (_, index) => AppointmentCard(
+          appointment: dummies[index],
+          onOpenWorkOrder: () {},
+          onConfirm: () {},
+          onCancel: () {},
+          onComplete: () {},
+        ),
       ),
     );
   }
