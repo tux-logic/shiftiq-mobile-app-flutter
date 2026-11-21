@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
@@ -431,27 +432,8 @@ class _CheckoutVoucherPageState extends State<CheckoutVoucherPage> {
                   SizedBox(
                     width: double.infinity,
                     height: 50,
-                    child: ElevatedButton.icon(
+                    child: ElevatedButton(
                       onPressed: viewModel.isLoading ? null : _submitEmission,
-                      icon: viewModel.isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Icon(Icons.receipt),
-                      label: Text(
-                        viewModel.isLoading
-                            ? 'EMITIENDO A SUNAT...'
-                            : 'EMITIR ${_selectedType.label.toUpperCase()} S/ ${_total.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
-                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.success,
                         foregroundColor: Colors.white,
@@ -459,6 +441,25 @@ class _CheckoutVoucherPageState extends State<CheckoutVoucherPage> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
+                      child: viewModel.isLoading
+                          ? const ShiftIQInlineProgress(
+                              label: 'EMITIENDO A SUNAT...',
+                              fontSize: 13.5,
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.receipt, size: 18),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'EMITIR ${_selectedType.label.toUpperCase()} S/ ${_total.toStringAsFixed(2)}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ],
+                            ),
                     ),
                   ),
                   const SizedBox(height: 20),

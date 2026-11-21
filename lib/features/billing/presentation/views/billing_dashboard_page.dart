@@ -8,6 +8,7 @@ import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_top_progress_bar.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/controllers/billing_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/checkout_voucher_page.dart';
@@ -81,6 +82,7 @@ class _BillingDashboardPageState extends State<BillingDashboardPage> {
                     subtitle: 'Comprobantes SUNAT y cotizaciones',
                     showBackButton: true,
                   ),
+                  ShiftIQTopProgressBar(isLoading: viewModel.isLoading),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
                     child: _SegmentedBillingTabs(
@@ -183,14 +185,7 @@ class _BillingDashboardPageState extends State<BillingDashboardPage> {
           ),
           const SizedBox(height: 14),
           if (viewModel.isLoading && viewModel.vouchers.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 64),
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: ShiftIQColors.primaryBlue,
-                ),
-              ),
-            )
+            const SizedBox.shrink()
           else if (viewModel.vouchers.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 56),
@@ -253,14 +248,7 @@ class _BillingDashboardPageState extends State<BillingDashboardPage> {
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 96),
         children: [
           if (viewModel.isLoading && viewModel.quotes.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 64),
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: ShiftIQColors.primaryBlue,
-                ),
-              ),
-            )
+            const SizedBox.shrink()
           else if (viewModel.quotes.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 56),
