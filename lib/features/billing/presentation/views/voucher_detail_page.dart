@@ -5,7 +5,7 @@ import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.d
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
-import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_top_progress_bar.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/controllers/billing_view_model.dart';
@@ -144,8 +144,7 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
                   title: loc.translate('voucher_detail'),
                   showBackButton: true,
                 ),
-                const ShiftIQTopProgressBar(isLoading: true),
-                const Expanded(child: SizedBox.shrink()),
+                const Expanded(child: ShiftIQSkeletonDetail()),
               ],
             ),
           );
