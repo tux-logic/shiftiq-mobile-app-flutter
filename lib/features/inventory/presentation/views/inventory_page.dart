@@ -8,7 +8,7 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
-import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_top_progress_bar.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/model/aggregates/product.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/model/valueobjects/stock_status.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/presentation/controllers/inventory_view_model.dart';
@@ -378,8 +378,6 @@ class _InventoryPageState extends State<InventoryPage> {
                   ),
                 ),
 
-              ShiftIQTopProgressBar(isLoading: isLoading),
-
               // Products List
               Expanded(
                 child: RefreshIndicator(
@@ -387,7 +385,9 @@ class _InventoryPageState extends State<InventoryPage> {
                   onRefresh: () => _viewModel.loadProducts(_effectiveBranchId),
                   child: ShiftIQContentTransition(
                     child: isLoading && products.isEmpty
-                        ? const SizedBox.shrink(key: ValueKey('inv_loading'))
+                        ? const ShiftIQSkeletonCardList(
+                            key: ValueKey('inv_loading'),
+                          )
                         : products.isEmpty
                           ? ListView(
                               physics: const AlwaysScrollableScrollPhysics(),
