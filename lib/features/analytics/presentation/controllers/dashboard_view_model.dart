@@ -3,6 +3,7 @@ import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_branch_financial_analytics.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_branch_summary.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_network_analytics_summary.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/analytics_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/application/operations_application.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
@@ -11,12 +12,14 @@ import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations
 class DashboardViewModel extends ChangeNotifier {
   final GetBranchSummaryUseCase getBranchSummaryUseCase;
   final GetBranchFinancialAnalyticsUseCase? getBranchFinancialAnalyticsUseCase;
+  final GetNetworkAnalyticsSummaryUseCase? getNetworkAnalyticsSummaryUseCase;
   final ManageWorkOrders? manageWorkOrders;
   final SessionStorage sessionStorage;
 
   DashboardViewModel({
     required this.getBranchSummaryUseCase,
     this.getBranchFinancialAnalyticsUseCase,
+    this.getNetworkAnalyticsSummaryUseCase,
     this.manageWorkOrders,
     required this.sessionStorage,
   });
@@ -29,6 +32,9 @@ class DashboardViewModel extends ChangeNotifier {
 
   BranchAnalyticsSummary? _summary;
   BranchAnalyticsSummary? get summary => _summary;
+
+  NetworkAnalyticsSummary? _networkSummary;
+  NetworkAnalyticsSummary? get networkSummary => _networkSummary;
 
   List<FinancialAnalyticsSnapshot> _snapshots = [];
   List<FinancialAnalyticsSnapshot> get snapshots => _snapshots;
@@ -70,7 +76,10 @@ class DashboardViewModel extends ChangeNotifier {
 
     try {
       _summary = await getBranchSummaryUseCase.execute(_activeBranchId);
-      await _loadFinancialSeries();
+      await Future.wait([
+        _loadFinancialSeries(),
+        _loadNetworkSummary(),
+      ]);
       if (manageWorkOrders != null) {
         final orders = await manageWorkOrders!.getWorkOrders(
           branchId: _activeBranchId,
@@ -111,6 +120,19 @@ class DashboardViewModel extends ChangeNotifier {
     } catch (_) {
       // Roles without ANALYTICS_READ or empty history fall back cleanly.
       _snapshots = [];
+    }
+  }
+
+  Future<void> _loadNetworkSummary() async {
+    if (getNetworkAnalyticsSummaryUseCase == null) {
+      _networkSummary = null;
+      return;
+    }
+    try {
+      _networkSummary = await getNetworkAnalyticsSummaryUseCase!.execute();
+    } catch (_) {
+      // Non-owner/admin callers receive 403 and hide network rollup cleanly.
+      _networkSummary = null;
     }
   }
 

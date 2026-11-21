@@ -49,4 +49,22 @@ class AnalyticsApi {
     );
     return response as Map<String, dynamic>;
   }
+
+  /// GET /api/v1/analytics/me/customer-summary
+  /// Returns self-service operational summary for the authenticated customer.
+  Future<Map<String, dynamic>> getCustomerSummary() async {
+    final response = await apiClient.get(
+      ApiConstants.customerAnalyticsSummary,
+    );
+    return response as Map<String, dynamic>;
+  }
+
+  /// GET /api/v1/analytics/me/employee-summary
+  /// Returns personal work queue summary for the authenticated employee.
+  Future<Map<String, dynamic>> getEmployeeSummary() async {
+    final response = await apiClient.get(
+      ApiConstants.employeeAnalyticsSummary,
+    );
+    return response as Map<String, dynamic>;
+  }
 }

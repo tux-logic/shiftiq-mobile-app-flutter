@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
+import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 
 class DateStripSelector extends StatelessWidget {
   final DateTime selectedDate;
@@ -22,10 +22,10 @@ class DateStripSelector extends StatelessWidget {
     );
 
     return SizedBox(
-      height: 98,
+      height: 84,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         itemCount: dates.length,
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
@@ -45,31 +45,45 @@ class DateStripSelector extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               onTap: () => onDateSelected(date),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(18),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                width: 60,
-                padding: const EdgeInsets.symmetric(vertical: 4),
+                curve: Curves.easeOutCubic,
+                width: 56,
+                padding: const EdgeInsets.symmetric(vertical: 6),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary : Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  gradient: isSelected
+                      ? const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF0F172A), ShiftIQColors.primaryBlue],
+                        )
+                      : null,
+                  color: isSelected ? null : Colors.white,
+                  borderRadius: BorderRadius.circular(18),
                   border: Border.all(
                     color: isSelected
-                        ? AppColors.primary
+                        ? Colors.transparent
                         : isToday
-                            ? AppColors.primaryLight
-                            : AppColors.neutralBorder,
+                            ? ShiftIQColors.primaryBlue
+                            : ShiftIQColors.borderSlate,
                     width: isToday && !isSelected ? 1.5 : 1,
                   ),
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: AppColors.primary.withAlpha(50),
-                            blurRadius: 8,
+                            color: ShiftIQColors.primaryBlue.withAlpha(60),
+                            blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
                         ]
-                      : null,
+                      : [
+                          BoxShadow(
+                            color: const Color(0xFF0F172A).withAlpha(6),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -77,20 +91,23 @@ class DateStripSelector extends StatelessWidget {
                     Text(
                       weekdayName,
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 10.5,
                         fontWeight: FontWeight.w600,
+                        letterSpacing: 0.3,
                         color: isSelected
-                            ? Colors.white.withAlpha(200)
-                            : AppColors.neutralLight,
+                            ? Colors.white.withAlpha(205)
+                            : const Color(0xFF64748B),
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
                       '${date.day}',
                       style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: isSelected ? Colors.white : AppColors.neutralDark,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        color: isSelected
+                            ? Colors.white
+                            : ShiftIQColors.graphiteText,
                       ),
                     ),
                     if (isToday) ...[
@@ -100,7 +117,9 @@ class DateStripSelector extends StatelessWidget {
                         height: 4,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: isSelected ? Colors.white : AppColors.primaryLight,
+                          color: isSelected
+                              ? Colors.white
+                              : ShiftIQColors.primaryBlue,
                         ),
                       ),
                     ],

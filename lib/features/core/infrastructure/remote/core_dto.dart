@@ -51,6 +51,9 @@ class BranchDto {
   final String address;
   final String? district;
   final String? phone;
+  final String? coverImageUrl;
+  final double? latitude;
+  final double? longitude;
   final bool active;
 
   BranchDto({
@@ -61,6 +64,9 @@ class BranchDto {
     required this.address,
     this.district,
     this.phone,
+    this.coverImageUrl,
+    this.latitude,
+    this.longitude,
     required this.active,
   });
 
@@ -80,6 +86,9 @@ class BranchDto {
         address: address,
         district: json['district'] as String?,
         phone: json['phone'] as String?,
+        coverImageUrl: json['coverImageUrl'] as String?,
+        latitude: (json['latitude'] as num?)?.toDouble(),
+        longitude: (json['longitude'] as num?)?.toDouble(),
         active: json['active'] as bool? ?? true,
       );
     }
@@ -95,6 +104,9 @@ class BranchDto {
       address: address,
       district: district,
       phone: phone,
+      coverImageUrl: coverImageUrl,
+      latitude: latitude,
+      longitude: longitude,
       active: active,
     );
   }

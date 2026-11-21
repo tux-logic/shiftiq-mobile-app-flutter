@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/domain/iot_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/controllers/telemetry_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/create_work_order_page.dart';
@@ -35,14 +36,7 @@ class DtcDetailPage extends StatelessWidget {
   Future<void> _resolveDtc(BuildContext context) async {
     await viewModel.updateDtcStatus(alert.id, DtcStatus.resolved, branchId);
     if (context.mounted) {
-      final loc = AppLocalizations.of(context);
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(loc.translate('dtc_resolved_success')),
-          backgroundColor: ShiftIQColors.preventiveGreen,
-        ),
-      );
     }
   }
 
@@ -51,34 +45,34 @@ class DtcDetailPage extends StatelessWidget {
     final loc = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ShiftIQColors.warmNeutral,
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Diagnóstico ${alert.code}',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              '${alert.vehiclePlate} · ${alert.vehicleModel}',
-              style: const TextStyle(fontSize: 11, color: Colors.white70),
-            ),
-          ],
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Code Banner
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: ShiftIQColors.borderSlate),
-              ),
+      body: Column(
+        children: [
+          ShiftIQPageHeader(
+            title: 'Diagnóstico ${alert.code}',
+            subtitle: '${alert.vehiclePlate} · ${alert.vehicleModel}',
+            showBackButton: true,
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 36),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Code Banner
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: ShiftIQColors.borderSlate),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF0F172A).withAlpha(9),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -237,11 +231,14 @@ class DtcDetailPage extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => _resolveDtc(context),
-                    icon: const Icon(Icons.check_circle_outline, size: 16),
+                    icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
                     label: Text(loc.translate('mark_resolved')),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: ShiftIQColors.preventiveGreen,
                       side: const BorderSide(color: ShiftIQColors.preventiveGreen),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                   ),
@@ -250,10 +247,14 @@ class DtcDetailPage extends StatelessWidget {
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: () => _openWorkOrder(context),
-                    icon: const Icon(Icons.post_add, size: 16),
+                    icon: const Icon(Icons.post_add_rounded, size: 16),
                     label: Text(loc.translate('open_ot_bay')),
                     style: FilledButton.styleFrom(
-                      backgroundColor: ShiftIQColors.primaryBlue,
+                      backgroundColor: const Color(0xFF0F172A),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                   ),
@@ -262,6 +263,9 @@ class DtcDetailPage extends StatelessWidget {
             ),
           ],
         ),
+      ),
+          ),
+        ],
       ),
     );
   }

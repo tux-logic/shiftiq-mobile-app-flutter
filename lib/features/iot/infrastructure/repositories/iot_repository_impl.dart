@@ -10,8 +10,8 @@ import 'package:shiftiq_mobile_app_flutter/features/iot/infrastructure/remote/te
 import 'package:shiftiq_mobile_app_flutter/features/iot/infrastructure/remote/telemetry_batch_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/infrastructure/remote/vehicle_api.dart';
 
-/// Concrete implementation of [IotRepository] coordinating remote REST APIs,
-/// data transformation mappers, and fallback telemetry streams.
+/// Concrete implementation of [IotRepository] coordinating remote REST APIs
+/// and domain transformation mappers.
 class IotRepositoryImpl implements IotRepository {
   final VehicleApi vehicleApi;
   final Obd2DeviceApi obd2DeviceApi;
@@ -19,89 +19,13 @@ class IotRepositoryImpl implements IotRepository {
   final TelemetryBatchApi telemetryBatchApi;
   final TelemetryApi? telemetryApi;
 
-  final List<DtcAlert> _localAlerts = [];
-
   IotRepositoryImpl({
     required this.vehicleApi,
     required this.obd2DeviceApi,
     required this.obd2RegistrationApi,
     required this.telemetryBatchApi,
     this.telemetryApi,
-  }) {
-    _initDemoData();
-  }
-
-  void _initDemoData() {
-    if (_localAlerts.isNotEmpty) return;
-
-    final now = DateTime.now();
-    _localAlerts.addAll([
-      DtcAlert(
-        id: 'dtc-01',
-        branchId: 'f130ca7c-5492-43ed-8d83-e98e2e69ece4',
-        vehicleId: 'veh-01',
-        vehiclePlate: 'BCX-892',
-        vehicleModel: 'Toyota Hilux 2021',
-        customerName: 'Carlos Mendoza',
-        code: 'P0300',
-        description: 'Random/Multiple Cylinder Misfire Detected',
-        systemCategory: 'Ignition and Combustion System',
-        severity: DtcSeverity.critical,
-        aiDiagnosticRecommendation:
-            'Inspect iridium spark plugs and ignition coils on cylinders 2 and 4. Check fuel rail pressure.',
-        detectedAt: now.subtract(const Duration(minutes: 18)),
-        status: DtcStatus.active,
-        freezeFrame: const {
-          'Engine RPM': '2,850 rpm',
-          'Vehicle Speed': '62 km/h',
-          'Coolant Temp': '98 °C',
-          'Throttle Position': '42 %',
-        },
-      ),
-      DtcAlert(
-        id: 'dtc-02',
-        branchId: 'f130ca7c-5492-43ed-8d83-e98e2e69ece4',
-        vehicleId: 'veh-02',
-        vehiclePlate: 'F1G-789',
-        vehicleModel: 'Kia Sportage 2022',
-        customerName: 'Andrea Benavente',
-        code: 'P0171',
-        description: 'System Too Lean (Bank 1)',
-        systemCategory: 'Fuel Injection & Emissions',
-        severity: DtcSeverity.moderate,
-        aiDiagnosticRecommendation:
-            'Clean Mass Air Flow (MAF) sensor. Check throttle body intake gasket for vacuum leaks.',
-        detectedAt: now.subtract(const Duration(hours: 2, minutes: 15)),
-        status: DtcStatus.active,
-        freezeFrame: const {
-          'Engine RPM': '1,920 rpm',
-          'Vehicle Speed': '45 km/h',
-          'Coolant Temp': '88 °C',
-        },
-      ),
-      DtcAlert(
-        id: 'dtc-03',
-        branchId: 'f130ca7c-5492-43ed-8d83-e98e2e69ece4',
-        vehicleId: 'veh-03',
-        vehiclePlate: 'D2A-789',
-        vehicleModel: 'Toyota Yaris 2022',
-        customerName: 'Mario Salcedo',
-        code: 'P0420',
-        description: 'Catalyst System Efficiency Below Threshold (Bank 1)',
-        systemCategory: 'Exhaust & Aftertreatment',
-        severity: DtcSeverity.low,
-        aiDiagnosticRecommendation:
-            'Monitor downstream O2 sensor waveform. Compare oscillation before catalytic converter replacement.',
-        detectedAt: now.subtract(const Duration(hours: 5)),
-        status: DtcStatus.inInspection,
-        freezeFrame: const {
-          'Engine RPM': '2,100 rpm',
-          'Vehicle Speed': '70 km/h',
-          'Coolant Temp': '92 °C',
-        },
-      ),
-    ]);
-  }
+  });
 
   // ==========================================
   // Vehicle Management
@@ -341,74 +265,39 @@ class IotRepositoryImpl implements IotRepository {
     int page = 0,
     int size = 20,
   }) async {
-    try {
-      if (branchId.isNotEmpty) {
-        final registrations = await obd2RegistrationApi.getRegistrations(
-          branchId: branchId,
-          status: 'ACTIVE',
+    if (branchId.isEmpty) return const [];
+
+    final registrations = await obd2RegistrationApi.getRegistrations(
+      branchId: branchId,
+      status: 'ACTIVE',
+    );
+
+    final List<DtcAlert> remoteAlerts = [];
+    for (final reg in registrations) {
+      if (reg is Map<String, dynamic> && reg['id'] != null) {
+        final regId = reg['id'].toString();
+        final rawDtcList = await obd2RegistrationApi.getRegistrationDtcAlerts(
+          registrationId: regId,
         );
-
-        final List<DtcAlert> remoteAlerts = [];
-        for (final reg in registrations) {
-          if (reg is Map<String, dynamic> && reg['id'] != null) {
-            final regId = reg['id'].toString();
-            final rawDtcList = await obd2RegistrationApi.getRegistrationDtcAlerts(
-              registrationId: regId,
-            );
-            final alerts = IotDto.dtcAlertListFromJson(rawDtcList);
-            remoteAlerts.addAll(alerts);
-          }
-        }
-
-        if (remoteAlerts.isNotEmpty) {
-          for (final alert in remoteAlerts) {
-            final index = _localAlerts.indexWhere((a) => a.id == alert.id);
-            if (index == -1) {
-              _localAlerts.add(alert);
-            } else {
-              _localAlerts[index] = alert;
-            }
-          }
-
-          var list = remoteAlerts;
-          if (severity != null) {
-            list = list.where((a) => a.severity == severity).toList();
-          }
-          if (status != null) {
-            list = list.where((a) => a.status == status).toList();
-          }
-          list.sort((a, b) => b.detectedAt.compareTo(a.detectedAt));
-          return list;
-        }
+        final alerts = IotDto.dtcAlertListFromJson(rawDtcList);
+        remoteAlerts.addAll(alerts);
       }
-    } catch (_) {
-      // Fallback to local alerts
     }
 
-    var list = _localAlerts
-        .where((a) => a.branchId == branchId || branchId.isEmpty)
-        .toList();
-
+    var list = remoteAlerts;
     if (severity != null) {
       list = list.where((a) => a.severity == severity).toList();
     }
-
     if (status != null) {
       list = list.where((a) => a.status == status).toList();
     }
-
     list.sort((a, b) => b.detectedAt.compareTo(a.detectedAt));
     return list;
   }
 
   @override
   Future<DtcAlert> getDtcAlertById(String id) async {
-    return _localAlerts.firstWhere(
-      (a) => a.id == id,
-      orElse: () => _localAlerts.isNotEmpty
-          ? _localAlerts.first
-          : throw Exception('DtcAlert with id $id not found'),
-    );
+    throw Exception('DtcAlert lookup by ID is not supported without branch context: $id');
   }
 
   @override
@@ -416,14 +305,7 @@ class IotRepositoryImpl implements IotRepository {
     required String alertId,
     required DtcStatus newStatus,
   }) async {
-    final index = _localAlerts.indexWhere((a) => a.id == alertId);
-    if (index != -1) {
-      final updated = _localAlerts[index].copyWith(status: newStatus);
-      _localAlerts[index] = updated;
-      return updated;
-    }
-
-    throw Exception('DtcAlert with id $alertId not found');
+    throw UnimplementedError('DTC status update endpoint is not available for alertId=$alertId');
   }
 
   // ==========================================
@@ -443,13 +325,12 @@ class IotRepositoryImpl implements IotRepository {
   // Live Sensor Streams & Readings (Monitoring)
   // ==========================================
 
-  @override
-  Future<List<LiveSensorReading>> getLiveSensorReadings(String vehicleId) async {
-    return const [
+  List<LiveSensorReading> _mapSnapshotToSensors(TelemetrySnapshot snapshot) {
+    return [
       LiveSensorReading(
         sensorId: 's-rpm',
         sensorName: 'Engine RPM',
-        value: 840,
+        value: snapshot.rpm.toDouble(),
         unit: 'rpm',
         normalMin: 650,
         normalMax: 3500,
@@ -458,43 +339,34 @@ class IotRepositoryImpl implements IotRepository {
       LiveSensorReading(
         sensorId: 's-temp',
         sensorName: 'Coolant Temperature',
-        value: 89.5,
+        value: snapshot.temperature.toDouble(),
         unit: '°C',
         normalMin: 80,
         normalMax: 102,
         icon: Icons.thermostat_outlined,
       ),
       LiveSensorReading(
-        sensorId: 's-volt',
-        sensorName: 'Battery Voltage',
-        value: 13.9,
-        unit: 'V',
-        normalMin: 13.2,
-        normalMax: 14.8,
-        icon: Icons.bolt_outlined,
-      ),
-      LiveSensorReading(
         sensorId: 's-speed',
         sensorName: 'Vehicle Speed (VSS)',
-        value: 0,
+        value: snapshot.speedKmh,
         unit: 'km/h',
         normalMin: 0,
         normalMax: 140,
         icon: Icons.navigation_outlined,
       ),
       LiveSensorReading(
-        sensorId: 's-throttle',
-        sensorName: 'Throttle Position (TPS)',
-        value: 14.2,
-        unit: '%',
-        normalMin: 10,
-        normalMax: 85,
-        icon: Icons.tune_outlined,
+        sensorId: 's-odom',
+        sensorName: 'Odometer',
+        value: snapshot.odometerKm,
+        unit: 'km',
+        normalMin: 0,
+        normalMax: 500000,
+        icon: Icons.route_outlined,
       ),
       LiveSensorReading(
         sensorId: 's-fuel',
         sensorName: 'Fuel Tank Level',
-        value: 72,
+        value: snapshot.fuelLevelPercent,
         unit: '%',
         normalMin: 15,
         normalMax: 100,
@@ -504,37 +376,44 @@ class IotRepositoryImpl implements IotRepository {
   }
 
   @override
-  Stream<List<LiveSensorReading>> getLiveSensorStream(String branchId) {
-    return Stream.periodic(const Duration(seconds: 5), (_) {
-      return [
-        LiveSensorReading(
-          sensorId: 's-rpm',
-          sensorName: 'Engine RPM',
-          value: 800.0 + (DateTime.now().second % 10) * 15,
-          unit: 'rpm',
-          normalMin: 650,
-          normalMax: 3500,
-          icon: Icons.speed_outlined,
-        ),
-        const LiveSensorReading(
-          sensorId: 's-temp',
-          sensorName: 'Coolant Temperature',
-          value: 90.0,
-          unit: '°C',
-          normalMin: 80,
-          normalMax: 102,
-          icon: Icons.thermostat_outlined,
-        ),
-        const LiveSensorReading(
-          sensorId: 's-volt',
-          sensorName: 'Battery Voltage',
-          value: 13.8,
-          unit: 'V',
-          normalMin: 13.2,
-          normalMax: 14.8,
-          icon: Icons.bolt_outlined,
-        ),
-      ];
-    });
+  Future<List<LiveSensorReading>> getLiveSensorReadings(String vehicleId) async {
+    if (vehicleId.isEmpty) return const [];
+    final snapshots = await getVehicleTelemetrySnapshots(
+      vehicleId: vehicleId,
+      page: 0,
+      size: 1,
+    );
+    if (snapshots.isEmpty) return const [];
+    return _mapSnapshotToSensors(snapshots.first);
+  }
+
+  @override
+  Stream<List<LiveSensorReading>> getLiveSensorStream(String branchId) async* {
+    while (true) {
+      if (branchId.isEmpty) {
+        yield const [];
+      } else {
+        final registrations = await obd2RegistrationApi.getRegistrations(
+          branchId: branchId,
+          status: 'ACTIVE',
+        );
+        List<LiveSensorReading> readings = const [];
+        for (final reg in registrations) {
+          if (reg is Map<String, dynamic> && reg['id'] != null) {
+            final snapshots = await getRegistrationTelemetrySnapshots(
+              registrationId: reg['id'].toString(),
+              page: 0,
+              size: 1,
+            );
+            if (snapshots.isNotEmpty) {
+              readings = _mapSnapshotToSensors(snapshots.first);
+              break;
+            }
+          }
+        }
+        yield readings;
+      }
+      await Future<void>.delayed(const Duration(seconds: 5));
+    }
   }
 }

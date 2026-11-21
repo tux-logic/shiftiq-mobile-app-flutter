@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
-import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
+import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/aggregates/appointment.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/valueobjects/appointment_status.dart';
 
@@ -26,14 +26,20 @@ class AppointmentCard extends StatelessWidget {
     final statusColor = _getStatusColor(appointment.status);
     final statusBg = _getStatusBg(appointment.status);
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.neutralBorder),
-      ),
-      color: Colors.white,
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: ShiftIQColors.borderSlate),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0F172A).withAlpha(9),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -43,37 +49,39 @@ class AppointmentCard extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.secondary.withAlpha(25),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.secondary.withAlpha(80)),
+                    color: ShiftIQColors.primaryBlue.withAlpha(18),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: ShiftIQColors.primaryBlue.withAlpha(55),
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(
                         Icons.garage_outlined,
-                        size: 14,
-                        color: AppColors.secondary,
+                        size: 13.5,
+                        color: ShiftIQColors.primaryBlue,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         'Bahía ${appointment.bayNumber}',
                         style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.secondary,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                          color: ShiftIQColors.primaryBlue,
                         ),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(width: 8),
-                Icon(
+                const Icon(
                   Icons.access_time_rounded,
                   size: 14,
-                  color: AppColors.neutralLight,
+                  color: Color(0xFF64748B),
                 ),
                 const SizedBox(width: 4),
                 Text(
@@ -81,7 +89,7 @@ class AppointmentCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.neutralDark,
+                    color: ShiftIQColors.graphiteText,
                   ),
                 ),
                 const Spacer(),
@@ -95,14 +103,17 @@ class AppointmentCard extends StatelessWidget {
                     appointment.status.label,
                     style: TextStyle(
                       fontSize: 11,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w700,
                       color: statusColor,
                     ),
                   ),
                 ),
               ],
             ),
-            const Divider(height: 20, color: AppColors.neutralBorder),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Divider(height: 1, color: ShiftIQColors.borderSlate),
+            ),
 
             // Customer and Vehicle Info
             Row(
@@ -110,13 +121,13 @@ class AppointmentCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 20,
-                  backgroundColor: AppColors.primary.withAlpha(20),
+                  backgroundColor: ShiftIQColors.primaryBlue.withAlpha(20),
                   child: Text(
                     _getInitials(appointment.customerName),
                     style: const TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                      color: ShiftIQColors.primaryBlue,
                     ),
                   ),
                 ),
@@ -129,8 +140,8 @@ class AppointmentCard extends StatelessWidget {
                         appointment.customerName,
                         style: const TextStyle(
                           fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.neutralDark,
+                          fontWeight: FontWeight.w700,
+                          color: ShiftIQColors.graphiteText,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -139,14 +150,14 @@ class AppointmentCard extends StatelessWidget {
                           const Icon(
                             Icons.phone_outlined,
                             size: 13,
-                            color: AppColors.neutralLight,
+                            color: Color(0xFF64748B),
                           ),
                           const SizedBox(width: 4),
                           Text(
                             appointment.customerPhone,
                             style: const TextStyle(
                               fontSize: 12,
-                              color: AppColors.neutralLight,
+                              color: Color(0xFF64748B),
                             ),
                           ),
                         ],
@@ -155,32 +166,35 @@ class AppointmentCard extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.neutralDark,
-                    borderRadius: BorderRadius.circular(6),
+                    color: const Color(0xFF0F172A),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     appointment.vehiclePlate,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
                       letterSpacing: 1,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
 
             // Vehicle Model and Service info
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.neutralBg,
-                borderRadius: BorderRadius.circular(10),
+                color: ShiftIQColors.warmNeutral,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: ShiftIQColors.borderSlate.withAlpha(140),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,49 +204,49 @@ class AppointmentCard extends StatelessWidget {
                       const Icon(
                         Icons.directions_car_outlined,
                         size: 14,
-                        color: AppColors.neutralLight,
+                        color: Color(0xFF64748B),
                       ),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           appointment.vehicleModel,
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 12.5,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.neutralDark,
+                            color: ShiftIQColors.graphiteText,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 5),
                   Row(
                     children: [
                       const Icon(
                         Icons.build_outlined,
                         size: 14,
-                        color: AppColors.primary,
+                        color: ShiftIQColors.primaryBlue,
                       ),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           appointment.serviceType,
                           style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.primary,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: ShiftIQColors.primaryBlue,
                           ),
                         ),
                       ),
                     ],
                   ),
                   if (appointment.notes.isNotEmpty) ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 5),
                     Text(
                       appointment.notes,
                       style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.neutralLight,
+                        fontSize: 11.5,
+                        color: Color(0xFF64748B),
                         fontStyle: FontStyle.italic,
                       ),
                     ),
@@ -252,54 +266,76 @@ class AppointmentCard extends StatelessWidget {
                 if (appointment.isPending) ...[
                   OutlinedButton.icon(
                     onPressed: onCancel,
-                    icon: const Icon(Icons.close, size: 14),
+                    icon: const Icon(Icons.close_rounded, size: 14),
                     label: Text(loc.translate('cancel')),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.stateError,
-                      side: const BorderSide(color: AppColors.stateError),
+                      foregroundColor: ShiftIQColors.severityCrimson,
+                      side: const BorderSide(color: ShiftIQColors.severityCrimson),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
                       minimumSize: Size.zero,
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      textStyle: const TextStyle(fontSize: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                      textStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   FilledButton.icon(
                     onPressed: onConfirm,
-                    icon: const Icon(Icons.check, size: 14),
+                    icon: const Icon(Icons.check_rounded, size: 14),
                     label: Text(loc.translate('confirm')),
                     style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.stateSuccess,
+                      backgroundColor: ShiftIQColors.preventiveGreen,
                       foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
                       minimumSize: Size.zero,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      textStyle: const TextStyle(fontSize: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+                      textStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ],
                 if (appointment.isConfirmed) ...[
                   OutlinedButton.icon(
                     onPressed: onComplete,
-                    icon: const Icon(Icons.done_all, size: 14),
+                    icon: const Icon(Icons.done_all_rounded, size: 14),
                     label: Text(loc.translate('complete')),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.stateInfo,
-                      side: const BorderSide(color: AppColors.stateInfo),
+                      foregroundColor: ShiftIQColors.primaryBlue,
+                      side: const BorderSide(color: ShiftIQColors.primaryBlue),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
                       minimumSize: Size.zero,
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      textStyle: const TextStyle(fontSize: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                      textStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
                 FilledButton.icon(
                   onPressed: onOpenWorkOrder,
-                  icon: const Icon(Icons.post_add_rounded, size: 16),
+                  icon: const Icon(Icons.post_add_rounded, size: 15),
                   label: Text(loc.translate('open_ot')),
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: const Color(0xFF0F172A),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
                     minimumSize: Size.zero,
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     textStyle: const TextStyle(
                       fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -314,26 +350,26 @@ class AppointmentCard extends StatelessWidget {
   Color _getStatusColor(AppointmentStatus status) {
     switch (status) {
       case AppointmentStatus.pending:
-        return AppColors.stateWarning;
+        return ShiftIQColors.severityOrange;
       case AppointmentStatus.confirmed:
-        return AppColors.stateSuccess;
+        return ShiftIQColors.preventiveGreen;
       case AppointmentStatus.completed:
-        return AppColors.stateInfo;
+        return ShiftIQColors.primaryBlue;
       case AppointmentStatus.canceled:
-        return AppColors.stateError;
+        return ShiftIQColors.severityCrimson;
     }
   }
 
   Color _getStatusBg(AppointmentStatus status) {
     switch (status) {
       case AppointmentStatus.pending:
-        return AppColors.stateWarning.withAlpha(30);
+        return ShiftIQColors.severityOrange.withAlpha(26);
       case AppointmentStatus.confirmed:
-        return AppColors.stateSuccess.withAlpha(30);
+        return ShiftIQColors.preventiveGreen.withAlpha(26);
       case AppointmentStatus.completed:
-        return AppColors.stateInfo.withAlpha(30);
+        return ShiftIQColors.primaryBlue.withAlpha(26);
       case AppointmentStatus.canceled:
-        return AppColors.stateError.withAlpha(30);
+        return ShiftIQColors.severityCrimson.withAlpha(26);
     }
   }
 

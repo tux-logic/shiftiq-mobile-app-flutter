@@ -1,4 +1,4 @@
-/// Domain Entity representing a physical workshop branch (sede de taller).
+/// Domain Entity representing a physical workshop branch.
 class Branch {
   final String id;
   final String workshopId;
@@ -7,6 +7,9 @@ class Branch {
   final String address;
   final String? district;
   final String? phone;
+  final String? coverImageUrl;
+  final double? latitude;
+  final double? longitude;
   final bool active;
 
   const Branch({
@@ -17,6 +20,11 @@ class Branch {
     required this.address,
     this.district,
     this.phone,
+    this.coverImageUrl,
+    this.latitude,
+    this.longitude,
     this.active = true,
   });
+
+  bool get hasCoordinates => latitude != null && longitude != null;
 }

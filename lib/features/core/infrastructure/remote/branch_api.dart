@@ -14,6 +14,9 @@ class BranchApi {
     required String name,
     required String address,
     String? phone,
+    String? coverImageUrl,
+    double? latitude,
+    double? longitude,
   }) async {
     final body = <String, dynamic>{
       'workshopId': workshopId,
@@ -21,7 +24,14 @@ class BranchApi {
       'name': name,
       'address': address,
     };
-    if (phone != null) body['phone'] = phone;
+    if (phone != null && phone.isNotEmpty) body['phone'] = phone;
+    if (coverImageUrl != null && coverImageUrl.isNotEmpty) {
+      body['coverImageUrl'] = coverImageUrl;
+    }
+    if (latitude != null && longitude != null) {
+      body['latitude'] = latitude;
+      body['longitude'] = longitude;
+    }
 
     final response = await apiClient.post(
       ApiConstants.branches,
@@ -37,13 +47,23 @@ class BranchApi {
     required String name,
     required String address,
     String? phone,
+    String? coverImageUrl,
+    double? latitude,
+    double? longitude,
   }) async {
     final body = <String, dynamic>{
       'code': code,
       'name': name,
       'address': address,
     };
-    if (phone != null) body['phone'] = phone;
+    if (phone != null && phone.isNotEmpty) body['phone'] = phone;
+    if (coverImageUrl != null && coverImageUrl.isNotEmpty) {
+      body['coverImageUrl'] = coverImageUrl;
+    }
+    if (latitude != null && longitude != null) {
+      body['latitude'] = latitude;
+      body['longitude'] = longitude;
+    }
 
     final response = await apiClient.put(
       ApiConstants.branchById(branchId),

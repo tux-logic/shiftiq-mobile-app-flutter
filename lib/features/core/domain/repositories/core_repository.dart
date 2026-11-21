@@ -35,6 +35,9 @@ abstract class CoreRepository {
     required String name,
     required String address,
     required String phone,
+    String? coverImageUrl,
+    double? latitude,
+    double? longitude,
   });
 
   Future<Branch> updateBranch({
@@ -43,6 +46,9 @@ abstract class CoreRepository {
     required String name,
     required String address,
     required String phone,
+    String? coverImageUrl,
+    double? latitude,
+    double? longitude,
   });
 
   Future<Branch> getBranchById(String branchId);

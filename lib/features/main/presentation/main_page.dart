@@ -3,7 +3,7 @@ import 'package:shiftiq_mobile_app_flutter/core/auth/mobile_role_scope.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
-import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_floating_nav_bar.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/views/dashboard_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/views/appointments_page.dart';
@@ -46,6 +46,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   late int _currentIndex;
+  int _transitionDirection = 1;
 
   MobileRoleScope get _effectiveScope {
     if (widget.roleScope != null) return widget.roleScope!;
@@ -62,7 +63,9 @@ class _MainPageState extends State<MainPage> {
   }
 
   void _onDestinationSelected(int index) {
+    if (index == _currentIndex) return;
     setState(() {
+      _transitionDirection = index > _currentIndex ? 1 : -1;
       _currentIndex = index;
     });
   }
@@ -168,58 +171,41 @@ class _MainPageState extends State<MainPage> {
     final safeIndex = _currentIndex.clamp(0, specs.length - 1);
 
     return Scaffold(
-      body: IndexedStack(
-        index: safeIndex,
-        children: specs.map((spec) => spec.page).toList(),
-      ),
-      bottomNavigationBar: NavigationBarTheme(
-        data: NavigationBarThemeData(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          height: 68,
-          indicatorColor: ShiftIQColors.primaryBlue.withAlpha(24),
-          labelTextStyle: WidgetStateProperty.resolveWith((states) {
-            final selected = states.contains(WidgetState.selected);
-            return TextStyle(
-              fontSize: 11,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-              color: selected
-                  ? ShiftIQColors.primaryBlue
-                  : const Color(0xFF64748B),
-            );
-          }),
-          iconTheme: WidgetStateProperty.resolveWith((states) {
-            final selected = states.contains(WidgetState.selected);
-            return IconThemeData(
-              size: 22,
-              color: selected
-                  ? ShiftIQColors.primaryBlue
-                  : const Color(0xFF64748B),
-            );
-          }),
-        ),
-        child: Container(
-          decoration: const BoxDecoration(
-            border: Border(
-              top: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+      extendBody: true,
+      body: TweenAnimationBuilder<double>(
+        key: ValueKey<int>(safeIndex),
+        tween: Tween<double>(begin: 0.0, end: 1.0),
+        duration: const Duration(milliseconds: 240),
+        curve: Curves.easeOutCubic,
+        builder: (context, progress, child) {
+          final dx = (1.0 - progress) * 0.03 * _transitionDirection;
+          return Opacity(
+            opacity: 0.55 + (0.45 * progress),
+            child: FractionalTranslation(
+              translation: Offset(dx, 0),
+              child: child,
             ),
-          ),
-          child: NavigationBar(
-            key: const Key('main_navigation_bar'),
-            selectedIndex: safeIndex,
-            onDestinationSelected: _onDestinationSelected,
-            destinations: specs
-                .map(
-                  (spec) => NavigationDestination(
-                    key: spec.key,
-                    icon: Icon(spec.icon),
-                    selectedIcon: Icon(spec.selectedIcon),
-                    label: loc.translate(spec.labelKey),
-                  ),
-                )
-                .toList(),
-          ),
+          );
+        },
+        child: IndexedStack(
+          index: safeIndex,
+          children: specs.map((spec) => spec.page).toList(),
         ),
+      ),
+      bottomNavigationBar: ShiftIQFloatingNavBar(
+        key: const Key('main_navigation_bar'),
+        selectedIndex: safeIndex,
+        onDestinationSelected: _onDestinationSelected,
+        items: specs
+            .map(
+              (spec) => ShiftIQNavItem(
+                key: spec.key,
+                icon: spec.icon,
+                selectedIcon: spec.selectedIcon,
+                label: loc.translate(spec.labelKey),
+              ),
+            )
+            .toList(),
       ),
     );
   }

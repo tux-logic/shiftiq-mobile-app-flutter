@@ -5,15 +5,16 @@ import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/analytics_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/controllers/dashboard_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/activity_bar_chart.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/dtc_alert_banner.dart';
-import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/kpi_metric_card.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/quick_actions_row.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/revenue_trend_chart.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/billing_dashboard_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/controllers/appointments_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/views/customer_directory_page.dart';
 
@@ -121,9 +122,11 @@ class _DashboardPageState extends State<DashboardPage> {
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                IconButton(
+                                ShiftIQLiquidIconButton(
                                   tooltip: loc
                                       .translate('tooltip_customer_directory'),
+                                  icon: Icons.people_outline_rounded,
+                                  onDarkBackground: true,
                                   onPressed: () {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
@@ -135,19 +138,13 @@ class _DashboardPageState extends State<DashboardPage> {
                                       ),
                                     );
                                   },
-                                  icon: const Icon(
-                                    Icons.people_outline_rounded,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                  style: IconButton.styleFrom(
-                                    backgroundColor: Colors.white.withAlpha(22),
-                                  ),
                                 ),
                                 if (isOwnerAdmin) ...[
-                                  const SizedBox(width: 6),
-                                  IconButton(
+                                  const SizedBox(width: 8),
+                                  ShiftIQLiquidIconButton(
                                     tooltip: loc.translate('tooltip_billing'),
+                                    icon: Icons.receipt_long_outlined,
+                                    onDarkBackground: true,
                                     onPressed: () {
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
@@ -156,20 +153,13 @@ class _DashboardPageState extends State<DashboardPage> {
                                         ),
                                       );
                                     },
-                                    icon: const Icon(
-                                      Icons.receipt_long_outlined,
-                                      color: Colors.white,
-                                      size: 20,
-                                    ),
-                                    style: IconButton.styleFrom(
-                                      backgroundColor:
-                                          Colors.white.withAlpha(22),
-                                    ),
                                   ),
                                 ],
-                                const SizedBox(width: 6),
-                                IconButton(
+                                const SizedBox(width: 8),
+                                ShiftIQLiquidIconButton(
                                   tooltip: loc.translate('tooltip_profile'),
+                                  icon: Icons.person_outline_rounded,
+                                  onDarkBackground: true,
                                   onPressed: () {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
@@ -177,14 +167,6 @@ class _DashboardPageState extends State<DashboardPage> {
                                       ),
                                     );
                                   },
-                                  icon: const Icon(
-                                    Icons.person_outline_rounded,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                  style: IconButton.styleFrom(
-                                    backgroundColor: Colors.white.withAlpha(22),
-                                  ),
                                 ),
                               ],
                             ),
@@ -256,7 +238,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         : SingleChildScrollView(
                       key: const ValueKey('content'),
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+                      padding: const EdgeInsets.fromLTRB(16, 18, 16, 108),
                       child: TweenAnimationBuilder<double>(
                         tween: Tween<double>(begin: 0.0, end: 1.0),
                         duration: const Duration(milliseconds: 380),
@@ -282,97 +264,45 @@ class _DashboardPageState extends State<DashboardPage> {
                               const SizedBox(height: 16),
                             ],
 
-                            // Minimalist 2x2 KPI grid
-                            GridView.count(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 12,
-                              mainAxisSpacing: 12,
-                              childAspectRatio: 1.18,
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              children: [
-                                if (isOwnerAdmin)
-                                  KpiMetricCard(
-                                    title: loc.translate('month_revenue'),
-                                    value: summary?.formattedRevenue ??
-                                        'S/ 0.00',
-                                    numericValue: summary?.totalRevenue ?? 0.0,
-                                    valueFormatter: (v) =>
-                                        'S/ ${NumberFormat('#,##0.00', 'en_US').format(v)}',
-                                    icon: Icons.trending_up_rounded,
-                                    accentColor: ShiftIQColors.preventiveGreen,
-                                    onTap: () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (_) =>
-                                              const BillingDashboardPage(),
-                                        ),
-                                      );
-                                    },
-                                  )
-                                else
-                                  KpiMetricCard(
-                                    title: loc.translate('bays_in_service'),
-                                    value: loc.translate('bays_active_label'),
-                                    icon: Icons.car_repair_outlined,
-                                    accentColor: ShiftIQColors.preventiveGreen,
-                                    onTap: widget.onNavigateToOrders,
+                            // Minimalist Executive Overview (no quantity counter boxes)
+                            _ExecutiveMinimalistCard(
+                              isOwnerAdmin: isOwnerAdmin,
+                              summary: summary,
+                              networkSummary: vm.networkSummary,
+                              revenueTitle: loc.translate('month_revenue'),
+                              baysTitle: loc.translate('bays_in_service'),
+                              baysStatusLabel:
+                                  loc.translate('bays_active_label'),
+                              ordersLabel: loc.translate('orders_tab'),
+                              appointmentsLabel:
+                                  loc.translate('appointments_tab'),
+                              onOpenBilling: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const BillingDashboardPage(),
                                   ),
-                                KpiMetricCard(
-                                  title: loc.translate('work_orders_kpi'),
-                                  value:
-                                      '${summary?.completedWorkOrdersCount ?? 0}',
-                                  numericValue: (summary
-                                              ?.completedWorkOrdersCount ??
-                                          0)
-                                      .toDouble(),
-                                  valueFormatter: (v) => '${v.round()}',
-                                  subtitle: loc.translate('orders_tab'),
-                                  icon: Icons.build_circle_outlined,
-                                  accentColor: ShiftIQColors.primaryBlue,
-                                  onTap: widget.onNavigateToOrders,
-                                ),
-                                KpiMetricCard(
-                                  title:
-                                      loc.translate('today_appointments_kpi'),
-                                  value:
-                                      '${summary?.totalAppointmentsCount ?? 0}',
-                                  numericValue:
-                                      (summary?.totalAppointmentsCount ?? 0)
-                                          .toDouble(),
-                                  valueFormatter: (v) => '${v.round()}',
-                                  subtitle: loc.translate('appointments_tab'),
-                                  icon: Icons.calendar_today_outlined,
-                                  accentColor: ShiftIQColors.secondaryTeal,
-                                  onTap: widget.onNavigateToAppointments,
-                                ),
-                                KpiMetricCard(
-                                  title: loc.translate('critical_stock_kpi'),
-                                  value: '${summary?.lowStockAlertsCount ?? 0}',
-                                  numericValue:
-                                      (summary?.lowStockAlertsCount ?? 0)
-                                          .toDouble(),
-                                  valueFormatter: (v) => '${v.round()}',
-                                  subtitle: loc.translate('reorder_today'),
-                                  icon: Icons.inventory_2_outlined,
-                                  accentColor: ShiftIQColors.severityAmber,
-                                  onTap: widget.onNavigateToInventory,
-                                ),
-                              ],
+                                );
+                              },
+                              onNavigateToOrders: widget.onNavigateToOrders,
+                              onNavigateToAppointments:
+                                  widget.onNavigateToAppointments,
+                              onNavigateToInventory: widget.onNavigateToInventory,
+                              onNavigateToIot: widget.onNavigateToIot,
                             ),
 
                             const SizedBox(height: 16),
 
-                            // Animated Analytics Charts
-                            if (isOwnerAdmin || vm.snapshots.isNotEmpty) ...[
+                            // Animated Analytics Charts (Owner / Admin only)
+                            if (isOwnerAdmin) ...[
                               RevenueTrendChart(
                                 snapshots: vm.snapshots,
                                 selectedRangeDays: vm.selectedRangeDays,
                                 onRangeChanged: vm.setRangeDays,
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 16),
                               ActivityBarChart(snapshots: vm.snapshots),
-                              const SizedBox(height: 18),
+                              const SizedBox(height: 16),
                             ],
 
                             QuickActionsRow(
@@ -381,7 +311,7 @@ class _DashboardPageState extends State<DashboardPage> {
                               onNewBatch: widget.onNavigateToInventory,
                             ),
 
-                            const SizedBox(height: 18),
+                            const SizedBox(height: 16),
 
                             // Clean Recent Work Orders Card
                             Container(
@@ -476,6 +406,303 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         );
       },
+    );
+  }
+}
+
+class _ExecutiveMinimalistCard extends StatelessWidget {
+  final bool isOwnerAdmin;
+  final BranchAnalyticsSummary? summary;
+  final NetworkAnalyticsSummary? networkSummary;
+  final String revenueTitle;
+  final String baysTitle;
+  final String baysStatusLabel;
+  final String ordersLabel;
+  final String appointmentsLabel;
+  final VoidCallback onOpenBilling;
+  final VoidCallback? onNavigateToOrders;
+  final VoidCallback? onNavigateToAppointments;
+  final VoidCallback? onNavigateToInventory;
+  final VoidCallback? onNavigateToIot;
+
+  const _ExecutiveMinimalistCard({
+    required this.isOwnerAdmin,
+    required this.summary,
+    required this.networkSummary,
+    required this.revenueTitle,
+    required this.baysTitle,
+    required this.baysStatusLabel,
+    required this.ordersLabel,
+    required this.appointmentsLabel,
+    required this.onOpenBilling,
+    this.onNavigateToOrders,
+    this.onNavigateToAppointments,
+    this.onNavigateToInventory,
+    this.onNavigateToIot,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final ordersCount = summary?.completedWorkOrdersCount ?? 0;
+    final appointmentsCount = summary?.totalAppointmentsCount ?? 0;
+    final totalFlow = ordersCount + appointmentsCount;
+    final ordersRatio = totalFlow > 0 ? ordersCount / totalFlow : 0.5;
+    final hasStockAlert = (summary?.lowStockAlertsCount ?? 0) > 0;
+    final hasDtcAlert = (summary?.dtcAlertsCount ?? 0) > 0;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: ShiftIQColors.borderSlate),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Top Focus Row: Revenue (Owner/Admin) or Bay Status (Staff)
+          InkWell(
+            onTap: isOwnerAdmin ? onOpenBilling : onNavigateToOrders,
+            borderRadius: BorderRadius.circular(12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isOwnerAdmin ? revenueTitle : baysTitle,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF64748B),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        isOwnerAdmin
+                            ? (summary?.formattedRevenue ?? 'S/ 0.00')
+                            : baysStatusLabel,
+                        style: const TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF0F172A),
+                          letterSpacing: -0.6,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (isOwnerAdmin && networkSummary != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ShiftIQColors.primaryBlue.withAlpha(16),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: ShiftIQColors.primaryBlue.withAlpha(45),
+                      ),
+                    ),
+                    child: Text(
+                      'Red: S/ ${NumberFormat('#,##0.00', 'en_US').format(networkSummary!.totalNetworkRevenue)}',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: ShiftIQColors.primaryBlue,
+                      ),
+                    ),
+                  )
+                else
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 16,
+                    color: Color(0xFF94A3B8),
+                  ),
+              ],
+            ),
+          ),
+
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Divider(height: 1, color: Color(0xFFF1F5F9)),
+          ),
+
+          // Proportional Operational Flow Bar (no numeric counter boxes)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              InkWell(
+                onTap: onNavigateToOrders,
+                borderRadius: BorderRadius.circular(8),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: ShiftIQColors.primaryBlue,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      ordersLabel,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: ShiftIQColors.graphiteText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              InkWell(
+                onTap: onNavigateToAppointments,
+                borderRadius: BorderRadius.circular(8),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: ShiftIQColors.secondaryTeal,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      appointmentsLabel,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: ShiftIQColors.graphiteText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: SizedBox(
+              height: 8,
+              child: totalFlow == 0
+                  ? Container(color: const Color(0xFFF1F5F9))
+                  : Row(
+                      children: [
+                        if (ordersRatio > 0)
+                          Expanded(
+                            flex: (ordersRatio * 100).round().clamp(1, 99),
+                            child: Container(color: ShiftIQColors.primaryBlue),
+                          ),
+                        if (ordersRatio < 1)
+                          Expanded(
+                            flex: ((1 - ordersRatio) * 100)
+                                .round()
+                                .clamp(1, 99),
+                            child:
+                                Container(color: ShiftIQColors.secondaryTeal),
+                          ),
+                      ],
+                    ),
+            ),
+          ),
+
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Divider(height: 1, color: Color(0xFFF1F5F9)),
+          ),
+
+          // Semantic Health Status Strip
+          Row(
+            children: [
+              Expanded(
+                child: _HealthStatusPill(
+                  icon: Icons.inventory_2_outlined,
+                  label: hasStockAlert ? 'Stock por reponer' : 'Stock saludable',
+                  color: hasStockAlert
+                      ? ShiftIQColors.severityAmber
+                      : ShiftIQColors.preventiveGreen,
+                  onTap: onNavigateToInventory,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _HealthStatusPill(
+                  icon: Icons.sensors_rounded,
+                  label: hasDtcAlert ? 'Revisión OBD-II' : 'Telemetría estable',
+                  color: hasDtcAlert
+                      ? ShiftIQColors.severityCrimson
+                      : ShiftIQColors.secondaryTeal,
+                  onTap: onNavigateToIot,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HealthStatusPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback? onTap;
+
+  const _HealthStatusPill({
+    required this.icon,
+    required this.label,
+    required this.color,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+        decoration: BoxDecoration(
+          color: color.withAlpha(18),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withAlpha(55)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 15, color: color),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
