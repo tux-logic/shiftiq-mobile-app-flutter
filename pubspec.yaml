@@ -19,6 +19,7 @@ dependencies:
   intl: ^0.20.3
   maplibre_gl: ^0.28.0
   image_picker: ^1.2.4
+  skeletonizer: ^3.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
