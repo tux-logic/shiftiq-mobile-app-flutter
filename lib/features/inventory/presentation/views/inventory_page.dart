@@ -10,6 +10,7 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton_dummies.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/model/aggregates/product.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/model/valueobjects/stock_status.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/presentation/controllers/inventory_view_model.dart';
@@ -383,12 +384,10 @@ class _InventoryPageState extends State<InventoryPage> {
               Expanded(
                 child: ShiftIQPullToRefresh(
                   onRefresh: () => _viewModel.loadProducts(_effectiveBranchId),
-                  skeleton: const ShiftIQSkeletonCardList(),
+                  skeleton: _buildProductSkeletonList(),
                   child: ShiftIQContentTransition(
                     child: isLoading && products.isEmpty
-                        ? const ShiftIQSkeletonCardList(
-                            key: ValueKey('inv_loading'),
-                          )
+                        ? _buildProductSkeletonList()
                         : products.isEmpty
                           ? ListView(
                               physics: const AlwaysScrollableScrollPhysics(),
@@ -464,6 +463,24 @@ class _InventoryPageState extends State<InventoryPage> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildProductSkeletonList() {
+    final dummies = ShiftIQSkeletonDummies.products();
+    return ShiftIQSkeletonizer(
+      key: const ValueKey('inv_loading'),
+      enabled: true,
+      child: ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+        itemCount: dummies.length,
+        itemBuilder: (_, index) => ProductCard(
+          product: dummies[index],
+          onTap: () {},
+          onAddBatch: () {},
+        ),
       ),
     );
   }
