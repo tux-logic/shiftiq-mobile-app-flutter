@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_top_progress_bar.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/core/auth/mobile_role_scope.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
@@ -197,8 +197,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                   title: loc.translate('work_order_detail'),
                   showBackButton: true,
                 ),
-                const ShiftIQTopProgressBar(isLoading: true),
-                const Expanded(child: SizedBox.shrink()),
+                const Expanded(child: ShiftIQSkeletonDetail()),
               ],
             ),
           );

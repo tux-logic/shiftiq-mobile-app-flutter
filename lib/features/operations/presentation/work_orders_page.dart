@@ -6,7 +6,7 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
-import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_top_progress_bar.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
@@ -144,8 +144,6 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
                 ),
               ),
 
-              ShiftIQTopProgressBar(isLoading: vm.isLoading),
-
               // Swipeable Kanban TabBarView
               Expanded(
                 child: TabBarView(
@@ -208,7 +206,7 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
       color: ShiftIQColors.primaryBlue,
       child: ShiftIQContentTransition(
         child: vm.isLoading && orders.isEmpty
-            ? const SizedBox.shrink(key: ValueKey('orders_loading'))
+            ? const ShiftIQSkeletonCardList(key: ValueKey('orders_loading'))
             : orders.isEmpty
               ? ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
