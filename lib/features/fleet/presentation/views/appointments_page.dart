@@ -8,7 +8,7 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
-import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_top_progress_bar.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/aggregates/appointment.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/valueobjects/appointment_status.dart';
@@ -195,8 +195,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                   ),
                 ),
 
-              ShiftIQTopProgressBar(isLoading: isLoading),
-
               // Appointment List
               Expanded(
                 child: RefreshIndicator(
@@ -204,7 +202,9 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                   onRefresh: () => _viewModel.loadAppointments(_effectiveBranchId),
                   child: ShiftIQContentTransition(
                     child: isLoading && appointments.isEmpty
-                        ? const SizedBox.shrink(key: ValueKey('appts_loading'))
+                        ? const ShiftIQSkeletonCardList(
+                            key: ValueKey('appts_loading'),
+                          )
                         : appointments.isEmpty
                           ? ListView(
                               physics: const AlwaysScrollableScrollPhysics(),

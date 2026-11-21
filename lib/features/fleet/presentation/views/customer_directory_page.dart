@@ -7,7 +7,7 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
-import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_top_progress_bar.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/entities/customer_registration.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/controllers/appointments_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/widgets/create_appointment_modal.dart';
@@ -146,8 +146,6 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
                       ),
                     ),
 
-              ShiftIQTopProgressBar(isLoading: isLoading),
-
               // List of customers
               Expanded(
                 child: RefreshIndicator(
@@ -158,7 +156,9 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
                   ),
                   child: ShiftIQContentTransition(
                     child: isLoading && customers.isEmpty
-                        ? const SizedBox.shrink(key: ValueKey('cust_loading'))
+                        ? const ShiftIQSkeletonCardList(
+                            key: ValueKey('cust_loading'),
+                          )
                         : customers.isEmpty
                           ? ListView(
                               physics: const AlwaysScrollableScrollPhysics(),
