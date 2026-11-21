@@ -9,6 +9,7 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/domain/iot_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/controllers/telemetry_view_model.dart';
@@ -255,9 +256,9 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> {
 
               // Alerts List with Pull-to-Refresh
               Expanded(
-                child: RefreshIndicator(
-                  color: ShiftIQColors.primaryBlue,
+                child: ShiftIQPullToRefresh(
                   onRefresh: () => _viewModel.loadDtcAlerts(_effectiveBranchId),
+                  skeleton: const ShiftIQSkeletonCardList(),
                   child: ShiftIQContentTransition(
                     child: isLoading && alerts.isEmpty
                         ? const ShiftIQSkeletonCardList(
