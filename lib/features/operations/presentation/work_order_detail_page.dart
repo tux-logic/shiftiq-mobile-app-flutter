@@ -491,8 +491,8 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
 
                 const SizedBox(height: 20),
 
-                // Finalize Order Button
-                if (!order.isCompleted)
+                // Finalize Order Button (owner/admin settlement only)
+                if (!order.isCompleted && _isOwnerAdmin)
                   ElevatedButton(
                     onPressed: () async {
                       final confirmed = await showDialog<bool>(
@@ -526,9 +526,10 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: ShiftIQColors.preventiveGreen,
                       foregroundColor: Colors.white,
+                      elevation: 0,
                       minimumSize: const Size.fromHeight(50),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
                     child: Row(
@@ -619,9 +620,10 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: ShiftIQColors.primaryBlue,
                         foregroundColor: Colors.white,
-                        minimumSize: const Size.fromHeight(48),
+                        elevation: 0,
+                        minimumSize: const Size.fromHeight(50),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                     ),
