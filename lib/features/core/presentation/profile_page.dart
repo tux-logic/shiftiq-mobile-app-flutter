@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_toast.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
@@ -11,7 +12,6 @@ import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_page
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_view_model.dart';
-import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 
 /// Redesigned user profile screen displaying live backend identity and branch context.
 class ProfilePage extends StatefulWidget {
@@ -220,14 +220,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 title: loc.translate('profile_title'),
                 subtitle: vm.roleDisplay,
                 showBackButton: Navigator.of(context).canPop(),
-                actions: [
-                  ShiftIQLiquidIconButton(
-                    tooltip: loc.translate('tooltip_refresh'),
-                    icon: Icons.refresh_rounded,
-                    onDarkBackground: true,
-                    onPressed: vm.isLoading ? null : vm.init,
-                  ),
-                ],
               ),
               Expanded(
                 child: ShiftIQContentTransition(
@@ -235,8 +227,11 @@ class _ProfilePageState extends State<ProfilePage> {
                           vm.profileContext == null &&
                           vm.userEmail.isEmpty
                       ? const ShiftIQSkeletonDetail(key: ValueKey('profile_loading'))
-                      : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
+                      : ShiftIQPullToRefresh(
+                          onRefresh: vm.init,
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -463,6 +458,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       const SizedBox(height: 24),
                     ],
                   ),
+                        ),
                 ),
                 ),
               ),
