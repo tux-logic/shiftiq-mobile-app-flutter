@@ -323,6 +323,8 @@ void setupDependencies() {
     () => EmployeeDashboardViewModel(
       analyticsApi: getIt<AnalyticsApi>(),
       sessionStorage: getIt<SessionStorage>(),
+      manageWorkOrders: getIt<ManageWorkOrders>(),
+      employeeRegistrationApi: getIt<EmployeeRegistrationApi>(),
     ),
   );
 
