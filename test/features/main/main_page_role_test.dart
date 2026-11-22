@@ -55,7 +55,7 @@ void main() {
       expect(find.byKey(const Key('nav_telemetry')), findsOneWidget);
     });
 
-    testWidgets('shows 3 operational destinations for employee scope',
+    testWidgets('shows 2 operational destinations for employee scope',
         (tester) async {
       await tester.pumpWidget(
         _wrapWithApp(
@@ -64,7 +64,6 @@ void main() {
             overridePages: [
               SizedBox(key: Key('page_0')),
               SizedBox(key: Key('page_1')),
-              SizedBox(key: Key('page_2')),
             ],
           ),
         ),
@@ -73,9 +72,9 @@ void main() {
 
       expect(find.byKey(const Key('main_navigation_bar')), findsOneWidget);
       expect(find.byKey(const Key('nav_dashboard')), findsNothing);
+      expect(find.byKey(const Key('nav_appointments')), findsNothing);
       expect(find.byKey(const Key('nav_inventory')), findsNothing);
       expect(find.byKey(const Key('nav_orders')), findsOneWidget);
-      expect(find.byKey(const Key('nav_appointments')), findsOneWidget);
       expect(find.byKey(const Key('nav_telemetry')), findsOneWidget);
     });
 

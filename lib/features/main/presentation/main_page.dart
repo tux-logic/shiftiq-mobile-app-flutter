@@ -127,7 +127,7 @@ class _MainPageState extends State<MainPage> {
       ];
     }
 
-    // Employee operational scope: Work Orders, Appointments, Telemetry.
+    // Employee operational scope: Work Orders and Telemetry/Diagnostics.
     return [
       _NavDestinationSpec(
         key: const Key('nav_orders'),
@@ -139,21 +139,12 @@ class _MainPageState extends State<MainPage> {
             : const WorkOrdersPage(),
       ),
       _NavDestinationSpec(
-        key: const Key('nav_appointments'),
-        icon: Icons.calendar_month_outlined,
-        selectedIcon: Icons.calendar_month_rounded,
-        labelKey: 'appointments_tab',
-        page: override != null && override.length > 1
-            ? override[1]
-            : const AppointmentsPage(),
-      ),
-      _NavDestinationSpec(
         key: const Key('nav_telemetry'),
         icon: Icons.sensors_outlined,
         selectedIcon: Icons.sensors_rounded,
         labelKey: 'telemetry_tab',
-        page: override != null && override.length > 2
-            ? override[2]
+        page: override != null && override.length > 1
+            ? override[1]
             : const TelemetryDashboardPage(),
       ),
     ];
