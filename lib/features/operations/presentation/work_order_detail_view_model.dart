@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:shiftiq_mobile_app_flutter/features/inventory/application/usecases/manage_products.dart';
+import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/models/product.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/application/operations_application.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
 
@@ -7,11 +9,13 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
   final ManageWorkOrders manageWorkOrders;
   final ManageWorkOrderTasks manageWorkOrderTasks;
   final ManageTaskProducts manageTaskProducts;
+  final ManageProducts? manageProducts;
 
   WorkOrderDetailViewModel({
     required this.manageWorkOrders,
     required this.manageWorkOrderTasks,
     required this.manageTaskProducts,
+    this.manageProducts,
   });
 
   bool _isLoading = false;
@@ -99,13 +103,22 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
     }
   }
 
+  /// Loads real inventory products available in the active work order's branch.
+  Future<List<Product>> loadBranchProducts() async {
+    final order = _order;
+    final productsUseCase = manageProducts;
+    if (order == null || productsUseCase == null) return const [];
+    return productsUseCase.getProducts(branchId: order.branchId);
+  }
+
   Future<bool> addProduct({
     required String taskId,
     required String productId,
-    required String productName,
+    String productName = '',
     required int quantity,
-    required double unitPrice,
+    double unitPrice = 0,
   }) async {
+    _error = null;
     try {
       _order = await manageTaskProducts.addProductToTask(
         taskId: taskId,

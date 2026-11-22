@@ -367,6 +367,7 @@ void setupDependencies() {
       manageWorkOrders: getIt<ManageWorkOrders>(),
       manageWorkOrderTasks: getIt<ManageWorkOrderTasks>(),
       manageTaskProducts: getIt<ManageTaskProducts>(),
+      manageProducts: getIt<ManageProducts>(),
     ),
   );
 
