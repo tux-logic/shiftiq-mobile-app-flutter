@@ -5,6 +5,7 @@ import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.d
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_floating_nav_bar.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/views/dashboard_page.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/views/employee_dashboard_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/views/appointments_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/presentation/views/inventory_page.dart';
@@ -127,15 +128,27 @@ class _MainPageState extends State<MainPage> {
       ];
     }
 
-    // Employee operational scope: Work Orders and Telemetry/Diagnostics.
+    // Employee operational scope: Personal Dashboard, Work Orders, and Telemetry.
     return [
+      _NavDestinationSpec(
+        key: const Key('nav_dashboard'),
+        icon: Icons.space_dashboard_outlined,
+        selectedIcon: Icons.space_dashboard_rounded,
+        labelKey: 'dashboard_tab',
+        page: override != null && override.isNotEmpty
+            ? override[0]
+            : EmployeeDashboardPage(
+                onNavigateToOrders: () => _onDestinationSelected(1),
+                onNavigateToTelemetry: () => _onDestinationSelected(2),
+              ),
+      ),
       _NavDestinationSpec(
         key: const Key('nav_orders'),
         icon: Icons.build_outlined,
         selectedIcon: Icons.build_rounded,
         labelKey: 'orders_tab',
-        page: override != null && override.isNotEmpty
-            ? override[0]
+        page: override != null && override.length > 1
+            ? override[1]
             : const WorkOrdersPage(),
       ),
       _NavDestinationSpec(
@@ -143,8 +156,8 @@ class _MainPageState extends State<MainPage> {
         icon: Icons.sensors_outlined,
         selectedIcon: Icons.sensors_rounded,
         labelKey: 'telemetry_tab',
-        page: override != null && override.length > 1
-            ? override[1]
+        page: override != null && override.length > 2
+            ? override[2]
             : const TelemetryDashboardPage(),
       ),
     ];
