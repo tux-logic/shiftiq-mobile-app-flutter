@@ -358,6 +358,78 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                         order.diagnosticSummary,
                         style: const TextStyle(fontSize: 13),
                       ),
+                      if (order.entryInspectionImages.isNotEmpty) ...[
+                        const Divider(height: 16),
+                        Text(
+                          'Fotos de recepción (${order.entryInspectionImages.length}):',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 82,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: order.entryInspectionImages.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(width: 8),
+                            itemBuilder: (_, index) {
+                              final url = order.entryInspectionImages[index];
+                              return GestureDetector(
+                                onTap: () => showDialog<void>(
+                                  context: context,
+                                  builder: (ctx) => Dialog(
+                                    backgroundColor: Colors.black,
+                                    insetPadding: const EdgeInsets.all(12),
+                                    child: Stack(
+                                      alignment: Alignment.topRight,
+                                      children: [
+                                        InteractiveViewer(
+                                          child: Center(
+                                            child: Image.network(
+                                              url,
+                                              fit: BoxFit.contain,
+                                            ),
+                                          ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () =>
+                                              Navigator.of(ctx).pop(),
+                                          icon: const Icon(
+                                            Icons.close_rounded,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Image.network(
+                                    url,
+                                    width: 82,
+                                    height: 82,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, _, _) => Container(
+                                      width: 82,
+                                      height: 82,
+                                      color: ShiftIQColors.warmNeutral,
+                                      child: const Icon(
+                                        Icons.broken_image_outlined,
+                                        color: Color(0xFF94A3B8),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -675,6 +747,35 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                   (t) => t.id == task.id,
                   orElse: () => task,
                 );
+              }
+            : null,
+        onAddEvidenceImage: canExecute && !task.isCompleted && !orderCompleted
+            ? (bytes, fileName) async {
+                final updated = await vm.uploadAndAttachEvidence(
+                  task: task,
+                  fileBytes: bytes,
+                  fileName: fileName,
+                );
+                if (updated == null) {
+                  throw Exception(
+                    vm.error ?? 'No se pudo subir la foto de evidencia.',
+                  );
+                }
+                return updated;
+              }
+            : null,
+        onRemoveEvidenceImage: canExecute && !task.isCompleted && !orderCompleted
+            ? (imageUrl) async {
+                final updated = await vm.removeEvidenceImage(
+                  task: task,
+                  imageUrl: imageUrl,
+                );
+                if (updated == null) {
+                  throw Exception(
+                    vm.error ?? 'No se pudo quitar la foto de evidencia.',
+                  );
+                }
+                return updated;
               }
             : null,
       ),

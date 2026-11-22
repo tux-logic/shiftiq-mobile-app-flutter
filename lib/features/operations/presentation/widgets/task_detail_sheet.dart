@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
@@ -14,6 +15,9 @@ class TaskDetailSheet extends StatefulWidget {
   final Future<WorkOrderTask?> Function(String productId, int newQuantity)?
       onUpdateProductQuantity;
   final Future<WorkOrderTask?> Function(String productId)? onRemoveProduct;
+  final Future<WorkOrderTask?> Function(List<int> fileBytes, String fileName)?
+      onAddEvidenceImage;
+  final Future<WorkOrderTask?> Function(String imageUrl)? onRemoveEvidenceImage;
 
   const TaskDetailSheet({
     super.key,
@@ -23,6 +27,8 @@ class TaskDetailSheet extends StatefulWidget {
     this.onCompleteTask,
     this.onUpdateProductQuantity,
     this.onRemoveProduct,
+    this.onAddEvidenceImage,
+    this.onRemoveEvidenceImage,
   });
 
   @override
@@ -30,8 +36,10 @@ class TaskDetailSheet extends StatefulWidget {
 }
 
 class _TaskDetailSheetState extends State<TaskDetailSheet> {
+  final ImagePicker _picker = ImagePicker();
   late WorkOrderTask _task;
   String? _busyProductId;
+  bool _isUploadingImage = false;
   String? _actionError;
 
   @override
@@ -99,6 +107,132 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
         _busyProductId = null;
       });
     }
+  }
+
+  Future<void> _pickAndUploadEvidence(ImageSource source) async {
+    final uploader = widget.onAddEvidenceImage;
+    if (uploader == null || _isUploadingImage) return;
+
+    try {
+      final picked = await _picker.pickImage(
+        source: source,
+        maxWidth: 1600,
+        maxHeight: 1200,
+        imageQuality: 85,
+      );
+      if (picked == null) return;
+
+      final bytes = await picked.readAsBytes();
+      if (!mounted) return;
+
+      setState(() {
+        _isUploadingImage = true;
+        _actionError = null;
+      });
+
+      final updated = await uploader(bytes, picked.name);
+      if (!mounted) return;
+      setState(() {
+        if (updated != null) _task = updated;
+        _isUploadingImage = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _actionError = e.toString().replaceFirst('Exception: ', '');
+        _isUploadingImage = false;
+      });
+    }
+  }
+
+  Future<void> _handleRemoveEvidence(String imageUrl) async {
+    final remover = widget.onRemoveEvidenceImage;
+    if (remover == null || _isUploadingImage) return;
+
+    setState(() {
+      _isUploadingImage = true;
+      _actionError = null;
+    });
+    try {
+      final updated = await remover(imageUrl);
+      if (!mounted) return;
+      setState(() {
+        if (updated != null) _task = updated;
+        _isUploadingImage = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _actionError = e.toString().replaceFirst('Exception: ', '');
+        _isUploadingImage = false;
+      });
+    }
+  }
+
+  void _showEvidenceSourcePicker() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(
+                  Icons.camera_alt_outlined,
+                  color: ShiftIQColors.primaryBlue,
+                ),
+                title: const Text('Tomar foto con cámara'),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _pickAndUploadEvidence(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.photo_library_outlined,
+                  color: ShiftIQColors.primaryBlue,
+                ),
+                title: const Text('Elegir de la galería'),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _pickAndUploadEvidence(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showFullScreenImage(String imageUrl) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.black,
+        insetPadding: const EdgeInsets.all(12),
+        child: Stack(
+          alignment: Alignment.topRight,
+          children: [
+            InteractiveViewer(
+              child: Center(
+                child: Image.network(imageUrl, fit: BoxFit.contain),
+              ),
+            ),
+            IconButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              icon: const Icon(Icons.close_rounded, color: Colors.white),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -391,43 +525,140 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                         ),
                       ),
 
-                    if (task.evidenceImages.isNotEmpty) ...[
+                    if (task.evidenceImages.isNotEmpty ||
+                        (widget.onAddEvidenceImage != null &&
+                            !task.isCompleted)) ...[
                       const SizedBox(height: 16),
-                      const Text(
-                        'Evidencia',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: ShiftIQColors.graphiteText,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        height: 86,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: task.evidenceImages.length,
-                          separatorBuilder: (_, _) => const SizedBox(width: 8),
-                          itemBuilder: (_, index) => ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.network(
-                              task.evidenceImages[index],
-                              width: 86,
-                              height: 86,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => Container(
-                                width: 86,
-                                height: 86,
-                                color: ShiftIQColors.warmNeutral,
-                                child: const Icon(
-                                  Icons.broken_image_outlined,
-                                  color: Color(0xFF94A3B8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Evidencia (${task.evidenceImages.length})',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: ShiftIQColors.graphiteText,
+                            ),
+                          ),
+                          if (widget.onAddEvidenceImage != null &&
+                              !task.isCompleted)
+                            TextButton.icon(
+                              onPressed: _isUploadingImage
+                                  ? null
+                                  : _showEvidenceSourcePicker,
+                              style: TextButton.styleFrom(
+                                foregroundColor: ShiftIQColors.primaryBlue,
+                                backgroundColor:
+                                    ShiftIQColors.primaryBlue.withAlpha(18),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              icon: Icon(
+                                _isUploadingImage
+                                    ? Icons.cloud_upload_outlined
+                                    : Icons.add_a_photo_outlined,
+                                size: 15,
+                              ),
+                              label: Text(
+                                _isUploadingImage
+                                    ? 'Subiendo...'
+                                    : 'Agregar foto',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      if (task.evidenceImages.isEmpty)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border:
+                                Border.all(color: ShiftIQColors.borderSlate),
+                          ),
+                          child: const Text(
+                            'Sin fotos de evidencia todavía.',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        )
+                      else
+                        SizedBox(
+                          height: 92,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: task.evidenceImages.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(width: 8),
+                            itemBuilder: (_, index) {
+                              final url = task.evidenceImages[index];
+                              return Stack(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () => _showFullScreenImage(url),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Image.network(
+                                        url,
+                                        width: 92,
+                                        height: 92,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, _, _) => Container(
+                                          width: 92,
+                                          height: 92,
+                                          color: ShiftIQColors.warmNeutral,
+                                          child: const Icon(
+                                            Icons.broken_image_outlined,
+                                            color: Color(0xFF94A3B8),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  if (widget.onRemoveEvidenceImage != null &&
+                                      !task.isCompleted)
+                                    Positioned(
+                                      top: 4,
+                                      right: 4,
+                                      child: InkWell(
+                                        onTap: _isUploadingImage
+                                            ? null
+                                            : () => _handleRemoveEvidence(url),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black
+                                                .withValues(alpha: 0.65),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.close_rounded,
+                                            size: 13,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              );
+                            },
                           ),
                         ),
-                      ),
                     ],
 
                     const SizedBox(height: 16),
