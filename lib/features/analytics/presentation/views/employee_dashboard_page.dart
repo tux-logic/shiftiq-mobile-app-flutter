@@ -9,6 +9,7 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/analytics_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/controllers/employee_dashboard_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/dtc_alert_banner.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/employee_workload_charts.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/kpi_metric_card.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
@@ -164,6 +165,28 @@ class _EmployeeDashboardPageState extends State<EmployeeDashboardPage> {
                                   ),
                                 ],
                               ),
+                              const SizedBox(height: 16),
+                              EmployeeTaskRingChart(
+                                completedTasks:
+                                    summary?.completedTasksCount ?? 0,
+                                pendingTasks: summary?.pendingTasksCount ?? 0,
+                              ),
+                              if (summary != null &&
+                                  summary.assignedWorkOrders.isNotEmpty) ...[
+                                const SizedBox(height: 16),
+                                EmployeeQueueWorkloadChart(
+                                  orders: summary.assignedWorkOrders,
+                                  onOrderTap: (order) {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => WorkOrderDetailPage(
+                                          workOrderId: order.workOrderId,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
                               const SizedBox(height: 22),
                               Row(
                                 mainAxisAlignment:

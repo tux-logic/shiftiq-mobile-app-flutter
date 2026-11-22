@@ -9,6 +9,7 @@ import 'package:shiftiq_mobile_app_flutter/features/analytics/infrastructure/rem
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/controllers/employee_dashboard_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/views/employee_dashboard_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/dtc_alert_banner.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/employee_workload_charts.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/kpi_metric_card.dart';
 
 class _FakeAnalyticsApi extends AnalyticsApi {
@@ -92,11 +93,18 @@ void main() {
       expect(find.text('Tareas Completadas'), findsOneWidget);
       expect(find.text('Alertas DTC'), findsOneWidget);
       await tester.scrollUntilVisible(
-        find.text('OT #000042'),
+        find.byType(EmployeeTaskRingChart),
         200,
         scrollable: find.byType(Scrollable).first,
       );
-      expect(find.text('OT #000042'), findsOneWidget);
+      expect(find.byType(EmployeeTaskRingChart), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.byType(EmployeeQueueWorkloadChart),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.byType(EmployeeQueueWorkloadChart), findsOneWidget);
+      expect(find.text('OT #000042'), findsWidgets);
     },
   );
 }
