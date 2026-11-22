@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/widgets/spare_part_thumbnail.dart';
 
 /// Modal bottom sheet displaying full task details: status, timestamps,
 /// labor/parts cost breakdown, consumed spare parts, and evidence images.
@@ -392,17 +393,10 @@ class _ProductLineTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: ShiftIQColors.primaryBlue.withAlpha(16),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(
-              Icons.settings_suggest_outlined,
-              size: 18,
-              color: ShiftIQColors.primaryBlue,
-            ),
+          SparePartThumbnail(
+            imageUrl: product.imageUrl,
+            size: 38,
+            borderRadius: 10,
           ),
           const SizedBox(width: 10),
           Expanded(

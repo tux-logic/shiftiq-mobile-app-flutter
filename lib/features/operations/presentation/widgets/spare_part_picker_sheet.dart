@@ -4,6 +4,7 @@ import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/models/product.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/widgets/spare_part_thumbnail.dart';
 
 /// Modal bottom sheet allowing workshop staff to select a real inventory
 /// spare part from the active branch and dispatch a stock-bounded quantity.
@@ -330,6 +331,12 @@ class _SparePartPickerSheetState extends State<SparePartPickerSheet> {
             ),
             child: Row(
               children: [
+                SparePartThumbnail(
+                  imageUrl: product.imageUrl,
+                  size: 46,
+                  borderRadius: 12,
+                ),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
