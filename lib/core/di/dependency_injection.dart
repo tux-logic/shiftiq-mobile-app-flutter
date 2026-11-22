@@ -240,7 +240,10 @@ void setupDependencies() {
   );
 
   getIt.registerLazySingleton<GetUserBranchesUseCase>(
-    () => GetUserBranchesUseCase(repository: getIt<CoreRepository>()),
+    () => GetUserBranchesUseCase(
+      repository: getIt<CoreRepository>(),
+      employeeRegistrationApi: getIt<EmployeeRegistrationApi>(),
+    ),
   );
 
   getIt.registerLazySingleton<SelectActiveBranchUseCase>(
