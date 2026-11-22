@@ -44,11 +44,22 @@ class SparePartThumbnail extends StatelessWidget {
   }
 
   Widget _fallbackIcon() {
-    return Center(
-      child: Icon(
-        Icons.settings_suggest_outlined,
-        size: size * 0.5,
-        color: ShiftIQColors.primaryBlue,
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF0F172A), ShiftIQColors.primaryBlue],
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.settings_suggest_outlined,
+          size: size * 0.52,
+          color: Colors.white.withValues(alpha: 0.9),
+        ),
       ),
     );
   }
