@@ -641,6 +641,41 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
         onCompleteTask: canExecute && task.isInProgress
             ? () => vm.completeTask(task.id)
             : null,
+        onUpdateProductQuantity: canExecute && !task.isCompleted && !orderCompleted
+            ? (productId, newQuantity) async {
+                final ok = await vm.updateProductQuantity(
+                  taskId: task.id,
+                  productId: productId,
+                  quantity: newQuantity,
+                );
+                if (!ok) {
+                  throw Exception(
+                    vm.error ?? 'No se pudo actualizar la cantidad.',
+                  );
+                }
+                return vm.order?.tasks.firstWhere(
+                  (t) => t.id == task.id,
+                  orElse: () => task,
+                );
+              }
+            : null,
+        onRemoveProduct: canExecute && !task.isCompleted && !orderCompleted
+            ? (productId) async {
+                final ok = await vm.removeProductFromTask(
+                  taskId: task.id,
+                  productId: productId,
+                );
+                if (!ok) {
+                  throw Exception(
+                    vm.error ?? 'No se pudo quitar el repuesto.',
+                  );
+                }
+                return vm.order?.tasks.firstWhere(
+                  (t) => t.id == task.id,
+                  orElse: () => task,
+                );
+              }
+            : null,
       ),
     );
   }

@@ -58,4 +58,72 @@ void main() {
       expect(find.text('S/ 240.00'), findsOneWidget);
     },
   );
+
+  testWidgets(
+    'TaskDetailSheet supports updating product quantity and removing a part',
+    (tester) async {
+      int? updatedQty;
+      String? removedProductId;
+
+      final task = WorkOrderTask(
+        id: 'task-2',
+        serviceId: 'svc-1',
+        branchId: 'branch-1',
+        assignedMechanicId: 'emp-1',
+        assignedMechanicName: 'Aldo Machacca',
+        status: TaskStatus.doing,
+        description: 'Cambio de bujías',
+        price: 190.0,
+        products: const [
+          WorkOrderTaskProduct(
+            id: 'tp-1',
+            productId: 'prod-1',
+            productName: 'Bujía NGK',
+            branchId: 'branch-1',
+            quantity: 1,
+            unitPrice: 40.0,
+            totalAmount: 40.0,
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        _wrapWithApp(
+          TaskDetailSheet(
+            task: task,
+            onUpdateProductQuantity: (productId, qty) async {
+              updatedQty = qty;
+              return task.copyWith(
+                price: 230.0,
+                products: [
+                  task.products.first.copyWith(
+                    quantity: qty,
+                    totalAmount: 40.0 * qty,
+                  ),
+                ],
+              );
+            },
+            onRemoveProduct: (productId) async {
+              removedProductId = productId;
+              return task.copyWith(price: 150.0, products: const []);
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.add_rounded));
+      await tester.pumpAndSettle();
+      expect(updatedQty, 2);
+      expect(find.text('2 unid · S/ 40.00 c/u'), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.delete_outline_rounded));
+      await tester.pumpAndSettle();
+      expect(removedProductId, 'prod-1');
+      expect(
+        find.text('No hay repuestos asignados a esta tarea.'),
+        findsOneWidget,
+      );
+    },
+  );
 }

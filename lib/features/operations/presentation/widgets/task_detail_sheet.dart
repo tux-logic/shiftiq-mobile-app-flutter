@@ -6,11 +6,14 @@ import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/widg
 
 /// Modal bottom sheet displaying full task details: status, timestamps,
 /// labor/parts cost breakdown, consumed spare parts, and evidence images.
-class TaskDetailSheet extends StatelessWidget {
+class TaskDetailSheet extends StatefulWidget {
   final WorkOrderTask task;
   final VoidCallback? onAddProduct;
   final VoidCallback? onStartTask;
   final VoidCallback? onCompleteTask;
+  final Future<WorkOrderTask?> Function(String productId, int newQuantity)?
+      onUpdateProductQuantity;
+  final Future<WorkOrderTask?> Function(String productId)? onRemoveProduct;
 
   const TaskDetailSheet({
     super.key,
@@ -18,7 +21,24 @@ class TaskDetailSheet extends StatelessWidget {
     this.onAddProduct,
     this.onStartTask,
     this.onCompleteTask,
+    this.onUpdateProductQuantity,
+    this.onRemoveProduct,
   });
+
+  @override
+  State<TaskDetailSheet> createState() => _TaskDetailSheetState();
+}
+
+class _TaskDetailSheetState extends State<TaskDetailSheet> {
+  late WorkOrderTask _task;
+  String? _busyProductId;
+  String? _actionError;
+
+  @override
+  void initState() {
+    super.initState();
+    _task = widget.task;
+  }
 
   String _formatDate(DateTime? dt) {
     if (dt == null) return '—';
@@ -30,9 +50,61 @@ class TaskDetailSheet extends StatelessWidget {
     return '$day/$month/${local.year} $hour:$min';
   }
 
+  Future<void> _handleQuantityChange(
+    WorkOrderTaskProduct product,
+    int newQuantity,
+  ) async {
+    final updater = widget.onUpdateProductQuantity;
+    if (updater == null || newQuantity < 1 || _busyProductId != null) return;
+
+    setState(() {
+      _busyProductId = product.productId;
+      _actionError = null;
+    });
+    try {
+      final updated = await updater(product.productId, newQuantity);
+      if (!mounted) return;
+      setState(() {
+        if (updated != null) _task = updated;
+        _busyProductId = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _actionError = e.toString().replaceFirst('Exception: ', '');
+        _busyProductId = null;
+      });
+    }
+  }
+
+  Future<void> _handleRemoveProduct(WorkOrderTaskProduct product) async {
+    final remover = widget.onRemoveProduct;
+    if (remover == null || _busyProductId != null) return;
+
+    setState(() {
+      _busyProductId = product.productId;
+      _actionError = null;
+    });
+    try {
+      final updated = await remover(product.productId);
+      if (!mounted) return;
+      setState(() {
+        if (updated != null) _task = updated;
+        _busyProductId = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _actionError = e.toString().replaceFirst('Exception: ', '');
+        _busyProductId = null;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
+    final task = _task;
     final statusColor = task.isCompleted
         ? ShiftIQColors.preventiveGreen
         : task.isInProgress
@@ -48,7 +120,7 @@ class TaskDetailSheet extends StatelessWidget {
       top: false,
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.sizeOf(context).height * 0.82,
+          maxHeight: MediaQuery.sizeOf(context).height * 0.84,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -172,13 +244,13 @@ class TaskDetailSheet extends StatelessWidget {
                             color: ShiftIQColors.graphiteText,
                           ),
                         ),
-                        if (onAddProduct != null &&
+                        if (widget.onAddProduct != null &&
                             !task.isCompleted &&
                             task.products.isNotEmpty)
                           TextButton.icon(
                             onPressed: () {
                               Navigator.of(context).pop();
-                              onAddProduct!();
+                              widget.onAddProduct!();
                             },
                             style: TextButton.styleFrom(
                               foregroundColor: ShiftIQColors.primaryBlue,
@@ -205,6 +277,28 @@ class TaskDetailSheet extends StatelessWidget {
                           ),
                       ],
                     ),
+                    if (_actionError != null) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: ShiftIQColors.severityCrimson.withAlpha(20),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          _actionError!,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: ShiftIQColors.severityCrimson,
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 8),
                     if (task.products.isEmpty)
                       Container(
@@ -225,12 +319,13 @@ class TaskDetailSheet extends StatelessWidget {
                                 color: Color(0xFF64748B),
                               ),
                             ),
-                            if (onAddProduct != null && !task.isCompleted) ...[
+                            if (widget.onAddProduct != null &&
+                                !task.isCompleted) ...[
                               const SizedBox(height: 12),
                               TextButton.icon(
                                 onPressed: () {
                                   Navigator.of(context).pop();
-                                  onAddProduct!();
+                                  widget.onAddProduct!();
                                 },
                                 style: TextButton.styleFrom(
                                   foregroundColor: ShiftIQColors.primaryBlue,
@@ -272,7 +367,25 @@ class TaskDetailSheet extends StatelessWidget {
                                   height: 1,
                                   color: ShiftIQColors.borderSlate,
                                 ),
-                              _ProductLineTile(product: task.products[i]),
+                              _ProductLineTile(
+                                product: task.products[i],
+                                isBusy:
+                                    _busyProductId == task.products[i].productId,
+                                canEdit: !task.isCompleted &&
+                                    widget.onUpdateProductQuantity != null,
+                                onDecrement: () => _handleQuantityChange(
+                                  task.products[i],
+                                  task.products[i].quantity - 1,
+                                ),
+                                onIncrement: () => _handleQuantityChange(
+                                  task.products[i],
+                                  task.products[i].quantity + 1,
+                                ),
+                                onRemove: widget.onRemoveProduct != null
+                                    ? () =>
+                                        _handleRemoveProduct(task.products[i])
+                                    : null,
+                              ),
                             ],
                           ],
                         ),
@@ -351,7 +464,7 @@ class TaskDetailSheet extends StatelessWidget {
               ),
             ),
             if (!task.isCompleted &&
-                (onStartTask != null || onCompleteTask != null))
+                (widget.onStartTask != null || widget.onCompleteTask != null))
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                 child: SizedBox(
@@ -359,10 +472,11 @@ class TaskDetailSheet extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: () {
                       Navigator.of(context).pop();
-                      if (task.isPending && onStartTask != null) {
-                        onStartTask!();
-                      } else if (task.isInProgress && onCompleteTask != null) {
-                        onCompleteTask!();
+                      if (task.isPending && widget.onStartTask != null) {
+                        widget.onStartTask!();
+                      } else if (task.isInProgress &&
+                          widget.onCompleteTask != null) {
+                        widget.onCompleteTask!();
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -440,52 +554,122 @@ class _MetaRow extends StatelessWidget {
 
 class _ProductLineTile extends StatelessWidget {
   final WorkOrderTaskProduct product;
+  final bool isBusy;
+  final bool canEdit;
+  final VoidCallback onDecrement;
+  final VoidCallback onIncrement;
+  final VoidCallback? onRemove;
 
-  const _ProductLineTile({required this.product});
+  const _ProductLineTile({
+    required this.product,
+    required this.isBusy,
+    required this.canEdit,
+    required this.onDecrement,
+    required this.onIncrement,
+    this.onRemove,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      child: Row(
+      child: Column(
         children: [
-          SparePartThumbnail(
-            imageUrl: product.imageUrl,
-            size: 38,
-            borderRadius: 10,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  product.productName,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: ShiftIQColors.graphiteText,
-                  ),
+          Row(
+            children: [
+              SparePartThumbnail(
+                imageUrl: product.imageUrl,
+                size: 38,
+                borderRadius: 10,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product.productName,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: ShiftIQColors.graphiteText,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${product.quantity} unid · ${product.formattedUnitPrice} c/u',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  '${product.quantity} unid · ${product.formattedUnitPrice} c/u',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF64748B),
+              ),
+              Text(
+                product.formattedTotal,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: ShiftIQColors.primaryBlue,
+                ),
+              ),
+            ],
+          ),
+          if (canEdit) ...[
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (onRemove != null)
+                  IconButton(
+                    tooltip: 'Quitar repuesto',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: isBusy ? null : onRemove,
+                    icon: const Icon(
+                      Icons.delete_outline_rounded,
+                      size: 18,
+                      color: ShiftIQColors.severityCrimson,
+                    ),
+                  ),
+                const SizedBox(width: 4),
+                Container(
+                  decoration: BoxDecoration(
+                    color: ShiftIQColors.warmNeutral,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: ShiftIQColors.borderSlate),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        visualDensity: VisualDensity.compact,
+                        onPressed:
+                            !isBusy && product.quantity > 1 ? onDecrement : null,
+                        icon: const Icon(Icons.remove_rounded, size: 16),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: Text(
+                          '${product.quantity}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: ShiftIQColors.graphiteText,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        visualDensity: VisualDensity.compact,
+                        onPressed: !isBusy ? onIncrement : null,
+                        icon: const Icon(Icons.add_rounded, size: 16),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-          Text(
-            product.formattedTotal,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: ShiftIQColors.primaryBlue,
-            ),
-          ),
+          ],
         ],
       ),
     );
