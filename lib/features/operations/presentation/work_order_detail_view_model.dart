@@ -374,6 +374,9 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
       final updatedTask = await manageWorkOrderTasks.updateTaskDetails(
         workOrderId: order.id,
         taskId: task.id,
+        serviceId: task.serviceId,
+        assignedMechanicId: task.assignedMechanicId,
+        description: task.description,
         evidenceImages: [...task.evidenceImages, url],
       );
       final updatedTasks = order.tasks
@@ -406,6 +409,9 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
       final updatedTask = await manageWorkOrderTasks.updateTaskDetails(
         workOrderId: order.id,
         taskId: task.id,
+        serviceId: task.serviceId,
+        assignedMechanicId: task.assignedMechanicId,
+        description: task.description,
         evidenceImages: nextImages,
       );
       final updatedTasks = order.tasks
