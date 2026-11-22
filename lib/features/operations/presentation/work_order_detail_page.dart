@@ -726,9 +726,13 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                           color: Color(0xFF64748B),
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          'Mecánico: ${task.assignedMechanicName}',
-                          style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                        Expanded(
+                          child: Text(
+                            'Mecánico: ${task.assignedMechanicName}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                          ),
                         ),
                       ],
                     ),
@@ -871,10 +875,15 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '• ${p.productName} (${p.quantity} unid)',
-                      style: const TextStyle(fontSize: 12),
+                    Expanded(
+                      child: Text(
+                        '• ${p.productName} (${p.quantity} unid)',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 12),
+                      ),
                     ),
+                    const SizedBox(width: 8),
                     Text(
                       p.formattedTotal,
                       style: TextStyle(
