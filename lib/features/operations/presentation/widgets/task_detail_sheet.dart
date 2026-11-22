@@ -172,33 +172,89 @@ class TaskDetailSheet extends StatelessWidget {
                             color: ShiftIQColors.graphiteText,
                           ),
                         ),
-                        if (onAddProduct != null && !task.isCompleted)
+                        if (onAddProduct != null &&
+                            !task.isCompleted &&
+                            task.products.isNotEmpty)
                           TextButton.icon(
                             onPressed: () {
                               Navigator.of(context).pop();
                               onAddProduct!();
                             },
-                            icon: const Icon(Icons.add_rounded, size: 18),
-                            label: Text(loc.translate('add_part_btn')),
+                            style: TextButton.styleFrom(
+                              foregroundColor: ShiftIQColors.primaryBlue,
+                              backgroundColor:
+                                  ShiftIQColors.primaryBlue.withAlpha(18),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            icon: const Icon(Icons.add_rounded, size: 16),
+                            label: const Text(
+                              'Agregar',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
                       ],
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
                     if (task.products.isEmpty)
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(14),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(14),
                           border: Border.all(color: ShiftIQColors.borderSlate),
                         ),
-                        child: const Text(
-                          'No hay repuestos asignados a esta tarea.',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Color(0xFF64748B),
-                          ),
+                        child: Column(
+                          children: [
+                            const Text(
+                              'No hay repuestos asignados a esta tarea.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                            if (onAddProduct != null && !task.isCompleted) ...[
+                              const SizedBox(height: 12),
+                              TextButton.icon(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  onAddProduct!();
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: ShiftIQColors.primaryBlue,
+                                  backgroundColor:
+                                      ShiftIQColors.primaryBlue.withAlpha(18),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 8,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.add_rounded, size: 17),
+                                label: const Text(
+                                  'Agregar repuesto',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       )
                     else
