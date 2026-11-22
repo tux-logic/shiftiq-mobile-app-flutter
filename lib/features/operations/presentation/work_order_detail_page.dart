@@ -770,11 +770,9 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
     return WorkOrderTaskCard(
       task: task,
       canExecute: canExecute,
-      orderCompleted: vm.order?.isCompleted ?? false,
       onTap: () => _showTaskDetailSheet(context, task, vm),
       onStart: () => vm.startTask(task.id),
       onComplete: () => vm.completeTask(task.id),
-      onAddProduct: () => _showAddProductSheet(context, task),
     );
   }
 }

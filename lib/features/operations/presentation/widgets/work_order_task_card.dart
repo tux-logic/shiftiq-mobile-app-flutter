@@ -10,21 +10,17 @@ import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/widg
 class WorkOrderTaskCard extends StatelessWidget {
   final WorkOrderTask task;
   final bool canExecute;
-  final bool orderCompleted;
   final VoidCallback onTap;
   final VoidCallback onStart;
   final VoidCallback onComplete;
-  final VoidCallback onAddProduct;
 
   const WorkOrderTaskCard({
     super.key,
     required this.task,
     required this.canExecute,
-    required this.orderCompleted,
     required this.onTap,
     required this.onStart,
     required this.onComplete,
-    required this.onAddProduct,
   });
 
   @override
@@ -256,74 +252,44 @@ class WorkOrderTaskCard extends StatelessWidget {
                   ),
                 ] else if (!task.isCompleted && canExecute) ...[
                   const SizedBox(height: 12),
-                  Wrap(
-                    alignment: WrapAlignment.end,
-                    spacing: 8,
-                    runSpacing: 6,
-                    children: [
-                      if (task.isPending)
-                        OutlinedButton.icon(
-                          onPressed: onStart,
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: ShiftIQColors.primaryBlue,
-                            side: const BorderSide(
-                              color: ShiftIQColors.primaryBlue,
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: task.isPending
+                        ? OutlinedButton.icon(
+                            onPressed: onStart,
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: ShiftIQColors.primaryBlue,
+                              side: const BorderSide(
+                                color: ShiftIQColors.primaryBlue,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 8,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
+                            icon: const Icon(
+                              Icons.play_arrow_rounded,
+                              size: 16,
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                            label: Text(
+                              loc.translate('start'),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
+                          )
+                        : ShiftIQLiquidButton(
+                            onPressed: onComplete,
+                            icon: Icons.check_rounded,
+                            label: loc.translate('complete'),
+                            height: 36,
+                            borderRadius: 10,
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
                           ),
-                          icon: const Icon(Icons.play_arrow_rounded, size: 16),
-                          label: Text(
-                            loc.translate('start'),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      if (task.isInProgress)
-                        ShiftIQLiquidButton(
-                          onPressed: onComplete,
-                          icon: Icons.check_rounded,
-                          label: loc.translate('complete'),
-                          height: 36,
-                          borderRadius: 10,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                        ),
-                      if (!orderCompleted)
-                        OutlinedButton.icon(
-                          onPressed: onAddProduct,
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: ShiftIQColors.graphiteText,
-                            side: const BorderSide(
-                              color: ShiftIQColors.borderSlate,
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          icon: const Icon(
-                            Icons.inventory_2_outlined,
-                            size: 16,
-                          ),
-                          label: Text(
-                            loc.translate('add_part_btn'),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                    ],
                   ),
                 ],
               ],
