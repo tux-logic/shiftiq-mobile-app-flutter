@@ -5,6 +5,7 @@ import 'package:shiftiq_mobile_app_flutter/features/inventory/application/usecas
 import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/models/product.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/application/operations_application.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
+import 'package:shiftiq_mobile_app_flutter/features/shared/infrastructure/remote/shared_api.dart';
 
 /// ViewModel managing state for work order inspection, task progression, and product allocation.
 class WorkOrderDetailViewModel extends ChangeNotifier {
@@ -14,6 +15,7 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
   final ManageProducts? manageProducts;
   final CoreRepository? coreRepository;
   final EmployeeRegistrationApi? employeeRegistrationApi;
+  final SharedApi? sharedApi;
 
   WorkOrderDetailViewModel({
     required this.manageWorkOrders,
@@ -22,6 +24,7 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
     this.manageProducts,
     this.coreRepository,
     this.employeeRegistrationApi,
+    this.sharedApi,
   });
 
   bool _isLoading = false;
@@ -340,6 +343,84 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
       _error = 'Error removing replacement part: ${e.toString()}';
       notifyListeners();
       return false;
+    }
+  }
+
+  /// Uploads an evidence photo to Cloudinary (`/api/v1/media/upload`) and
+  /// appends its URL to the task's `evidenceImages`.
+  Future<WorkOrderTask?> uploadAndAttachEvidence({
+    required WorkOrderTask task,
+    required List<int> fileBytes,
+    required String fileName,
+  }) async {
+    final order = _order;
+    final api = sharedApi;
+    if (order == null || api == null) {
+      _error = 'Media upload service is not configured.';
+      notifyListeners();
+      return null;
+    }
+    _error = null;
+    try {
+      final response = await api.uploadMedia(
+        fileBytes: fileBytes,
+        fileName: fileName,
+        folder: 'tasks',
+      );
+      if (response is! Map<String, dynamic> || response['url'] is! String) {
+        throw Exception('Invalid media upload response.');
+      }
+      final url = (response['url'] as String).trim();
+      final updatedTask = await manageWorkOrderTasks.updateTaskDetails(
+        workOrderId: order.id,
+        taskId: task.id,
+        evidenceImages: [...task.evidenceImages, url],
+      );
+      final updatedTasks = order.tasks
+          .map((t) => t.id == task.id ? updatedTask : t)
+          .toList();
+      _order = await _hydrateOrderDetails(order.copyWith(tasks: updatedTasks));
+      notifyListeners();
+      return _order?.tasks.firstWhere(
+        (t) => t.id == task.id,
+        orElse: () => updatedTask,
+      );
+    } catch (e) {
+      _error = 'Error uploading evidence image: ${e.toString()}';
+      notifyListeners();
+      return null;
+    }
+  }
+
+  /// Removes an evidence image URL from the given [task].
+  Future<WorkOrderTask?> removeEvidenceImage({
+    required WorkOrderTask task,
+    required String imageUrl,
+  }) async {
+    final order = _order;
+    if (order == null) return null;
+    _error = null;
+    try {
+      final nextImages =
+          task.evidenceImages.where((url) => url != imageUrl).toList();
+      final updatedTask = await manageWorkOrderTasks.updateTaskDetails(
+        workOrderId: order.id,
+        taskId: task.id,
+        evidenceImages: nextImages,
+      );
+      final updatedTasks = order.tasks
+          .map((t) => t.id == task.id ? updatedTask : t)
+          .toList();
+      _order = await _hydrateOrderDetails(order.copyWith(tasks: updatedTasks));
+      notifyListeners();
+      return _order?.tasks.firstWhere(
+        (t) => t.id == task.id,
+        orElse: () => updatedTask,
+      );
+    } catch (e) {
+      _error = 'Error removing evidence image: ${e.toString()}';
+      notifyListeners();
+      return null;
     }
   }
 

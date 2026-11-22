@@ -382,6 +382,7 @@ void setupDependencies() {
       manageProducts: getIt<ManageProducts>(),
       coreRepository: getIt<CoreRepository>(),
       employeeRegistrationApi: getIt<EmployeeRegistrationApi>(),
+      sharedApi: getIt<SharedApi>(),
     ),
   );
 
