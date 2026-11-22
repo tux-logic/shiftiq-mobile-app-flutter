@@ -25,8 +25,13 @@ import 'package:shiftiq_mobile_app_flutter/features/main/presentation/main_page.
 /// animated map pins and a list/map toggle.
 class BranchSelectionPage extends StatefulWidget {
   final BranchSelectionViewModel? viewModel;
+  final WidgetBuilder? mainPageBuilder;
 
-  const BranchSelectionPage({super.key, this.viewModel});
+  const BranchSelectionPage({
+    super.key,
+    this.viewModel,
+    this.mainPageBuilder,
+  });
 
   @override
   State<BranchSelectionPage> createState() => _BranchSelectionPageState();
@@ -35,14 +40,23 @@ class BranchSelectionPage extends StatefulWidget {
 class _BranchSelectionPageState extends State<BranchSelectionPage> {
   late final BranchSelectionViewModel _viewModel;
   bool _showMap = true;
+  bool _isAutoEntering = false;
 
   @override
   void initState() {
     super.initState();
     _viewModel = widget.viewModel ?? getIt<BranchSelectionViewModel>();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _viewModel.loadBranches();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _initBranches());
+  }
+
+  Future<void> _initBranches() async {
+    await _viewModel.loadBranches();
+    if (!mounted) return;
+    if (_roleScope == MobileRoleScope.employee &&
+        _viewModel.branches.length == 1) {
+      setState(() => _isAutoEntering = true);
+      await _onBranchSelected(_viewModel.branches.first);
+    }
   }
 
   MobileRoleScope get _roleScope {
@@ -56,7 +70,9 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
     final success = await _viewModel.selectBranch(branch);
     if (success && mounted) {
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const MainPage()),
+        MaterialPageRoute(
+          builder: widget.mainPageBuilder ?? (_) => const MainPage(),
+        ),
         (route) => false,
       );
     }
@@ -361,7 +377,7 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
     BranchSelectionViewModel vm,
     AppLocalizations loc,
   ) {
-    if (vm.isLoading && vm.branches.isEmpty) {
+    if (_isAutoEntering || (vm.isLoading && vm.branches.isEmpty)) {
       return _buildBranchSkeletonList();
     }
 
