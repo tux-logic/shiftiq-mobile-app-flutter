@@ -11,6 +11,7 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_toast.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/widgets/spare_part_picker_sheet.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/widgets/task_detail_sheet.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_order_detail_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/checkout_voucher_page.dart';
@@ -615,18 +616,46 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
     );
   }
 
+  void _showTaskDetailSheet(
+    BuildContext context,
+    WorkOrderTask task,
+    WorkOrderDetailViewModel vm,
+  ) {
+    final orderCompleted = vm.order?.isCompleted ?? false;
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => TaskDetailSheet(
+        task: task,
+        onAddProduct: !task.isCompleted && !orderCompleted
+            ? () => _showAddProductSheet(context, task)
+            : null,
+        onStartTask: task.isPending ? () => vm.startTask(task.id) : null,
+        onCompleteTask:
+            task.isInProgress ? () => vm.completeTask(task.id) : null,
+      ),
+    );
+  }
+
   Widget _buildTaskItem(
     BuildContext context,
     WorkOrderTask task,
     WorkOrderDetailViewModel vm,
   ) {
     final loc = AppLocalizations.of(context);
-    return Container(
+    return InkWell(
+      onTap: () => _showTaskDetailSheet(context, task, vm),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: task.isCompleted
               ? ShiftIQColors.preventiveGreen.withAlpha(80)
@@ -828,6 +857,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
           ],
         ],
       ),
+    ),
     );
   }
 }
