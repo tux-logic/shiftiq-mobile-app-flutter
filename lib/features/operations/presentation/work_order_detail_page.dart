@@ -622,6 +622,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
     WorkOrderDetailViewModel vm,
   ) {
     final orderCompleted = vm.order?.isCompleted ?? false;
+    final canExecute = _isOwnerAdmin || vm.canExecuteTask(task);
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -631,12 +632,14 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
       ),
       builder: (_) => TaskDetailSheet(
         task: task,
-        onAddProduct: !task.isCompleted && !orderCompleted
+        onAddProduct: canExecute && !task.isCompleted && !orderCompleted
             ? () => _showAddProductSheet(context, task)
             : null,
-        onStartTask: task.isPending ? () => vm.startTask(task.id) : null,
-        onCompleteTask:
-            task.isInProgress ? () => vm.completeTask(task.id) : null,
+        onStartTask:
+            canExecute && task.isPending ? () => vm.startTask(task.id) : null,
+        onCompleteTask: canExecute && task.isInProgress
+            ? () => vm.completeTask(task.id)
+            : null,
       ),
     );
   }
@@ -647,6 +650,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
     WorkOrderDetailViewModel vm,
   ) {
     final loc = AppLocalizations.of(context);
+    final canExecute = _isOwnerAdmin || vm.canExecuteTask(task);
     return InkWell(
       onTap: () => _showTaskDetailSheet(context, task, vm),
       borderRadius: BorderRadius.circular(12),
@@ -677,18 +681,24 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                 )
               else if (task.isInProgress)
                 IconButton(
-                  tooltip: AppLocalizations.of(context).translate('tooltip_complete_task'),
+                  tooltip: canExecute
+                      ? AppLocalizations.of(context)
+                          .translate('tooltip_complete_task')
+                      : null,
                   icon: const Icon(
                     Icons.radio_button_unchecked,
                     color: ShiftIQColors.secondaryTeal,
                   ),
-                  onPressed: () => vm.completeTask(task.id),
+                  onPressed: canExecute ? () => vm.completeTask(task.id) : null,
                 )
               else
                 IconButton(
-                  tooltip: AppLocalizations.of(context).translate('tooltip_start_task'),
+                  tooltip: canExecute
+                      ? AppLocalizations.of(context)
+                          .translate('tooltip_start_task')
+                      : null,
                   icon: const Icon(Icons.play_circle_outline, color: Colors.grey),
-                  onPressed: () => vm.startTask(task.id),
+                  onPressed: canExecute ? () => vm.startTask(task.id) : null,
                 ),
               const SizedBox(width: 8),
 
@@ -739,7 +749,30 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
           ),
 
           // Action Buttons for this task
-          if (!task.isCompleted) ...[
+          if (!task.isCompleted && !canExecute) ...[
+            const SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  'Asignada a otro técnico',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF64748B),
+                  ),
+                ),
+              ),
+            ),
+          ] else if (!task.isCompleted && canExecute) ...[
             const SizedBox(height: 10),
             Wrap(
               alignment: WrapAlignment.end,
