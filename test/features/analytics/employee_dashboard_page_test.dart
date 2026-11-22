@@ -59,9 +59,11 @@ void main() {
       const summary = EmployeeAnalyticsSummary(
         employeeId: 'emp-1',
         assignedWorkOrdersCount: 2,
-        pendingTasksCount: 3,
+        pendingTasksCount: 2,
+        inProgressTasksCount: 1,
         completedTasksCount: 5,
         activeDtcAlertsCount: 1,
+        avgCompletionMinutes: 35,
         assignedWorkOrders: [
           EmployeeAssignedWorkOrderSummary(
             workOrderId: 'wo-1',
@@ -86,14 +88,15 @@ void main() {
       await tester.pump(const Duration(milliseconds: 600));
 
       expect(find.byType(DtcAlertBanner), findsOneWidget);
-      expect(find.byType(EmployeeRadarOverviewChart), findsOneWidget);
-      expect(find.text('OTs Activas'), findsOneWidget);
+      expect(find.byType(EmployeeTaskRingChart), findsOneWidget);
+      expect(find.text('En progreso'), findsOneWidget);
       await tester.scrollUntilVisible(
-        find.byType(EmployeeTaskRingChart),
+        find.byType(EmployeeWeeklyActivityChart),
         200,
         scrollable: find.byType(Scrollable).first,
       );
-      expect(find.byType(EmployeeTaskRingChart), findsOneWidget);
+      expect(find.byType(EmployeeWeeklyActivityChart), findsOneWidget);
+      expect(find.text('35 min/tarea'), findsOneWidget);
       await tester.scrollUntilVisible(
         find.byType(EmployeeQueueWorkloadChart),
         200,

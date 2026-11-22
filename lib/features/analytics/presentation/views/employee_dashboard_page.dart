@@ -99,19 +99,19 @@ class _EmployeeDashboardPageState extends State<EmployeeDashboardPage> {
                                 ),
                                 const SizedBox(height: 16),
                               ],
-                              EmployeeRadarOverviewChart(
-                                assignedOrders:
-                                    summary?.assignedWorkOrdersCount ?? 0,
-                                pendingTasks: summary?.pendingTasksCount ?? 0,
-                                completedTasks:
-                                    summary?.completedTasksCount ?? 0,
-                                dtcAlerts: summary?.activeDtcAlertsCount ?? 0,
-                              ),
-                              const SizedBox(height: 16),
                               EmployeeTaskRingChart(
                                 completedTasks:
                                     summary?.completedTasksCount ?? 0,
+                                inProgressTasks:
+                                    summary?.inProgressTasksCount ?? 0,
                                 pendingTasks: summary?.pendingTasksCount ?? 0,
+                              ),
+                              const SizedBox(height: 16),
+                              EmployeeWeeklyActivityChart(
+                                dailyCompletions:
+                                    summary?.weeklyCompletedTasks ?? const [],
+                                avgCompletionMinutes:
+                                    summary?.avgCompletionMinutes,
                               ),
                               if (summary != null &&
                                   summary.assignedWorkOrders.isNotEmpty) ...[

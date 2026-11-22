@@ -3,35 +3,43 @@ import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/analytics_domain.dart';
 
-/// Animated 4-axis radar (spider) chart summarizing the employee's operational
-/// profile: assigned work orders, pending tasks, completed tasks, and DTC alerts.
-class EmployeeRadarOverviewChart extends StatelessWidget {
-  final int assignedOrders;
-  final int pendingTasks;
-  final int completedTasks;
-  final int dtcAlerts;
+/// Animated 7-day pill-bar chart showing completed tasks per day
+/// (`task.completedAt`) plus average execution duration (`completedAt - startedAt`).
+class EmployeeWeeklyActivityChart extends StatelessWidget {
+  final List<EmployeeDailyCompletion> dailyCompletions;
+  final double? avgCompletionMinutes;
 
-  const EmployeeRadarOverviewChart({
+  const EmployeeWeeklyActivityChart({
     super.key,
-    required this.assignedOrders,
-    required this.pendingTasks,
-    required this.completedTasks,
-    required this.dtcAlerts,
+    required this.dailyCompletions,
+    this.avgCompletionMinutes,
   });
+
+  static const _weekdayLabels = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+
+  String _formatDuration(double minutes) {
+    final rounded = minutes.round();
+    if (rounded < 60) return '$rounded min/tarea';
+    final hours = rounded ~/ 60;
+    final rem = rounded % 60;
+    return rem == 0 ? '${hours}h/tarea' : '${hours}h ${rem}m';
+  }
 
   @override
   Widget build(BuildContext context) {
-    final values = [
-      assignedOrders.toDouble(),
-      pendingTasks.toDouble(),
-      completedTasks.toDouble(),
-      dtcAlerts.toDouble(),
-    ];
-    final maxVal = math.max(
-      1.0,
-      values.reduce((a, b) => math.max(a, b)),
-    );
-    final normalized = values.map((v) => (v / maxVal).clamp(0.0, 1.0)).toList();
+    final days = dailyCompletions.isNotEmpty
+        ? dailyCompletions
+        : List.generate(7, (i) {
+            final now = DateTime.now();
+            final today = DateTime(now.year, now.month, now.day);
+            return EmployeeDailyCompletion(
+              date: today.subtract(Duration(days: 6 - i)),
+              count: 0,
+            );
+          });
+
+    final totalWeek = days.fold<int>(0, (sum, d) => sum + d.count);
+    final maxCount = days.fold<int>(1, (m, d) => math.max(m, d.count));
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -50,79 +58,82 @@ class EmployeeRadarOverviewChart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Balance Operativo',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
-              color: ShiftIQColors.graphiteText,
-            ),
-          ),
-          const SizedBox(height: 2),
-          const Text(
-            'Distribución en tiempo real de tu cola',
-            style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-          ),
-          const SizedBox(height: 14),
-          TweenAnimationBuilder<double>(
-            tween: Tween<double>(begin: 0, end: 1),
-            duration: const Duration(milliseconds: 700),
-            curve: Curves.easeOutCubic,
-            builder: (context, progress, _) {
-              final animatedValues =
-                  normalized.map((v) => v * progress).toList();
-              return SizedBox(
-                height: 220,
-                width: double.infinity,
-                child: Stack(
-                  alignment: Alignment.center,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 42,
-                        vertical: 28,
-                      ),
-                      child: CustomPaint(
-                        size: const Size(164, 164),
-                        painter: _RadarChartPainter(values: animatedValues),
+                    const Text(
+                      'Productividad Semanal',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: ShiftIQColors.graphiteText,
                       ),
                     ),
-                    Positioned(
-                      top: 0,
-                      child: _RadarAxisTag(
-                        label: 'OTs Activas',
-                        value: assignedOrders,
-                        color: ShiftIQColors.primaryBlue,
-                      ),
-                    ),
-                    Positioned(
-                      right: 0,
-                      child: _RadarAxisTag(
-                        label: 'Pendientes',
-                        value: pendingTasks,
-                        color: ShiftIQColors.severityAmber,
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      child: _RadarAxisTag(
-                        label: 'Completadas',
-                        value: completedTasks,
-                        color: ShiftIQColors.preventiveGreen,
-                      ),
-                    ),
-                    Positioned(
-                      left: 0,
-                      child: _RadarAxisTag(
-                        label: 'Alertas DTC',
-                        value: dtcAlerts,
-                        color: ShiftIQColors.severityCrimson,
+                    const SizedBox(height: 2),
+                    Text(
+                      '$totalWeek ${totalWeek == 1 ? 'tarea completada' : 'tareas completadas'} en 7 días',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF64748B),
                       ),
                     ),
                   ],
                 ),
-              );
-            },
+              ),
+              if (avgCompletionMinutes != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: ShiftIQColors.primaryBlue.withAlpha(16),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.timer_outlined,
+                        size: 13,
+                        color: ShiftIQColors.primaryBlue,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _formatDuration(avgCompletionMinutes!),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: ShiftIQColors.primaryBlue,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          SizedBox(
+            height: 118,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                for (int i = 0; i < days.length; i++) ...[
+                  Expanded(
+                    child: _DayPillBar(
+                      label: _weekdayLabels[(days[i].date.weekday - 1) % 7],
+                      count: days[i].count,
+                      fraction: (days[i].count / maxCount).clamp(0.0, 1.0),
+                      isToday: i == days.length - 1,
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
         ],
       ),
@@ -130,173 +141,94 @@ class EmployeeRadarOverviewChart extends StatelessWidget {
   }
 }
 
-class _RadarAxisTag extends StatelessWidget {
+class _DayPillBar extends StatelessWidget {
   final String label;
-  final int value;
-  final Color color;
+  final int count;
+  final double fraction;
+  final bool isToday;
 
-  const _RadarAxisTag({
+  const _DayPillBar({
     required this.label,
-    required this.value,
-    required this.color,
+    required this.count,
+    required this.fraction,
+    required this.isToday,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withAlpha(18),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withAlpha(60)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: color,
-            ),
+    final targetHeight = count == 0 ? 6.0 : 14.0 + (58.0 * fraction);
+    final barColor = count == 0
+        ? const Color(0xFFE2E8F0)
+        : isToday
+            ? ShiftIQColors.primaryBlue
+            : ShiftIQColors.preventiveGreen;
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Text(
+          count > 0 ? '$count' : '',
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: isToday
+                ? ShiftIQColors.primaryBlue
+                : ShiftIQColors.graphiteText,
           ),
-          const SizedBox(width: 4),
-          Text(
-            '$value',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: color,
-            ),
+        ),
+        const SizedBox(height: 4),
+        TweenAnimationBuilder<double>(
+          tween: Tween<double>(begin: 6.0, end: targetHeight),
+          duration: const Duration(milliseconds: 550),
+          curve: Curves.easeOutCubic,
+          builder: (context, height, _) {
+            return Container(
+              width: 18,
+              height: height,
+              decoration: BoxDecoration(
+                color: barColor,
+                borderRadius: BorderRadius.circular(999),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isToday ? FontWeight.w800 : FontWeight.w600,
+            color: isToday
+                ? ShiftIQColors.primaryBlue
+                : const Color(0xFF64748B),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
-class _RadarChartPainter extends CustomPainter {
-  final List<double> values;
-
-  const _RadarChartPainter({required this.values});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = math.min(size.width, size.height) / 2;
-    const angles = [
-      -math.pi / 2,
-      0.0,
-      math.pi / 2,
-      math.pi,
-    ];
-
-    final gridPaint = Paint()
-      ..color = const Color(0xFFE2E8F0)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-
-    for (final level in [0.25, 0.5, 0.75, 1.0]) {
-      final path = Path();
-      for (int i = 0; i < angles.length; i++) {
-        final r = radius * level;
-        final pt = Offset(
-          center.dx + r * math.cos(angles[i]),
-          center.dy + r * math.sin(angles[i]),
-        );
-        if (i == 0) {
-          path.moveTo(pt.dx, pt.dy);
-        } else {
-          path.lineTo(pt.dx, pt.dy);
-        }
-      }
-      path.close();
-      canvas.drawPath(path, gridPaint);
-    }
-
-    for (final angle in angles) {
-      canvas.drawLine(
-        center,
-        Offset(
-          center.dx + radius * math.cos(angle),
-          center.dy + radius * math.sin(angle),
-        ),
-        gridPaint,
-      );
-    }
-
-    final dataPoints = <Offset>[];
-    final dataPath = Path();
-    for (int i = 0; i < angles.length; i++) {
-      final val = i < values.length ? values[i] : 0.0;
-      final r = radius * (val == 0 ? 0.08 : val);
-      final pt = Offset(
-        center.dx + r * math.cos(angles[i]),
-        center.dy + r * math.sin(angles[i]),
-      );
-      dataPoints.add(pt);
-      if (i == 0) {
-        dataPath.moveTo(pt.dx, pt.dy);
-      } else {
-        dataPath.lineTo(pt.dx, pt.dy);
-      }
-    }
-    dataPath.close();
-
-    final fillPaint = Paint()
-      ..color = ShiftIQColors.primaryBlue.withValues(alpha: 0.18)
-      ..style = PaintingStyle.fill;
-    final strokePaint = Paint()
-      ..color = ShiftIQColors.primaryBlue
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2
-      ..strokeJoin = StrokeJoin.round;
-
-    canvas.drawPath(dataPath, fillPaint);
-    canvas.drawPath(dataPath, strokePaint);
-
-    final dotColors = [
-      ShiftIQColors.primaryBlue,
-      ShiftIQColors.severityAmber,
-      ShiftIQColors.preventiveGreen,
-      ShiftIQColors.severityCrimson,
-    ];
-    for (int i = 0; i < dataPoints.length; i++) {
-      canvas.drawCircle(
-        dataPoints[i],
-        4.2,
-        Paint()..color = dotColors[i],
-      );
-      canvas.drawCircle(
-        dataPoints[i],
-        2.0,
-        Paint()..color = Colors.white,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _RadarChartPainter oldDelegate) => true;
-}
-
-/// Animated radial donut chart displaying the employee's task completion ratio
-/// (`completedTasksCount` vs `pendingTasksCount`) matching ShiftIQ's chart card style.
+/// Animated 3-segment radial donut chart displaying the employee's real
+/// task status breakdown in bay: Completed, In Progress (`DOING`), and Pending.
 class EmployeeTaskRingChart extends StatelessWidget {
   final int completedTasks;
+  final int inProgressTasks;
   final int pendingTasks;
 
   const EmployeeTaskRingChart({
     super.key,
     required this.completedTasks,
+    this.inProgressTasks = 0,
     required this.pendingTasks,
   });
 
   @override
   Widget build(BuildContext context) {
-    final total = completedTasks + pendingTasks;
-    final ratio = total == 0 ? 0.0 : (completedTasks / total).clamp(0.0, 1.0);
-    final percent = (ratio * 100).round();
+    final total = completedTasks + inProgressTasks + pendingTasks;
+    final completedRatio = total == 0 ? 0.0 : completedTasks / total;
+    final inProgressRatio = total == 0 ? 0.0 : inProgressTasks / total;
+    final pendingRatio = total == 0 ? 0.0 : pendingTasks / total;
+    final percent = (completedRatio * 100).round();
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -316,7 +248,7 @@ class EmployeeTaskRingChart extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Rendimiento de Tareas',
+            'Estado en Bahía',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w800,
@@ -327,23 +259,25 @@ class EmployeeTaskRingChart extends StatelessWidget {
           Text(
             total == 0
                 ? 'Sin tareas registradas aún'
-                : '$total ${total == 1 ? 'tarea asignada' : 'tareas en total'}',
+                : '$total ${total == 1 ? 'tarea asignada' : 'tareas en tu cola'}',
             style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
           ),
           const SizedBox(height: 16),
           Row(
             children: [
               TweenAnimationBuilder<double>(
-                tween: Tween<double>(begin: 0, end: ratio),
+                tween: Tween<double>(begin: 0, end: 1),
                 duration: const Duration(milliseconds: 700),
                 curve: Curves.easeOutCubic,
-                builder: (context, animatedRatio, _) {
+                builder: (context, progress, _) {
                   return SizedBox(
                     width: 112,
                     height: 112,
                     child: CustomPaint(
                       painter: _TaskRingPainter(
-                        ratio: animatedRatio,
+                        completedRatio: completedRatio * progress,
+                        inProgressRatio: inProgressRatio * progress,
+                        pendingRatio: pendingRatio * progress,
                         hasData: total > 0,
                       ),
                       child: Center(
@@ -383,17 +317,17 @@ class EmployeeTaskRingChart extends StatelessWidget {
                       label: 'Completadas',
                       count: completedTasks,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
+                    _LegendRow(
+                      color: ShiftIQColors.secondaryTeal,
+                      label: 'En progreso',
+                      count: inProgressTasks,
+                    ),
+                    const SizedBox(height: 10),
                     _LegendRow(
                       color: ShiftIQColors.severityAmber,
                       label: 'Pendientes',
                       count: pendingTasks,
-                    ),
-                    const SizedBox(height: 12),
-                    _LegendRow(
-                      color: ShiftIQColors.primaryBlue,
-                      label: 'Total',
-                      count: total,
                     ),
                   ],
                 ),
@@ -407,10 +341,17 @@ class EmployeeTaskRingChart extends StatelessWidget {
 }
 
 class _TaskRingPainter extends CustomPainter {
-  final double ratio;
+  final double completedRatio;
+  final double inProgressRatio;
+  final double pendingRatio;
   final bool hasData;
 
-  const _TaskRingPainter({required this.ratio, required this.hasData});
+  const _TaskRingPainter({
+    required this.completedRatio,
+    required this.inProgressRatio,
+    required this.pendingRatio,
+    required this.hasData,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -420,35 +361,40 @@ class _TaskRingPainter extends CustomPainter {
     final rect = Rect.fromCircle(center: center, radius: radius);
 
     final trackPaint = Paint()
-      ..color = hasData
-          ? ShiftIQColors.severityAmber.withValues(alpha: 0.28)
-          : const Color(0xFFE2E8F0)
+      ..color = const Color(0xFFE2E8F0)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
+      ..strokeWidth = strokeWidth;
 
     canvas.drawArc(rect, 0, math.pi * 2, false, trackPaint);
 
-    if (!hasData || ratio <= 0) return;
+    if (!hasData) return;
 
-    final progressPaint = Paint()
-      ..color = ShiftIQColors.preventiveGreen
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
+    var startAngle = -math.pi / 2;
+    final segments = [
+      (completedRatio, ShiftIQColors.preventiveGreen),
+      (inProgressRatio, ShiftIQColors.secondaryTeal),
+      (pendingRatio, ShiftIQColors.severityAmber),
+    ];
 
-    canvas.drawArc(
-      rect,
-      -math.pi / 2,
-      math.pi * 2 * ratio,
-      false,
-      progressPaint,
-    );
+    for (final (ratio, color) in segments) {
+      if (ratio <= 0) continue;
+      final sweep = math.pi * 2 * ratio;
+      final paint = Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.butt;
+      canvas.drawArc(rect, startAngle, sweep, false, paint);
+      startAngle += sweep;
+    }
   }
 
   @override
   bool shouldRepaint(covariant _TaskRingPainter oldDelegate) =>
-      oldDelegate.ratio != ratio || oldDelegate.hasData != hasData;
+      oldDelegate.completedRatio != completedRatio ||
+      oldDelegate.inProgressRatio != inProgressRatio ||
+      oldDelegate.pendingRatio != pendingRatio ||
+      oldDelegate.hasData != hasData;
 }
 
 class _LegendRow extends StatelessWidget {
