@@ -377,14 +377,15 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                         color: Color(0xFF64748B),
                       ),
                     ),
-                    TextButton.icon(
-                      onPressed: () => _showAddTaskDialog(context),
-                      icon: const Icon(Icons.add, size: 16),
-                      label: const Text(
-                        'Agregar Tarea',
-                        style: TextStyle(fontSize: 12),
+                    if (_isOwnerAdmin && !order.isCompleted)
+                      TextButton.icon(
+                        onPressed: () => _showAddTaskDialog(context),
+                        icon: const Icon(Icons.add, size: 16),
+                        label: const Text(
+                          'Agregar Tarea',
+                          style: TextStyle(fontSize: 12),
+                        ),
                       ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
