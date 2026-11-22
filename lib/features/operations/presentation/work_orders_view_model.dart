@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
+import 'package:shiftiq_mobile_app_flutter/core/auth/mobile_role_scope.dart';
 import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/infrastructure/remote/analytics_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/remote/employee_registration_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/application/operations_application.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
 
@@ -8,10 +11,14 @@ import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations
 class WorkOrdersViewModel extends ChangeNotifier {
   final ManageWorkOrders manageWorkOrders;
   final SessionStorage sessionStorage;
+  final AnalyticsApi? analyticsApi;
+  final EmployeeRegistrationApi? employeeRegistrationApi;
 
   WorkOrdersViewModel({
     required this.manageWorkOrders,
     required this.sessionStorage,
+    this.analyticsApi,
+    this.employeeRegistrationApi,
   });
 
   bool _isLoading = false;
@@ -54,15 +61,64 @@ class WorkOrdersViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _allOrders = await manageWorkOrders.getWorkOrders(
+      final branchOrders = await manageWorkOrders.getWorkOrders(
         branchId: _activeBranchId,
       );
+      _allOrders = await _scopeOrdersForRole(branchOrders);
       _applyFilter();
     } catch (e) {
       _error = 'Error loading work orders: ${e.toString()}';
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<List<WorkOrder>> _scopeOrdersForRole(List<WorkOrder> branchOrders) async {
+    if (analyticsApi == null) return branchOrders;
+
+    try {
+      final scope = RoleRouter.resolveScope(sessionStorage.roles);
+      if (scope != MobileRoleScope.employee) {
+        return branchOrders;
+      }
+
+      final summary = await analyticsApi!.getEmployeeSummary();
+      final employeeId = (summary['employeeId'] ?? '').toString().trim();
+      final employeeIds = <String>{if (employeeId.isNotEmpty) employeeId};
+
+      final regApi = employeeRegistrationApi;
+      if (regApi != null && employeeId.isNotEmpty) {
+        try {
+          final regs = await regApi.getEmployeeRegistrations(
+            employeeId: employeeId,
+          );
+          for (final reg in regs) {
+            final regId = (reg['id'] ?? '').toString().trim();
+            if (regId.isNotEmpty) employeeIds.add(regId);
+          }
+        } catch (_) {}
+      }
+
+      final assignedOrderIds = <String>{};
+      final rawAssigned = summary['assignedWorkOrders'];
+      if (rawAssigned is List) {
+        for (final item in rawAssigned) {
+          if (item is Map<String, dynamic>) {
+            final woId = (item['workOrderId'] ?? '').toString().trim();
+            if (woId.isNotEmpty) assignedOrderIds.add(woId);
+          }
+        }
+      }
+
+      return branchOrders.where((order) {
+        if (assignedOrderIds.contains(order.id)) return true;
+        return order.tasks.any(
+          (task) => employeeIds.contains(task.assignedMechanicId),
+        );
+      }).toList();
+    } catch (_) {
+      return branchOrders;
     }
   }
 

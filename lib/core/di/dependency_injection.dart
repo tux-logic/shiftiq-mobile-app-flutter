@@ -359,6 +359,8 @@ void setupDependencies() {
     () => WorkOrdersViewModel(
       manageWorkOrders: getIt<ManageWorkOrders>(),
       sessionStorage: getIt<SessionStorage>(),
+      analyticsApi: getIt<AnalyticsApi>(),
+      employeeRegistrationApi: getIt<EmployeeRegistrationApi>(),
     ),
   );
 
