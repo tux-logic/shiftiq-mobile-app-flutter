@@ -48,4 +48,27 @@ void main() {
     expect(order.vehicleModel, 'Vehículo General');
     expect(order.customerName, 'Cliente General');
   });
+
+  test('workOrderTaskProductFromJson maps productName when present and falls back otherwise', () {
+    final named = OperationsDto.workOrderTaskProductFromJson({
+      'id': 'tp-1',
+      'productId': 'prod-1',
+      'productName': 'Filtro de Aceite Bosch',
+      'branchId': 'branch-1',
+      'quantity': 2,
+      'unitPrice': 45.0,
+      'totalAmount': 90.0,
+    });
+    expect(named.productName, 'Filtro de Aceite Bosch');
+
+    final unnamed = OperationsDto.workOrderTaskProductFromJson({
+      'id': 'tp-2',
+      'productId': 'prod-2',
+      'branchId': 'branch-1',
+      'quantity': 1,
+      'unitPrice': 20.0,
+      'totalAmount': 20.0,
+    });
+    expect(unnamed.productName, 'Repuesto');
+  });
 }

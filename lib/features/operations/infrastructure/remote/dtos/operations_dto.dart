@@ -47,6 +47,7 @@ class OperationsDto {
         WorkOrderTaskProduct(
           id: id,
           productId: productId,
+          productName: _resolveProductName(json),
           branchId: branchId,
           quantity: qty.toInt(),
           unitPrice: unitPrice.toDouble(),
@@ -155,6 +156,12 @@ class OperationsDto {
           'Invalid WorkOrder JSON payload: missing required fields',
         ),
     };
+  }
+
+  static String _resolveProductName(Map<String, dynamic> json) {
+    final raw = (json['productName'] ?? json['name'])?.toString().trim();
+    if (raw != null && raw.isNotEmpty) return raw;
+    return 'Repuesto';
   }
 
   static String _resolveVehiclePlate(Map<String, dynamic> json) {

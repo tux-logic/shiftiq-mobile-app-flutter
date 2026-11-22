@@ -33,7 +33,8 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _order = await manageWorkOrders.getWorkOrderById(id);
+      final loaded = await manageWorkOrders.getWorkOrderById(id);
+      _order = await _hydrateTaskProductNames(loaded);
     } catch (e) {
       _error = 'Error loading work order detail: ${e.toString()}';
     } finally {
@@ -103,6 +104,35 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
     }
   }
 
+  /// Hydrates spare-part names from the branch inventory catalog whenever
+  /// the backend work-order payload omits `productName`.
+  Future<WorkOrder> _hydrateTaskProductNames(WorkOrder order) async {
+    final productsUseCase = manageProducts;
+    if (productsUseCase == null) return order;
+
+    final needsHydration = order.tasks.any(
+      (t) => t.products.any((p) => p.productName == 'Repuesto'),
+    );
+    if (!needsHydration) return order;
+
+    try {
+      final catalog = await productsUseCase.getProducts(branchId: order.branchId);
+      final nameById = {for (final p in catalog) p.id: p.name};
+      final updatedTasks = order.tasks.map((task) {
+        final updatedProducts = task.products.map((tp) {
+          if (tp.productName != 'Repuesto') return tp;
+          final resolved = nameById[tp.productId];
+          if (resolved == null || resolved.isEmpty) return tp;
+          return tp.copyWith(productName: resolved);
+        }).toList();
+        return task.copyWith(products: updatedProducts);
+      }).toList();
+      return order.copyWith(tasks: updatedTasks);
+    } catch (_) {
+      return order;
+    }
+  }
+
   /// Loads real inventory products available in the active work order's branch.
   Future<List<Product>> loadBranchProducts() async {
     final order = _order;
@@ -120,11 +150,12 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
   }) async {
     _error = null;
     try {
-      _order = await manageTaskProducts.addProductToTask(
+      final updated = await manageTaskProducts.addProductToTask(
         taskId: taskId,
         productId: productId,
         quantity: quantity,
       );
+      _order = await _hydrateTaskProductNames(updated);
       notifyListeners();
       return true;
     } catch (e) {
