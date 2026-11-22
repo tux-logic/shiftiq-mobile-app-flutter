@@ -299,6 +299,50 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateProductQuantity({
+    required String taskId,
+    required String productId,
+    required int quantity,
+  }) async {
+    _error = null;
+    try {
+      final updated = await manageTaskProducts.updateProductQuantity(
+        taskId: taskId,
+        productId: productId,
+        quantity: quantity,
+      );
+      _order = await _hydrateOrderDetails(updated);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = 'Error updating part quantity: ${e.toString()}';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> removeProductFromTask({
+    required String taskId,
+    required String productId,
+  }) async {
+    if (_order == null) return false;
+    _error = null;
+    try {
+      await manageTaskProducts.removeProductFromTask(
+        taskId: taskId,
+        productId: productId,
+      );
+      final reloaded = await manageWorkOrders.getWorkOrderById(_order!.id);
+      _order = await _hydrateOrderDetails(reloaded);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = 'Error removing replacement part: ${e.toString()}';
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> completeOrder() async {
     if (_order == null) return false;
 
