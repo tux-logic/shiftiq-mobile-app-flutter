@@ -698,7 +698,7 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: task.isInProgress
-                          ? ShiftIQColors.preventiveGreen
+                          ? ShiftIQColors.secondaryTeal
                           : ShiftIQColors.primaryBlue,
                       foregroundColor: Colors.white,
                       elevation: 0,

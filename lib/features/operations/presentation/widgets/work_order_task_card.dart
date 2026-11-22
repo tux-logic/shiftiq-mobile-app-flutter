@@ -289,7 +289,7 @@ class WorkOrderTaskCard extends StatelessWidget {
                         ElevatedButton.icon(
                           onPressed: onComplete,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: ShiftIQColors.preventiveGreen,
+                            backgroundColor: ShiftIQColors.secondaryTeal,
                             foregroundColor: Colors.white,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(
