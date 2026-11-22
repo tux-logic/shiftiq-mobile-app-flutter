@@ -130,8 +130,8 @@ class OperationsDto {
           appointmentId: appointmentId,
           branchId: branchId,
           vehicleId: vehicleId,
-          vehiclePlate: json['vehiclePlate']?.toString() ?? 'S/P',
-          vehicleModel: json['vehicleModel']?.toString() ?? 'Vehículo General',
+          vehiclePlate: _resolveVehiclePlate(json),
+          vehicleModel: _resolveVehicleDisplay(json),
           customerId: customerId,
           customerName: json['customerName']?.toString() ?? 'Cliente General',
           customerPhone: json['customerPhone']?.toString() ?? '',
@@ -155,6 +155,27 @@ class OperationsDto {
           'Invalid WorkOrder JSON payload: missing required fields',
         ),
     };
+  }
+
+  static String _resolveVehiclePlate(Map<String, dynamic> json) {
+    final raw = (json['vehiclePlateNumber'] ?? json['vehiclePlate'])
+        ?.toString()
+        .trim();
+    if (raw != null && raw.isNotEmpty) return raw;
+    return 'S/P';
+  }
+
+  static String _resolveVehicleDisplay(Map<String, dynamic> json) {
+    final brand = json['vehicleBrand']?.toString().trim() ?? '';
+    final model = json['vehicleModel']?.toString().trim() ?? '';
+    final year = json['vehicleYear']?.toString().trim() ?? '';
+
+    final base = [brand, model].where((part) => part.isNotEmpty).join(' ');
+    if (base.isEmpty) return 'Vehículo General';
+    if (year.isNotEmpty && !base.contains(year)) {
+      return '$base $year';
+    }
+    return base;
   }
 
   /// Deserializes a list of [WorkOrder] entities.
