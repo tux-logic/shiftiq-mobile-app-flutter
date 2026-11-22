@@ -31,7 +31,7 @@ void main() {
         assignedMechanicName: 'Aldo Machacca',
         status: TaskStatus.doing,
         description: 'Cambio de aceite y filtro',
-        price: 150.0,
+        price: 240.0,
         products: const [
           WorkOrderTaskProduct(
             id: 'tp-1',

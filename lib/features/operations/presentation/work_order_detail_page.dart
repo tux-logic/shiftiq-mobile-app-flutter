@@ -412,7 +412,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                             style: TextStyle(fontSize: 13, color: Colors.grey),
                           ),
                           Text(
-                            'S/ ${order.tasks.fold(0.0, (sum, t) => sum + t.price).toStringAsFixed(2)}',
+                            'S/ ${order.tasks.fold(0.0, (sum, t) => sum + t.laborPrice).toStringAsFixed(2)}',
                             style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
@@ -561,7 +561,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                               description: task.description,
                               itemType: VoucherItemType.service,
                               quantity: 1,
-                              unitPrice: task.price,
+                              unitPrice: task.laborPrice,
                             ),
                           );
                           for (final p in task.products) {

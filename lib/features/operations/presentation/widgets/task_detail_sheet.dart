@@ -274,7 +274,7 @@ class TaskDetailSheet extends StatelessWidget {
                         children: [
                           _CostRow(
                             label: 'Mano de obra',
-                            value: task.formattedPrice,
+                            value: 'S/ ${task.laborPrice.toStringAsFixed(2)}',
                           ),
                           const SizedBox(height: 6),
                           _CostRow(
