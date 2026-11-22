@@ -57,23 +57,21 @@ class CustomerHomePage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: ShiftIQColors.warmNeutral,
-      body: Column(
-        children: [
-          ShiftIQPageHeader(
-            title: loc.translate('customer_portal_title'),
-            subtitle: email.isNotEmpty ? email : null,
-            actions: [
-              ShiftIQLiquidIconButton(
-                key: const Key('customer_logout_button'),
-                tooltip: loc.translate('logout_dialog_title'),
-                icon: Icons.logout_rounded,
-                onDarkBackground: true,
-                onPressed: () => _handleLogout(context),
-              ),
-            ],
-          ),
-          Expanded(
-            child: ListView(
+      body: ShiftIQCollapsibleHeaderBody(
+        header: ShiftIQPageHeader(
+          title: loc.translate('customer_portal_title'),
+          subtitle: email.isNotEmpty ? email : null,
+          actions: [
+            ShiftIQLiquidIconButton(
+              key: const Key('customer_logout_button'),
+              tooltip: loc.translate('logout_dialog_title'),
+              icon: Icons.logout_rounded,
+              onDarkBackground: true,
+              onPressed: () => _handleLogout(context),
+            ),
+          ],
+        ),
+        body: ListView(
           padding: const EdgeInsets.all(20),
           children: [
             Container(
@@ -175,8 +173,6 @@ class CustomerHomePage extends StatelessWidget {
             ),
           ],
         ),
-      ),
-        ],
       ),
     );
   }

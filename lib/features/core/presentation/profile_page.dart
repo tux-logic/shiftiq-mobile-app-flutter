@@ -214,15 +214,13 @@ class _ProfilePageState extends State<ProfilePage> {
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
-          body: Column(
-            children: [
-              ShiftIQPageHeader(
-                title: loc.translate('profile_title'),
-                subtitle: vm.roleDisplay,
-                showBackButton: Navigator.of(context).canPop(),
-              ),
-              Expanded(
-                child: ShiftIQContentTransition(
+          body: ShiftIQCollapsibleHeaderBody(
+            header: ShiftIQPageHeader(
+              title: loc.translate('profile_title'),
+              subtitle: vm.roleDisplay,
+              showBackButton: Navigator.of(context).canPop(),
+            ),
+            body: ShiftIQContentTransition(
                   child: vm.isLoading &&
                           vm.profileContext == null &&
                           vm.userEmail.isEmpty
@@ -458,11 +456,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       const SizedBox(height: 24),
                     ],
                   ),
-                        ),
-                ),
                 ),
               ),
-            ],
+            ),
           ),
         );
       },

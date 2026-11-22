@@ -54,26 +54,24 @@ class _EmployeeDashboardPageState extends State<EmployeeDashboardPage> {
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
-          body: Column(
-            children: [
-              ShiftIQPageHeader(
-                title: 'Mi Resumen',
-                subtitle: 'Cola operativa · ${vm.activeBranchName}',
-                actions: [
-                  ShiftIQLiquidIconButton(
-                    tooltip: 'Mi perfil',
-                    icon: Icons.person_outline_rounded,
-                    onDarkBackground: true,
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const ProfilePage()),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              Expanded(
-                child: ShiftIQContentTransition(
+          body: ShiftIQCollapsibleHeaderBody(
+            header: ShiftIQPageHeader(
+              title: 'Mi Resumen',
+              subtitle: 'Cola operativa · ${vm.activeBranchName}',
+              actions: [
+                ShiftIQLiquidIconButton(
+                  tooltip: 'Mi perfil',
+                  icon: Icons.person_outline_rounded,
+                  onDarkBackground: true,
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const ProfilePage()),
+                    );
+                  },
+                ),
+              ],
+            ),
+            body: ShiftIQContentTransition(
                   child: vm.isLoading && summary == null
                       ? const ShiftIQSkeletonDetail(
                           key: ValueKey('employee_dashboard_loading'),
@@ -205,8 +203,6 @@ class _EmployeeDashboardPageState extends State<EmployeeDashboardPage> {
                           ),
                         ),
                 ),
-              ),
-            ],
           ),
         );
       },

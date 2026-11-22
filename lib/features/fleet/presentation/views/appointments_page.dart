@@ -128,22 +128,20 @@ class _AppointmentsPageState extends State<AppointmentsPage>
     final loc = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ShiftIQColors.warmNeutral,
-      body: Column(
-        children: [
-          ShiftIQPageHeader(
-            title: loc.translate('appointments_title'),
-            subtitle: 'Gestión de Bahías · $_branchName',
-            actions: [
-              ShiftIQLiquidIconButton(
-                tooltip: loc.translate('tooltip_customer_directory'),
-                icon: Icons.people_alt_outlined,
-                onDarkBackground: true,
-                onPressed: _openDirectory,
-              ),
-            ],
-          ),
-          Expanded(
-            child: ListenableBuilder(
+      body: ShiftIQCollapsibleHeaderBody(
+        header: ShiftIQPageHeader(
+          title: loc.translate('appointments_title'),
+          subtitle: 'Gestión de Bahías · $_branchName',
+          actions: [
+            ShiftIQLiquidIconButton(
+              tooltip: loc.translate('tooltip_customer_directory'),
+              icon: Icons.people_alt_outlined,
+              onDarkBackground: true,
+              onPressed: _openDirectory,
+            ),
+          ],
+        ),
+        body: ListenableBuilder(
         listenable: _viewModel,
         builder: (context, _) {
           final isLoading = _viewModel.isLoading;
@@ -234,8 +232,6 @@ class _AppointmentsPageState extends State<AppointmentsPage>
           );
         },
       ),
-          ),
-        ],
       ),
       floatingActionButton: ListenableBuilder(
         listenable: _viewModel,

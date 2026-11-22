@@ -67,15 +67,13 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
     final loc = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ShiftIQColors.warmNeutral,
-      body: Column(
-        children: [
-          ShiftIQPageHeader(
-            title: loc.translate('tooltip_customer_directory'),
-            subtitle: 'Directorio de clientes y vehículos',
-            showBackButton: true,
-          ),
-          Expanded(
-            child: ListenableBuilder(
+      body: ShiftIQCollapsibleHeaderBody(
+        header: ShiftIQPageHeader(
+          title: loc.translate('tooltip_customer_directory'),
+          subtitle: 'Directorio de clientes y vehículos',
+          showBackButton: true,
+        ),
+        body: ListenableBuilder(
               listenable: widget.viewModel,
               builder: (context, _) {
                 final customers = widget.viewModel.customers;
@@ -208,8 +206,6 @@ class _CustomerDirectoryPageState extends State<CustomerDirectoryPage> {
           );
         },
       ),
-          ),
-        ],
       ),
       floatingActionButton: ShiftIQPrimaryPillButton(
         label: loc.translate('new_appointment'),

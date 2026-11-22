@@ -37,15 +37,13 @@ class _LiveSensorsMonitorPageState extends State<LiveSensorsMonitorPage> {
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
-          body: Column(
-            children: [
-              ShiftIQPageHeader(
-                title: 'Último Snapshot OBD-II',
-                subtitle: 'Vehículo ${widget.vehiclePlate} · Lectura registrada',
-                showBackButton: true,
-              ),
-              Expanded(
-                child: ShiftIQPullToRefresh(
+          body: ShiftIQCollapsibleHeaderBody(
+            header: ShiftIQPageHeader(
+              title: 'Último Snapshot OBD-II',
+              subtitle: 'Vehículo ${widget.vehiclePlate} · Lectura registrada',
+              showBackButton: true,
+            ),
+            body: ShiftIQPullToRefresh(
                   onRefresh: () =>
                       widget.viewModel.loadLiveSensors(widget.vehiclePlate),
                   skeleton: const ShiftIQSkeletonCardList(itemCount: 3),
@@ -152,8 +150,6 @@ class _LiveSensorsMonitorPageState extends State<LiveSensorsMonitorPage> {
             ),
           ),
                 ),
-              ),
-            ],
           ),
         );
       },

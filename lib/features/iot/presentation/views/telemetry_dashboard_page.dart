@@ -131,14 +131,12 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage>
     final loc = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ShiftIQColors.warmNeutral,
-      body: Column(
-        children: [
-          ShiftIQPageHeader(
-            title: 'Telemetría IoT & OBD-II',
-            subtitle: 'Alertas DTC & Snapshots · $_branchName',
-          ),
-          Expanded(
-            child: ListenableBuilder(
+      body: ShiftIQCollapsibleHeaderBody(
+        header: ShiftIQPageHeader(
+          title: 'Telemetría IoT & OBD-II',
+          subtitle: 'Alertas DTC & Snapshots · $_branchName',
+        ),
+        body: ListenableBuilder(
         listenable: _viewModel,
         builder: (context, _) {
           final isLoading = _viewModel.isLoading;
@@ -279,8 +277,6 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage>
           );
         },
       ),
-          ),
-        ],
       ),
     );
   }

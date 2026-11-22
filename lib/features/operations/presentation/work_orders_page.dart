@@ -100,29 +100,30 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
-          body: Column(
-            children: [
-              ShiftIQPageHeader(
-                title: 'Órdenes de Trabajo',
-                subtitle: vm.activeBranchName,
-                actions: [
-                  ShiftIQLiquidIconButton(
-                    key: const Key('work_orders_profile_button'),
-                    tooltip:
-                        AppLocalizations.of(context).translate('tooltip_profile'),
-                    icon: Icons.person_outline_rounded,
-                    onDarkBackground: true,
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const ProfilePage(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              // Minimalist underline TabBar for Kanban columns
+          body: ShiftIQCollapsibleHeaderBody(
+            header: ShiftIQPageHeader(
+              title: 'Órdenes de Trabajo',
+              subtitle: vm.activeBranchName,
+              actions: [
+                ShiftIQLiquidIconButton(
+                  key: const Key('work_orders_profile_button'),
+                  tooltip:
+                      AppLocalizations.of(context).translate('tooltip_profile'),
+                  icon: Icons.person_outline_rounded,
+                  onDarkBackground: true,
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const ProfilePage(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            body: Column(
+              children: [
+                // Minimalist underline TabBar for Kanban columns
               Container(
                 color: Colors.white,
                 child: TabBar(
@@ -173,6 +174,7 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
                 ),
               ),
             ],
+          ),
           ),
           floatingActionButton: ListenableBuilder(
             listenable: _viewModel,

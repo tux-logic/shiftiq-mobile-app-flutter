@@ -175,31 +175,29 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
-          body: Column(
-            children: [
-              ShiftIQPageHeader(
-                title: '${voucher.voucherType.label} ${voucher.fullCode}',
-                subtitle: voucher.customerName,
-                showBackButton: true,
-                actions: [
-                  ShiftIQLiquidIconButton(
-                    icon: Icons.share_outlined,
-                    tooltip: AppLocalizations.of(context)
-                        .translate('tooltip_share_whatsapp'),
-                    onDarkBackground: true,
-                    onPressed: () {
-                      ShiftIQToast.show(
-                        context,
-                        message:
-                            'Enlace de ${voucher.fullCode} copiado al portapapeles',
-                        type: ShiftIQToastType.info,
-                      );
-                    },
-                  ),
-                ],
-              ),
-              Expanded(
-                child: SingleChildScrollView(
+          body: ShiftIQCollapsibleHeaderBody(
+            header: ShiftIQPageHeader(
+              title: '${voucher.voucherType.label} ${voucher.fullCode}',
+              subtitle: voucher.customerName,
+              showBackButton: true,
+              actions: [
+                ShiftIQLiquidIconButton(
+                  icon: Icons.share_outlined,
+                  tooltip: AppLocalizations.of(context)
+                      .translate('tooltip_share_whatsapp'),
+                  onDarkBackground: true,
+                  onPressed: () {
+                    ShiftIQToast.show(
+                      context,
+                      message:
+                          'Enlace de ${voucher.fullCode} copiado al portapapeles',
+                      type: ShiftIQToastType.info,
+                    );
+                  },
+                ),
+              ],
+            ),
+            body: SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -460,8 +458,6 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
               ],
             ),
           ),
-              ),
-            ],
           ),
         );
       },

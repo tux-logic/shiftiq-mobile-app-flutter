@@ -208,9 +208,13 @@ class _ShiftIQCollapsibleHeaderBodyState
           ),
         ),
         Expanded(
-          child: NotificationListener<ScrollUpdateNotification>(
-            onNotification: _handleScrollNotification,
-            child: widget.body,
+          child: SafeArea(
+            top: !_headerVisible,
+            bottom: false,
+            child: NotificationListener<ScrollUpdateNotification>(
+              onNotification: _handleScrollNotification,
+              child: widget.body,
+            ),
           ),
         ),
       ],

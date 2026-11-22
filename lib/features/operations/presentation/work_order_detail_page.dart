@@ -218,15 +218,13 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
-          body: Column(
-            children: [
-              ShiftIQPageHeader(
-                title: order.formattedNumber,
-                subtitle: '${order.vehicleModel} · ${order.vehiclePlate}',
-                showBackButton: true,
-              ),
-              Expanded(
-                child: ShiftIQPullToRefresh(
+          body: ShiftIQCollapsibleHeaderBody(
+            header: ShiftIQPageHeader(
+              title: order.formattedNumber,
+              subtitle: '${order.vehicleModel} · ${order.vehiclePlate}',
+              showBackButton: true,
+            ),
+            body: ShiftIQPullToRefresh(
                   onRefresh: () => vm.loadOrder(order.id),
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -661,8 +659,6 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
             ),
                   ),
                 ),
-              ),
-            ],
           ),
         );
       },

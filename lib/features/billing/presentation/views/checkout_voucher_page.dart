@@ -170,15 +170,13 @@ class _CheckoutVoucherPageState extends State<CheckoutVoucherPage> {
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
-          body: Column(
-            children: [
-              ShiftIQPageHeader(
-                title: loc.translate('liquidation_billing_title'),
-                subtitle: 'Emisión de comprobante SUNAT',
-                showBackButton: true,
-              ),
-              Expanded(
-                child: SingleChildScrollView(
+          body: ShiftIQCollapsibleHeaderBody(
+            header: ShiftIQPageHeader(
+              title: loc.translate('liquidation_billing_title'),
+              subtitle: 'Emisión de comprobante SUNAT',
+              showBackButton: true,
+            ),
+            body: SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
             child: Form(
               key: _formKey,
@@ -467,8 +465,6 @@ class _CheckoutVoucherPageState extends State<CheckoutVoucherPage> {
               ),
             ),
           ),
-              ),
-            ],
           ),
         );
       },

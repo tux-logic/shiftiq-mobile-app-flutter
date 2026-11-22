@@ -5,6 +5,7 @@ import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton_dummies.dart';
@@ -73,10 +74,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
-          body: Column(
-            children: [
-              // Unified gradient header matching BranchSelectionPage
-              Container(
+          body: ShiftIQCollapsibleHeaderBody(
+            header: Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
@@ -224,9 +223,8 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: ShiftIQPullToRefresh(
+            ),
+            body: ShiftIQPullToRefresh(
                   onRefresh: vm.refresh,
                   skeleton: ShiftIQSkeletonizer(
                     enabled: true,
@@ -251,9 +249,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
+            ),
         );
       },
     );

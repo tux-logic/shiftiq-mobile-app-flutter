@@ -77,30 +77,33 @@ class _BillingDashboardPageState extends State<BillingDashboardPage> {
           backgroundColor: ShiftIQColors.warmNeutral,
           body: Stack(
             children: [
-              Column(
-                children: [
-                  ShiftIQPageHeader(
-                    title: loc.translate('billing_title'),
-                    subtitle: 'Comprobantes SUNAT y cotizaciones',
-                    showBackButton: true,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
-                    child: _SegmentedBillingTabs(
-                      selectedIndex: _selectedTab,
-                      vouchersLabel:
-                          '${loc.translate('vouchers')} (${viewModel.vouchers.length})',
-                      quotesLabel:
-                          '${loc.translate('quotes')} (${viewModel.quotes.length})',
-                      onChanged: (index) => setState(() => _selectedTab = index),
+              ShiftIQCollapsibleHeaderBody(
+                header: ShiftIQPageHeader(
+                  title: loc.translate('billing_title'),
+                  subtitle: 'Comprobantes SUNAT y cotizaciones',
+                  showBackButton: true,
+                ),
+                body: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+                      child: _SegmentedBillingTabs(
+                        selectedIndex: _selectedTab,
+                        vouchersLabel:
+                            '${loc.translate('vouchers')} (${viewModel.vouchers.length})',
+                        quotesLabel:
+                            '${loc.translate('quotes')} (${viewModel.quotes.length})',
+                        onChanged: (index) =>
+                            setState(() => _selectedTab = index),
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    child: _selectedTab == 0
-                        ? _buildVouchersTab(context, viewModel, loc)
-                        : _buildQuotesTab(context, viewModel),
-                  ),
-                ],
+                    Expanded(
+                      child: _selectedTab == 0
+                          ? _buildVouchersTab(context, viewModel, loc)
+                          : _buildQuotesTab(context, viewModel),
+                    ),
+                  ],
+                ),
               ),
               Positioned(
                 right: 16,
