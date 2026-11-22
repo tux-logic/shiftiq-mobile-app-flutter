@@ -368,6 +368,8 @@ void setupDependencies() {
       manageWorkOrderTasks: getIt<ManageWorkOrderTasks>(),
       manageTaskProducts: getIt<ManageTaskProducts>(),
       manageProducts: getIt<ManageProducts>(),
+      coreRepository: getIt<CoreRepository>(),
+      employeeRegistrationApi: getIt<EmployeeRegistrationApi>(),
     ),
   );
 

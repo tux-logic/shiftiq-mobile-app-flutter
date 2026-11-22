@@ -71,4 +71,17 @@ void main() {
     });
     expect(unnamed.productName, 'Repuesto');
   });
+
+  test('workOrderTaskFromJson maps assignedMechanicName when present', () {
+    final task = OperationsDto.workOrderTaskFromJson({
+      'id': 'task-1',
+      'serviceId': 'svc-1',
+      'branchId': 'branch-1',
+      'assignedMechanicId': 'mech-1',
+      'assignedMechanicName': 'Aldo Machacca',
+      'description': 'Cambio de aceite',
+      'price': 100,
+    });
+    expect(task.assignedMechanicName, 'Aldo Machacca');
+  });
 }

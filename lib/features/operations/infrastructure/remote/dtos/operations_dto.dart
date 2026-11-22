@@ -84,6 +84,7 @@ class OperationsDto {
           serviceId: serviceId,
           branchId: branchId,
           assignedMechanicId: mechanicId,
+          assignedMechanicName: _resolveMechanicName(json),
           status: TaskStatus.fromString(json['status']?.toString()),
           description: description,
           price: price.toDouble(),
@@ -156,6 +157,13 @@ class OperationsDto {
           'Invalid WorkOrder JSON payload: missing required fields',
         ),
     };
+  }
+
+  static String _resolveMechanicName(Map<String, dynamic> json) {
+    final raw =
+        (json['assignedMechanicName'] ?? json['mechanicName'])?.toString().trim();
+    if (raw != null && raw.isNotEmpty) return raw;
+    return 'Sin asignar';
   }
 
   static String _resolveProductName(Map<String, dynamic> json) {

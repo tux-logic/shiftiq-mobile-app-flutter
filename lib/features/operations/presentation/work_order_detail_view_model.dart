@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/domain/repositories/core_repository.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/remote/employee_registration_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/application/usecases/manage_products.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/domain/models/product.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/application/operations_application.dart';
@@ -10,12 +12,16 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
   final ManageWorkOrderTasks manageWorkOrderTasks;
   final ManageTaskProducts manageTaskProducts;
   final ManageProducts? manageProducts;
+  final CoreRepository? coreRepository;
+  final EmployeeRegistrationApi? employeeRegistrationApi;
 
   WorkOrderDetailViewModel({
     required this.manageWorkOrders,
     required this.manageWorkOrderTasks,
     required this.manageTaskProducts,
     this.manageProducts,
+    this.coreRepository,
+    this.employeeRegistrationApi,
   });
 
   bool _isLoading = false;
@@ -27,14 +33,25 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
   WorkOrder? _order;
   WorkOrder? get order => _order;
 
+  Set<String> _currentEmployeeIds = const {};
+  bool _employeeIdentityLoaded = false;
+
+  /// Returns whether the current employee is allowed to execute [task].
+  /// When identity context is unavailable (e.g. unit tests), defaults to true.
+  bool canExecuteTask(WorkOrderTask task) {
+    if (!_employeeIdentityLoaded || _currentEmployeeIds.isEmpty) return true;
+    return _currentEmployeeIds.contains(task.assignedMechanicId);
+  }
+
   Future<void> loadOrder(String id) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
+      await _loadCurrentEmployeeIdentity();
       final loaded = await manageWorkOrders.getWorkOrderById(id);
-      _order = await _hydrateTaskProductNames(loaded);
+      _order = await _hydrateOrderDetails(loaded);
     } catch (e) {
       _error = 'Error loading work order detail: ${e.toString()}';
     } finally {
@@ -45,7 +62,8 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
 
   Future<bool> startTask(String taskId) async {
     try {
-      _order = await manageWorkOrderTasks.startTask(taskId);
+      final updated = await manageWorkOrderTasks.startTask(taskId);
+      _order = await _hydrateOrderDetails(updated);
       notifyListeners();
       return true;
     } catch (e) {
@@ -57,7 +75,8 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
 
   Future<bool> completeTask(String taskId) async {
     try {
-      _order = await manageWorkOrderTasks.completeTask(taskId);
+      final updated = await manageWorkOrderTasks.completeTask(taskId);
+      _order = await _hydrateOrderDetails(updated);
       notifyListeners();
       return true;
     } catch (e) {
@@ -69,7 +88,8 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
 
   Future<bool> reopenTask(String taskId) async {
     try {
-      _order = await manageWorkOrderTasks.reopenTask(taskId);
+      final updated = await manageWorkOrderTasks.reopenTask(taskId);
+      _order = await _hydrateOrderDetails(updated);
       notifyListeners();
       return true;
     } catch (e) {
@@ -101,6 +121,106 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
       _error = 'Error adding task: ${e.toString()}';
       notifyListeners();
       return false;
+    }
+  }
+
+  Future<void> _loadCurrentEmployeeIdentity() async {
+    if (_employeeIdentityLoaded) return;
+    final coreRepo = coreRepository;
+    if (coreRepo == null) return;
+
+    try {
+      final profile = await coreRepo.getMyProfileContext();
+      final employee = profile.employee;
+      if (employee == null) {
+        _employeeIdentityLoaded = true;
+        return;
+      }
+      final ids = <String>{employee.employeeId};
+      final regApi = employeeRegistrationApi;
+      if (regApi != null) {
+        final regs = await regApi.getEmployeeRegistrations(
+          employeeId: employee.employeeId,
+        );
+        for (final reg in regs) {
+          final regId = (reg['id'] ?? '').toString().trim();
+          if (regId.isNotEmpty) ids.add(regId);
+        }
+      }
+      _currentEmployeeIds = ids;
+      _employeeIdentityLoaded = true;
+    } catch (_) {
+      // Keep default permissive check if profile lookup fails transiently.
+    }
+  }
+
+  Future<WorkOrder> _hydrateOrderDetails(WorkOrder order) async {
+    var hydrated = await _hydrateTaskProductNames(order);
+    hydrated = await _hydrateTaskMechanicNames(hydrated);
+    return hydrated;
+  }
+
+  /// Hydrates mechanic names from branch registrations & employee profiles
+  /// whenever the backend task payload omits `assignedMechanicName`.
+  Future<WorkOrder> _hydrateTaskMechanicNames(WorkOrder order) async {
+    final coreRepo = coreRepository;
+    if (coreRepo == null) return order;
+
+    final needsHydration = order.tasks.any(
+      (t) =>
+          t.assignedMechanicName == 'Sin asignar' &&
+          t.assignedMechanicId.isNotEmpty,
+    );
+    if (!needsHydration) return order;
+
+    try {
+      final regToEmployeeId = <String, String>{};
+      final regApi = employeeRegistrationApi;
+      if (regApi != null) {
+        final regs = await regApi.getEmployeeRegistrations(
+          branchId: order.branchId,
+        );
+        for (final reg in regs) {
+          final regId = (reg['id'] ?? '').toString().trim();
+          final empId = (reg['employeeId'] ?? '').toString().trim();
+          if (regId.isNotEmpty && empId.isNotEmpty) {
+            regToEmployeeId[regId] = empId;
+          }
+        }
+      }
+
+      final nameCache = <String, String>{};
+      final updatedTasks = <WorkOrderTask>[];
+      for (final task in order.tasks) {
+        if (task.assignedMechanicName != 'Sin asignar' ||
+            task.assignedMechanicId.isEmpty) {
+          updatedTasks.add(task);
+          continue;
+        }
+        final targetEmpId =
+            regToEmployeeId[task.assignedMechanicId] ?? task.assignedMechanicId;
+        var resolvedName = nameCache[targetEmpId];
+        if (resolvedName == null) {
+          try {
+            final empJson = await coreRepo.getEmployeeById(targetEmpId);
+            final first = (empJson['firstName'] ?? '').toString().trim();
+            final last = (empJson['lastName'] ?? '').toString().trim();
+            final full = [first, last].where((s) => s.isNotEmpty).join(' ');
+            if (full.isNotEmpty) {
+              resolvedName = full;
+              nameCache[targetEmpId] = full;
+            }
+          } catch (_) {}
+        }
+        updatedTasks.add(
+          resolvedName != null
+              ? task.copyWith(assignedMechanicName: resolvedName)
+              : task,
+        );
+      }
+      return order.copyWith(tasks: updatedTasks);
+    } catch (_) {
+      return order;
     }
   }
 
@@ -155,7 +275,7 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
         productId: productId,
         quantity: quantity,
       );
-      _order = await _hydrateTaskProductNames(updated);
+      _order = await _hydrateOrderDetails(updated);
       notifyListeners();
       return true;
     } catch (e) {
