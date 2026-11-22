@@ -8,7 +8,9 @@ import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.d
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_toast.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/widgets/spare_part_picker_sheet.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_order_detail_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/checkout_voucher_page.dart';
@@ -113,71 +115,41 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
     );
   }
 
-  void _showAddProductDialog(BuildContext context, String taskId) {
-    final loc = AppLocalizations.of(context);
-    final nameController = TextEditingController(text: 'Filtro de Aceite Mann');
-    final qtyController = TextEditingController(text: '1');
-    final priceController = TextEditingController(text: '35.00');
-
-    showDialog(
+  Future<void> _showAddProductSheet(
+    BuildContext context,
+    WorkOrderTask task,
+  ) async {
+    final attachedIds = task.products.map((p) => p.productId).toSet();
+    final dispatched = await showModalBottomSheet<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(loc.translate('dispatch_part_stock')),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(
-                labelText: loc.translate('part_name_input'),
-                hintText: loc.translate('part_name_dispatch_hint'),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: qtyController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: loc.translate('quantity_required')),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: priceController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: loc.translate('unit_price_required'),
-                prefixText: 'S/ ',
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(loc.translate('cancel')),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (nameController.text.trim().isEmpty) return;
-              final qty = int.tryParse(qtyController.text) ?? 1;
-              final price = double.tryParse(priceController.text) ?? 20.0;
-              Navigator.of(ctx).pop();
-              await _viewModel.addProduct(
-                taskId: taskId,
-                productId: 'prod-${DateTime.now().millisecondsSinceEpoch}',
-                productName: nameController.text.trim(),
-                quantity: qty,
-                unitPrice: price,
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ShiftIQColors.primaryBlue,
-              foregroundColor: Colors.white,
-            ),
-            child: Text(loc.translate('dispatch')),
-          ),
-        ],
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => SparePartPickerSheet(
+        loadProducts: _viewModel.loadBranchProducts,
+        attachedProductIds: attachedIds,
+        onDispatch: (product, quantity) async {
+          final ok = await _viewModel.addProduct(
+            taskId: task.id,
+            productId: product.id,
+            productName: product.name,
+            quantity: quantity,
+            unitPrice: product.salePrice,
+          );
+          if (ok) return null;
+          return _viewModel.error ?? 'No se pudo agregar el repuesto.';
+        },
       ),
     );
+    if (dispatched == true && context.mounted) {
+      ShiftIQToast.show(
+        context,
+        message: 'Repuesto agregado a la tarea correctamente.',
+        type: ShiftIQToastType.success,
+      );
+    }
   }
 
   @override
@@ -738,28 +710,86 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
           ),
 
           // Action Buttons for this task
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              if (!task.isCompleted && task.isPending)
-                TextButton.icon(
-                  onPressed: () => vm.startTask(task.id),
-                  icon: const Icon(Icons.play_arrow, size: 14),
-                  label: Text(loc.translate('start'), style: const TextStyle(fontSize: 11)),
-                ),
-              if (!task.isCompleted && task.isInProgress)
-                TextButton.icon(
-                  onPressed: () => vm.completeTask(task.id),
-                  icon: const Icon(Icons.check, size: 14),
-                  label: Text(loc.translate('complete'), style: const TextStyle(fontSize: 11)),
-                ),
-              TextButton.icon(
-                onPressed: () => _showAddProductDialog(context, task.id),
-                icon: const Icon(Icons.inventory_2_outlined, size: 14),
-                label: Text(loc.translate('add_part_btn'), style: const TextStyle(fontSize: 11)),
-              ),
-            ],
-          ),
+          if (!task.isCompleted) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              alignment: WrapAlignment.end,
+              spacing: 8,
+              runSpacing: 6,
+              children: [
+                if (task.isPending)
+                  OutlinedButton.icon(
+                    onPressed: () => vm.startTask(task.id),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: ShiftIQColors.primaryBlue,
+                      side: const BorderSide(color: ShiftIQColors.primaryBlue),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    icon: const Icon(Icons.play_arrow_rounded, size: 16),
+                    label: Text(
+                      loc.translate('start'),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                if (task.isInProgress)
+                  ElevatedButton.icon(
+                    onPressed: () => vm.completeTask(task.id),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ShiftIQColors.preventiveGreen,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    icon: const Icon(Icons.check_rounded, size: 16),
+                    label: Text(
+                      loc.translate('complete'),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                if (!(vm.order?.isCompleted ?? false))
+                  OutlinedButton.icon(
+                    onPressed: () => _showAddProductSheet(context, task),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: ShiftIQColors.graphiteText,
+                      side: const BorderSide(color: ShiftIQColors.borderSlate),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    icon: const Icon(Icons.inventory_2_outlined, size: 16),
+                    label: Text(
+                      loc.translate('add_part_btn'),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
 
           // Attached Products (Repuestos)
           if (task.products.isNotEmpty) ...[
