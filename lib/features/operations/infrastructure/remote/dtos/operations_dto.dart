@@ -48,6 +48,7 @@ class OperationsDto {
           id: id,
           productId: productId,
           productName: _resolveProductName(json),
+          imageUrl: _resolveProductImageUrl(json),
           branchId: branchId,
           quantity: qty.toInt(),
           unitPrice: unitPrice.toDouble(),
@@ -170,6 +171,14 @@ class OperationsDto {
     final raw = (json['productName'] ?? json['name'])?.toString().trim();
     if (raw != null && raw.isNotEmpty) return raw;
     return 'Repuesto';
+  }
+
+  static String? _resolveProductImageUrl(Map<String, dynamic> json) {
+    final raw = (json['imageUrl'] ?? json['productImageUrl'] ?? json['image_url'])
+        ?.toString()
+        .trim();
+    if (raw != null && raw.isNotEmpty) return raw;
+    return null;
   }
 
   static String _resolveVehiclePlate(Map<String, dynamic> json) {

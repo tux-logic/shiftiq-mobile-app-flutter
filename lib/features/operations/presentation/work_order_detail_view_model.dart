@@ -224,26 +224,40 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
     }
   }
 
-  /// Hydrates spare-part names from the branch inventory catalog whenever
-  /// the backend work-order payload omits `productName`.
+  /// Hydrates spare-part names and images from the branch inventory catalog
+  /// whenever the backend work-order payload omits them.
   Future<WorkOrder> _hydrateTaskProductNames(WorkOrder order) async {
     final productsUseCase = manageProducts;
     if (productsUseCase == null) return order;
 
     final needsHydration = order.tasks.any(
-      (t) => t.products.any((p) => p.productName == 'Repuesto'),
+      (t) => t.products.any(
+        (p) => p.productName == 'Repuesto' || (p.imageUrl?.isEmpty ?? true),
+      ),
     );
     if (!needsHydration) return order;
 
     try {
       final catalog = await productsUseCase.getProducts(branchId: order.branchId);
-      final nameById = {for (final p in catalog) p.id: p.name};
+      final byId = {for (final p in catalog) p.id: p};
       final updatedTasks = order.tasks.map((task) {
         final updatedProducts = task.products.map((tp) {
-          if (tp.productName != 'Repuesto') return tp;
-          final resolved = nameById[tp.productId];
-          if (resolved == null || resolved.isEmpty) return tp;
-          return tp.copyWith(productName: resolved);
+          final match = byId[tp.productId];
+          if (match == null) return tp;
+          final resolvedName =
+              tp.productName == 'Repuesto' && match.name.isNotEmpty
+                  ? match.name
+                  : null;
+          final resolvedImage =
+              (tp.imageUrl == null || tp.imageUrl!.isEmpty) &&
+                      (match.imageUrl != null && match.imageUrl!.isNotEmpty)
+                  ? match.imageUrl
+                  : null;
+          if (resolvedName == null && resolvedImage == null) return tp;
+          return tp.copyWith(
+            productName: resolvedName ?? tp.productName,
+            imageUrl: resolvedImage ?? tp.imageUrl,
+          );
         }).toList();
         return task.copyWith(products: updatedProducts);
       }).toList();

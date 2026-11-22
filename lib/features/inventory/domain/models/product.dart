@@ -15,6 +15,7 @@ class Product {
   final int currentStock;
   final int minimumStock;
   final bool lowStockAlert;
+  final String? imageUrl;
   final List<ProductBatch> batches;
   final DateTime? createdAt;
 
@@ -32,6 +33,7 @@ class Product {
     this.currentStock = 0,
     this.minimumStock = 5,
     bool? lowStockAlert,
+    this.imageUrl,
     this.batches = const [],
     this.createdAt,
   })  : salePrice = salePrice ?? unitPrice ?? 0.0,
