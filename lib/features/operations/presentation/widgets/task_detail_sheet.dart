@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_photo_gallery_viewer.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/widgets/spare_part_thumbnail.dart';
 
@@ -211,27 +212,12 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
     );
   }
 
-  void _showFullScreenImage(String imageUrl) {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.black,
-        insetPadding: const EdgeInsets.all(12),
-        child: Stack(
-          alignment: Alignment.topRight,
-          children: [
-            InteractiveViewer(
-              child: Center(
-                child: Image.network(imageUrl, fit: BoxFit.contain),
-              ),
-            ),
-            IconButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              icon: const Icon(Icons.close_rounded, color: Colors.white),
-            ),
-          ],
-        ),
-      ),
+  void _openEvidenceGallery(int initialIndex) {
+    ShiftIQPhotoGalleryViewer.open(
+      context,
+      imageUrls: _task.evidenceImages,
+      initialIndex: initialIndex,
+      title: 'Evidencia',
     );
   }
 
@@ -610,7 +596,7 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                               return Stack(
                                 children: [
                                   GestureDetector(
-                                    onTap: () => _showFullScreenImage(url),
+                                    onTap: () => _openEvidenceGallery(index),
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(12),
                                       child: Image.network(

@@ -8,6 +8,7 @@ import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.d
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_photo_gallery_viewer.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_toast.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/widgets/spare_part_picker_sheet.dart';
@@ -379,33 +380,11 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                             itemBuilder: (_, index) {
                               final url = order.entryInspectionImages[index];
                               return GestureDetector(
-                                onTap: () => showDialog<void>(
-                                  context: context,
-                                  builder: (ctx) => Dialog(
-                                    backgroundColor: Colors.black,
-                                    insetPadding: const EdgeInsets.all(12),
-                                    child: Stack(
-                                      alignment: Alignment.topRight,
-                                      children: [
-                                        InteractiveViewer(
-                                          child: Center(
-                                            child: Image.network(
-                                              url,
-                                              fit: BoxFit.contain,
-                                            ),
-                                          ),
-                                        ),
-                                        IconButton(
-                                          onPressed: () =>
-                                              Navigator.of(ctx).pop(),
-                                          icon: const Icon(
-                                            Icons.close_rounded,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                                onTap: () => ShiftIQPhotoGalleryViewer.open(
+                                  context,
+                                  imageUrls: order.entryInspectionImages,
+                                  initialIndex: index,
+                                  title: 'Recepción',
                                 ),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(10),
