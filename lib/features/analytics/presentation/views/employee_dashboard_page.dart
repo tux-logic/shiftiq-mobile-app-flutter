@@ -10,7 +10,6 @@ import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/analytics_d
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/controllers/employee_dashboard_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/dtc_alert_banner.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/employee_workload_charts.dart';
-import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/kpi_metric_card.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_order_detail_page.dart';
@@ -100,70 +99,13 @@ class _EmployeeDashboardPageState extends State<EmployeeDashboardPage> {
                                 ),
                                 const SizedBox(height: 16),
                               ],
-                              GridView.count(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 12,
-                                mainAxisSpacing: 12,
-                                childAspectRatio: 1.32,
-                                children: [
-                                  KpiMetricCard(
-                                    title: 'OTs Asignadas',
-                                    value:
-                                        '${summary?.assignedWorkOrdersCount ?? 0}',
-                                    numericValue:
-                                        (summary?.assignedWorkOrdersCount ?? 0)
-                                            .toDouble(),
-                                    valueFormatter: (v) =>
-                                        v.round().toString(),
-                                    subtitle: 'Activas en bahía',
-                                    icon: Icons.build_circle_outlined,
-                                    accentColor: ShiftIQColors.primaryBlue,
-                                    onTap: widget.onNavigateToOrders,
-                                  ),
-                                  KpiMetricCard(
-                                    title: 'Tareas Pendientes',
-                                    value:
-                                        '${summary?.pendingTasksCount ?? 0}',
-                                    numericValue:
-                                        (summary?.pendingTasksCount ?? 0)
-                                            .toDouble(),
-                                    valueFormatter: (v) =>
-                                        v.round().toString(),
-                                    subtitle: 'Por ejecutar',
-                                    icon: Icons.pending_actions_rounded,
-                                    accentColor: ShiftIQColors.severityAmber,
-                                    onTap: widget.onNavigateToOrders,
-                                  ),
-                                  KpiMetricCard(
-                                    title: 'Tareas Completadas',
-                                    value:
-                                        '${summary?.completedTasksCount ?? 0}',
-                                    numericValue:
-                                        (summary?.completedTasksCount ?? 0)
-                                            .toDouble(),
-                                    valueFormatter: (v) =>
-                                        v.round().toString(),
-                                    subtitle: 'Finalizadas',
-                                    icon: Icons.task_alt_rounded,
-                                    accentColor: ShiftIQColors.preventiveGreen,
-                                  ),
-                                  KpiMetricCard(
-                                    title: 'Alertas DTC',
-                                    value:
-                                        '${summary?.activeDtcAlertsCount ?? 0}',
-                                    numericValue:
-                                        (summary?.activeDtcAlertsCount ?? 0)
-                                            .toDouble(),
-                                    valueFormatter: (v) =>
-                                        v.round().toString(),
-                                    subtitle: 'En tu cola',
-                                    icon: Icons.sensors_rounded,
-                                    accentColor: ShiftIQColors.severityCrimson,
-                                    onTap: widget.onNavigateToTelemetry,
-                                  ),
-                                ],
+                              EmployeeRadarOverviewChart(
+                                assignedOrders:
+                                    summary?.assignedWorkOrdersCount ?? 0,
+                                pendingTasks: summary?.pendingTasksCount ?? 0,
+                                completedTasks:
+                                    summary?.completedTasksCount ?? 0,
+                                dtcAlerts: summary?.activeDtcAlertsCount ?? 0,
                               ),
                               const SizedBox(height: 16),
                               EmployeeTaskRingChart(

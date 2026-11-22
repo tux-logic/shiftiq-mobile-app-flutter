@@ -10,7 +10,6 @@ import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/contr
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/views/employee_dashboard_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/dtc_alert_banner.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/employee_workload_charts.dart';
-import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/kpi_metric_card.dart';
 
 class _FakeAnalyticsApi extends AnalyticsApi {
   _FakeAnalyticsApi()
@@ -86,12 +85,9 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 600));
 
-      expect(find.byType(KpiMetricCard), findsNWidgets(4));
       expect(find.byType(DtcAlertBanner), findsOneWidget);
-      expect(find.text('OTs Asignadas'), findsOneWidget);
-      expect(find.text('Tareas Pendientes'), findsOneWidget);
-      expect(find.text('Tareas Completadas'), findsOneWidget);
-      expect(find.text('Alertas DTC'), findsOneWidget);
+      expect(find.byType(EmployeeRadarOverviewChart), findsOneWidget);
+      expect(find.text('OTs Activas'), findsOneWidget);
       await tester.scrollUntilVisible(
         find.byType(EmployeeTaskRingChart),
         200,
