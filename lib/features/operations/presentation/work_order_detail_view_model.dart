@@ -365,7 +365,7 @@ class WorkOrderDetailViewModel extends ChangeNotifier {
       final response = await api.uploadMedia(
         fileBytes: fileBytes,
         fileName: fileName,
-        folder: 'tasks',
+        folder: 'workorders',
       );
       if (response is! Map<String, dynamic> || response['url'] is! String) {
         throw Exception('Invalid media upload response.');
