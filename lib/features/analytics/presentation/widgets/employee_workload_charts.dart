@@ -1,11 +1,12 @@
 import 'dart:math' as math;
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/analytics_domain.dart';
 
-/// Animated 7-day pill-bar chart showing completed tasks per day
-/// (`task.completedAt`) plus average execution duration (`completedAt - startedAt`).
-class EmployeeWeeklyActivityChart extends StatelessWidget {
+/// Interactive 7-day bar chart powered by `fl_chart` showing completed tasks
+/// per day (`task.completedAt`) plus average execution duration.
+class EmployeeWeeklyActivityChart extends StatefulWidget {
   final List<EmployeeDailyCompletion> dailyCompletions;
   final double? avgCompletionMinutes;
 
@@ -15,7 +16,15 @@ class EmployeeWeeklyActivityChart extends StatelessWidget {
     this.avgCompletionMinutes,
   });
 
+  @override
+  State<EmployeeWeeklyActivityChart> createState() =>
+      _EmployeeWeeklyActivityChartState();
+}
+
+class _EmployeeWeeklyActivityChartState
+    extends State<EmployeeWeeklyActivityChart> {
   static const _weekdayLabels = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+  int _touchedIndex = -1;
 
   String _formatDuration(double minutes) {
     final rounded = minutes.round();
@@ -27,8 +36,8 @@ class EmployeeWeeklyActivityChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final days = dailyCompletions.isNotEmpty
-        ? dailyCompletions
+    final days = widget.dailyCompletions.isNotEmpty
+        ? widget.dailyCompletions
         : List.generate(7, (i) {
             final now = DateTime.now();
             final today = DateTime(now.year, now.month, now.day);
@@ -84,7 +93,7 @@ class EmployeeWeeklyActivityChart extends StatelessWidget {
                   ],
                 ),
               ),
-              if (avgCompletionMinutes != null)
+              if (widget.avgCompletionMinutes != null)
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
@@ -104,7 +113,7 @@ class EmployeeWeeklyActivityChart extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        _formatDuration(avgCompletionMinutes!),
+                        _formatDuration(widget.avgCompletionMinutes!),
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
@@ -118,21 +127,124 @@ class EmployeeWeeklyActivityChart extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           SizedBox(
-            height: 118,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                for (int i = 0; i < days.length; i++) ...[
-                  Expanded(
-                    child: _DayPillBar(
-                      label: _weekdayLabels[(days[i].date.weekday - 1) % 7],
-                      count: days[i].count,
-                      fraction: (days[i].count / maxCount).clamp(0.0, 1.0),
-                      isToday: i == days.length - 1,
+            height: 148,
+            child: BarChart(
+              BarChartData(
+                alignment: BarChartAlignment.spaceAround,
+                maxY: (maxCount + 1).toDouble(),
+                barTouchData: BarTouchData(
+                  enabled: true,
+                  touchCallback: (event, response) {
+                    setState(() {
+                      if (!event.isInterestedForInteractions ||
+                          response == null ||
+                          response.spot == null) {
+                        _touchedIndex = -1;
+                      } else {
+                        _touchedIndex = response.spot!.touchedBarGroupIndex;
+                      }
+                    });
+                  },
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipColor: (_) => ShiftIQColors.graphiteText,
+                    tooltipPadding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      final count = days[group.x].count;
+                      return BarTooltipItem(
+                        '$count ${count == 1 ? 'tarea' : 'tareas'}',
+                        const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 11,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                titlesData: FlTitlesData(
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  leftTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 26,
+                      getTitlesWidget: (value, meta) {
+                        final idx = value.toInt();
+                        if (idx < 0 || idx >= days.length) {
+                          return const SizedBox.shrink();
+                        }
+                        final isToday = idx == days.length - 1;
+                        final label =
+                            _weekdayLabels[(days[idx].date.weekday - 1) % 7];
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            label,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight:
+                                  isToday ? FontWeight.w800 : FontWeight.w600,
+                              color: isToday
+                                  ? ShiftIQColors.primaryBlue
+                                  : const Color(0xFF64748B),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
-                ],
-              ],
+                ),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: math.max(1, (maxCount / 2).ceil()).toDouble(),
+                  getDrawingHorizontalLine: (_) => const FlLine(
+                    color: Color(0xFFF1F5F9),
+                    strokeWidth: 1,
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                barGroups: List.generate(days.length, (i) {
+                  final isTouched = i == _touchedIndex;
+                  final isToday = i == days.length - 1;
+                  final count = days[i].count;
+                  final barColor = count == 0
+                      ? const Color(0xFFE2E8F0)
+                      : isTouched
+                          ? ShiftIQColors.accentSkyBlue
+                          : isToday
+                              ? ShiftIQColors.primaryBlue
+                              : ShiftIQColors.preventiveGreen;
+                  return BarChartGroupData(
+                    x: i,
+                    barRods: [
+                      BarChartRodData(
+                        toY: count.toDouble(),
+                        width: isTouched ? 20 : 16,
+                        color: barColor,
+                        borderRadius: BorderRadius.circular(8),
+                        backDrawRodData: BackgroundBarChartRodData(
+                          show: true,
+                          toY: (maxCount + 1).toDouble(),
+                          color: const Color(0xFFF8FAFC),
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+              ),
+              duration: const Duration(milliseconds: 450),
+              curve: Curves.easeOutCubic,
             ),
           ),
         ],
@@ -141,76 +253,9 @@ class EmployeeWeeklyActivityChart extends StatelessWidget {
   }
 }
 
-class _DayPillBar extends StatelessWidget {
-  final String label;
-  final int count;
-  final double fraction;
-  final bool isToday;
-
-  const _DayPillBar({
-    required this.label,
-    required this.count,
-    required this.fraction,
-    required this.isToday,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final targetHeight = count == 0 ? 6.0 : 14.0 + (58.0 * fraction);
-    final barColor = count == 0
-        ? const Color(0xFFE2E8F0)
-        : isToday
-            ? ShiftIQColors.primaryBlue
-            : ShiftIQColors.preventiveGreen;
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Text(
-          count > 0 ? '$count' : '',
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            color: isToday
-                ? ShiftIQColors.primaryBlue
-                : ShiftIQColors.graphiteText,
-          ),
-        ),
-        const SizedBox(height: 4),
-        TweenAnimationBuilder<double>(
-          tween: Tween<double>(begin: 6.0, end: targetHeight),
-          duration: const Duration(milliseconds: 550),
-          curve: Curves.easeOutCubic,
-          builder: (context, height, _) {
-            return Container(
-              width: 18,
-              height: height,
-              decoration: BoxDecoration(
-                color: barColor,
-                borderRadius: BorderRadius.circular(999),
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: isToday ? FontWeight.w800 : FontWeight.w600,
-            color: isToday
-                ? ShiftIQColors.primaryBlue
-                : const Color(0xFF64748B),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Animated 3-segment radial donut chart displaying the employee's real
-/// task status breakdown in bay: Completed, In Progress (`DOING`), and Pending.
-class EmployeeTaskRingChart extends StatelessWidget {
+/// Interactive 3-segment donut chart powered by `fl_chart` displaying the
+/// employee's real task status breakdown: Completed, In Progress, and Pending.
+class EmployeeTaskRingChart extends StatefulWidget {
   final int completedTasks;
   final int inProgressTasks;
   final int pendingTasks;
@@ -223,11 +268,17 @@ class EmployeeTaskRingChart extends StatelessWidget {
   });
 
   @override
+  State<EmployeeTaskRingChart> createState() => _EmployeeTaskRingChartState();
+}
+
+class _EmployeeTaskRingChartState extends State<EmployeeTaskRingChart> {
+  int _touchedIndex = -1;
+
+  @override
   Widget build(BuildContext context) {
-    final total = completedTasks + inProgressTasks + pendingTasks;
-    final completedRatio = total == 0 ? 0.0 : completedTasks / total;
-    final inProgressRatio = total == 0 ? 0.0 : inProgressTasks / total;
-    final pendingRatio = total == 0 ? 0.0 : pendingTasks / total;
+    final total =
+        widget.completedTasks + widget.inProgressTasks + widget.pendingTasks;
+    final completedRatio = total == 0 ? 0.0 : widget.completedTasks / total;
     final percent = (completedRatio * 100).round();
 
     return Container(
@@ -265,47 +316,87 @@ class EmployeeTaskRingChart extends StatelessWidget {
           const SizedBox(height: 16),
           Row(
             children: [
-              TweenAnimationBuilder<double>(
-                tween: Tween<double>(begin: 0, end: 1),
-                duration: const Duration(milliseconds: 700),
-                curve: Curves.easeOutCubic,
-                builder: (context, progress, _) {
-                  return SizedBox(
-                    width: 112,
-                    height: 112,
-                    child: CustomPaint(
-                      painter: _TaskRingPainter(
-                        completedRatio: completedRatio * progress,
-                        inProgressRatio: inProgressRatio * progress,
-                        pendingRatio: pendingRatio * progress,
-                        hasData: total > 0,
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '$percent%',
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: ShiftIQColors.graphiteText,
-                              ),
-                            ),
-                            const Text(
-                              'Completado',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF64748B),
-                              ),
-                            ),
-                          ],
+              SizedBox(
+                width: 124,
+                height: 124,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    PieChart(
+                      PieChartData(
+                        startDegreeOffset: -90,
+                        sectionsSpace: total == 0 ? 0 : 3,
+                        centerSpaceRadius: 38,
+                        pieTouchData: PieTouchData(
+                          touchCallback: (event, response) {
+                            setState(() {
+                              if (!event.isInterestedForInteractions ||
+                                  response == null ||
+                                  response.touchedSection == null) {
+                                _touchedIndex = -1;
+                              } else {
+                                _touchedIndex = response
+                                    .touchedSection!.touchedSectionIndex;
+                              }
+                            });
+                          },
                         ),
+                        sections: total == 0
+                            ? [
+                                PieChartSectionData(
+                                  value: 1,
+                                  color: const Color(0xFFE2E8F0),
+                                  radius: 14,
+                                  showTitle: false,
+                                ),
+                              ]
+                            : [
+                                PieChartSectionData(
+                                  value: widget.completedTasks.toDouble(),
+                                  color: ShiftIQColors.preventiveGreen,
+                                  radius: _touchedIndex == 0 ? 18 : 14,
+                                  showTitle: false,
+                                ),
+                                PieChartSectionData(
+                                  value: widget.inProgressTasks.toDouble(),
+                                  color: ShiftIQColors.secondaryTeal,
+                                  radius: _touchedIndex == 1 ? 18 : 14,
+                                  showTitle: false,
+                                ),
+                                PieChartSectionData(
+                                  value: widget.pendingTasks.toDouble(),
+                                  color: ShiftIQColors.severityAmber,
+                                  radius: _touchedIndex == 2 ? 18 : 14,
+                                  showTitle: false,
+                                ),
+                              ],
                       ),
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.easeOutCubic,
                     ),
-                  );
-                },
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '$percent%',
+                          style: const TextStyle(
+                            fontSize: 21,
+                            fontWeight: FontWeight.w800,
+                            color: ShiftIQColors.graphiteText,
+                          ),
+                        ),
+                        const Text(
+                          'Completado',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(width: 20),
               Expanded(
@@ -315,19 +406,22 @@ class EmployeeTaskRingChart extends StatelessWidget {
                     _LegendRow(
                       color: ShiftIQColors.preventiveGreen,
                       label: 'Completadas',
-                      count: completedTasks,
+                      count: widget.completedTasks,
+                      highlighted: _touchedIndex == 0,
                     ),
                     const SizedBox(height: 10),
                     _LegendRow(
                       color: ShiftIQColors.secondaryTeal,
                       label: 'En progreso',
-                      count: inProgressTasks,
+                      count: widget.inProgressTasks,
+                      highlighted: _touchedIndex == 1,
                     ),
                     const SizedBox(height: 10),
                     _LegendRow(
                       color: ShiftIQColors.severityAmber,
                       label: 'Pendientes',
-                      count: pendingTasks,
+                      count: widget.pendingTasks,
+                      highlighted: _touchedIndex == 2,
                     ),
                   ],
                 ),
@@ -340,103 +434,55 @@ class EmployeeTaskRingChart extends StatelessWidget {
   }
 }
 
-class _TaskRingPainter extends CustomPainter {
-  final double completedRatio;
-  final double inProgressRatio;
-  final double pendingRatio;
-  final bool hasData;
-
-  const _TaskRingPainter({
-    required this.completedRatio,
-    required this.inProgressRatio,
-    required this.pendingRatio,
-    required this.hasData,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    const strokeWidth = 12.0;
-    final radius = (math.min(size.width, size.height) - strokeWidth) / 2;
-    final rect = Rect.fromCircle(center: center, radius: radius);
-
-    final trackPaint = Paint()
-      ..color = const Color(0xFFE2E8F0)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth;
-
-    canvas.drawArc(rect, 0, math.pi * 2, false, trackPaint);
-
-    if (!hasData) return;
-
-    var startAngle = -math.pi / 2;
-    final segments = [
-      (completedRatio, ShiftIQColors.preventiveGreen),
-      (inProgressRatio, ShiftIQColors.secondaryTeal),
-      (pendingRatio, ShiftIQColors.severityAmber),
-    ];
-
-    for (final (ratio, color) in segments) {
-      if (ratio <= 0) continue;
-      final sweep = math.pi * 2 * ratio;
-      final paint = Paint()
-        ..color = color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = strokeWidth
-        ..strokeCap = StrokeCap.butt;
-      canvas.drawArc(rect, startAngle, sweep, false, paint);
-      startAngle += sweep;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _TaskRingPainter oldDelegate) =>
-      oldDelegate.completedRatio != completedRatio ||
-      oldDelegate.inProgressRatio != inProgressRatio ||
-      oldDelegate.pendingRatio != pendingRatio ||
-      oldDelegate.hasData != hasData;
-}
-
 class _LegendRow extends StatelessWidget {
   final Color color;
   final String label;
   final int count;
+  final bool highlighted;
 
   const _LegendRow({
     required this.color,
     required this.label,
     required this.count,
+    this.highlighted = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF475569),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: highlighted ? color.withAlpha(18) : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF475569),
+              ),
             ),
           ),
-        ),
-        Text(
-          '$count',
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w800,
-            color: ShiftIQColors.graphiteText,
+          Text(
+            '$count',
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: ShiftIQColors.graphiteText,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
