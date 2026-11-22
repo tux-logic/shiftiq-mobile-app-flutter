@@ -8,7 +8,7 @@ import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/remote/
 import 'package:shiftiq_mobile_app_flutter/features/operations/application/operations_application.dart';
 
 /// ViewModel managing the mechanic's personal operational summary dashboard
-/// backed by `GET /api/v1/analytics/me/employee-summary` with real work-order fallback.
+/// combining `GET /api/v1/analytics/me/employee-summary` with live branch task metrics.
 class EmployeeDashboardViewModel extends ChangeNotifier {
   final AnalyticsApi analyticsApi;
   final SessionStorage sessionStorage;
@@ -54,7 +54,7 @@ class EmployeeDashboardViewModel extends ChangeNotifier {
     try {
       final raw = await analyticsApi.getEmployeeSummary();
       final parsed = AnalyticsDto.employeeSummaryFromJson(raw);
-      _summary = await _enrichFromBranchOrdersIfEmpty(parsed);
+      _summary = await _enrichWithBranchTaskMetrics(parsed);
     } catch (e) {
       _error = e.toString().replaceFirst('Exception: ', '');
     } finally {
@@ -63,20 +63,14 @@ class EmployeeDashboardViewModel extends ChangeNotifier {
     }
   }
 
-  /// Resolves the employee's real task counts and assigned work orders from
-  /// the active branch's work orders whenever `/analytics/me/employee-summary`
-  /// returns empty counts (e.g., when tasks reference `employeeRegistrationId`).
-  Future<EmployeeAnalyticsSummary> _enrichFromBranchOrdersIfEmpty(
+  /// Combines `/analytics/me/employee-summary` with real branch task timestamps
+  /// and statuses (`PENDING` / `DOING` / `COMPLETED`, 7-day completion trend,
+  /// and average execution duration).
+  Future<EmployeeAnalyticsSummary> _enrichWithBranchTaskMetrics(
     EmployeeAnalyticsSummary summary,
   ) async {
     final workOrdersUseCase = manageWorkOrders;
-    final hasSummaryTasks =
-        summary.assignedWorkOrders.isNotEmpty ||
-        summary.pendingTasksCount > 0 ||
-        summary.completedTasksCount > 0;
-    if (hasSummaryTasks || workOrdersUseCase == null) {
-      return summary;
-    }
+    if (workOrdersUseCase == null) return summary;
 
     try {
       final employeeIds = <String>{
@@ -100,8 +94,17 @@ class EmployeeDashboardViewModel extends ChangeNotifier {
         branchId: _activeBranchId,
       );
 
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final dayCounts = <DateTime, int>{
+        for (int i = 6; i >= 0; i--) today.subtract(Duration(days: i)): 0,
+      };
+
       var pendingCount = 0;
+      var inProgressCount = 0;
       var completedCount = 0;
+      var durationMinutesSum = 0;
+      var durationSampleCount = 0;
       final assignedOrders = <EmployeeAssignedWorkOrderSummary>[];
 
       for (final order in branchOrders) {
@@ -111,9 +114,32 @@ class EmployeeDashboardViewModel extends ChangeNotifier {
         if (myTasks.isEmpty) continue;
 
         final orderPending = myTasks.where((t) => !t.isCompleted).length;
-        final orderCompleted = myTasks.where((t) => t.isCompleted).length;
-        pendingCount += orderPending;
-        completedCount += orderCompleted;
+        for (final task in myTasks) {
+          if (task.isCompleted) {
+            completedCount++;
+            final completedAt = task.completedAt?.toLocal();
+            if (completedAt != null) {
+              final dayKey = DateTime(
+                completedAt.year,
+                completedAt.month,
+                completedAt.day,
+              );
+              if (dayCounts.containsKey(dayKey)) {
+                dayCounts[dayKey] = dayCounts[dayKey]! + 1;
+              }
+              final startedAt = task.startedAt?.toLocal();
+              if (startedAt != null && !completedAt.isBefore(startedAt)) {
+                durationMinutesSum +=
+                    completedAt.difference(startedAt).inMinutes;
+                durationSampleCount++;
+              }
+            }
+          } else if (task.isInProgress) {
+            inProgressCount++;
+          } else {
+            pendingCount++;
+          }
+        }
 
         assignedOrders.add(
           EmployeeAssignedWorkOrderSummary(
@@ -128,7 +154,28 @@ class EmployeeDashboardViewModel extends ChangeNotifier {
         );
       }
 
-      if (assignedOrders.isEmpty) return summary;
+      final weekly = dayCounts.entries
+          .map((e) => EmployeeDailyCompletion(date: e.key, count: e.value))
+          .toList();
+
+      final avgMinutes = durationSampleCount > 0
+          ? durationMinutesSum / durationSampleCount
+          : null;
+
+      if (assignedOrders.isEmpty &&
+          (summary.pendingTasksCount > 0 || summary.completedTasksCount > 0)) {
+        return EmployeeAnalyticsSummary(
+          employeeId: summary.employeeId,
+          branchIds: summary.branchIds,
+          assignedWorkOrdersCount: summary.assignedWorkOrdersCount,
+          pendingTasksCount: summary.pendingTasksCount,
+          inProgressTasksCount: 0,
+          completedTasksCount: summary.completedTasksCount,
+          activeDtcAlertsCount: summary.activeDtcAlertsCount,
+          weeklyCompletedTasks: weekly,
+          assignedWorkOrders: summary.assignedWorkOrders,
+        );
+      }
 
       return EmployeeAnalyticsSummary(
         employeeId: summary.employeeId,
@@ -137,8 +184,11 @@ class EmployeeDashboardViewModel extends ChangeNotifier {
             : [_activeBranchId],
         assignedWorkOrdersCount: assignedOrders.length,
         pendingTasksCount: pendingCount,
+        inProgressTasksCount: inProgressCount,
         completedTasksCount: completedCount,
         activeDtcAlertsCount: summary.activeDtcAlertsCount,
+        avgCompletionMinutes: avgMinutes,
+        weeklyCompletedTasks: weekly,
         assignedWorkOrders: assignedOrders,
       );
     } catch (_) {
