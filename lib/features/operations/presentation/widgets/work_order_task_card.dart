@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/widgets/spare_part_thumbnail.dart';
 
@@ -286,28 +287,13 @@ class WorkOrderTaskCard extends StatelessWidget {
                           ),
                         ),
                       if (task.isInProgress)
-                        ElevatedButton.icon(
+                        ShiftIQLiquidButton(
                           onPressed: onComplete,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: ShiftIQColors.secondaryTeal,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          icon: const Icon(Icons.check_rounded, size: 16),
-                          label: Text(
-                            loc.translate('complete'),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          icon: Icons.check_rounded,
+                          label: loc.translate('complete'),
+                          height: 36,
+                          borderRadius: 10,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
                         ),
                       if (!orderCompleted)
                         OutlinedButton.icon(

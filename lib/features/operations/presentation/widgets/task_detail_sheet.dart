@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_photo_gallery_viewer.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/widgets/spare_part_thumbnail.dart';
 
@@ -684,45 +685,44 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                 (widget.onStartTask != null || widget.onCompleteTask != null))
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      if (task.isPending && widget.onStartTask != null) {
-                        widget.onStartTask!();
-                      } else if (task.isInProgress &&
-                          widget.onCompleteTask != null) {
-                        widget.onCompleteTask!();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: task.isInProgress
-                          ? ShiftIQColors.secondaryTeal
-                          : ShiftIQColors.primaryBlue,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      minimumSize: const Size.fromHeight(48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                child: task.isInProgress
+                    ? ShiftIQLiquidButton(
+                        expand: true,
+                        height: 48,
+                        borderRadius: 14,
+                        icon: Icons.check_rounded,
+                        label: loc.translate('complete'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          widget.onCompleteTask?.call();
+                        },
+                      )
+                    : SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            widget.onStartTask?.call();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: ShiftIQColors.primaryBlue,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            minimumSize: const Size.fromHeight(48),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          icon: const Icon(Icons.play_arrow_rounded),
+                          label: Text(
+                            loc.translate('start'),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    icon: Icon(
-                      task.isInProgress
-                          ? Icons.check_rounded
-                          : Icons.play_arrow_rounded,
-                    ),
-                    label: Text(
-                      task.isInProgress
-                          ? loc.translate('complete')
-                          : loc.translate('start'),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
               ),
           ],
         ),
