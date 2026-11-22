@@ -128,3 +128,92 @@ class ShiftIQPageHeader extends StatelessWidget {
     );
   }
 }
+
+/// Global layout wrapper that subtly collapses [header] when scrolling down
+/// and reveals it smoothly when scrolling up, maximizing vertical space across
+/// all ShiftIQ screens while keeping pull-to-refresh bounce unaffected.
+class ShiftIQCollapsibleHeaderBody extends StatefulWidget {
+  final Widget header;
+  final Widget body;
+
+  const ShiftIQCollapsibleHeaderBody({
+    super.key,
+    required this.header,
+    required this.body,
+  });
+
+  @override
+  State<ShiftIQCollapsibleHeaderBody> createState() =>
+      _ShiftIQCollapsibleHeaderBodyState();
+}
+
+class _ShiftIQCollapsibleHeaderBodyState
+    extends State<ShiftIQCollapsibleHeaderBody> {
+  bool _headerVisible = true;
+  double _accumulatedDelta = 0;
+
+  bool _handleScrollNotification(ScrollUpdateNotification notification) {
+    if (notification.metrics.axis != Axis.vertical) return false;
+    final metrics = notification.metrics;
+    final delta = notification.scrollDelta ?? 0;
+    if (delta == 0) return false;
+
+    // Always keep header visible near the top or during pull-to-refresh overscroll.
+    if (metrics.pixels <= 16) {
+      if (!_headerVisible) {
+        setState(() => _headerVisible = true);
+      }
+      _accumulatedDelta = 0;
+      return false;
+    }
+
+    // Ignore bottom overscroll bounce.
+    if (metrics.pixels >= metrics.maxScrollExtent) {
+      return false;
+    }
+
+    // Reset accumulator if scroll direction reverses.
+    if ((delta > 0 && _accumulatedDelta < 0) ||
+        (delta < 0 && _accumulatedDelta > 0)) {
+      _accumulatedDelta = 0;
+    }
+    _accumulatedDelta += delta;
+
+    if (_accumulatedDelta > 18 && _headerVisible) {
+      setState(() => _headerVisible = false);
+      _accumulatedDelta = 0;
+    } else if (_accumulatedDelta < -12 && !_headerVisible) {
+      setState(() => _headerVisible = true);
+      _accumulatedDelta = 0;
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        ClipRect(
+          child: AnimatedAlign(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            alignment: Alignment.topCenter,
+            heightFactor: _headerVisible ? 1.0 : 0.0,
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOut,
+              opacity: _headerVisible ? 1.0 : 0.0,
+              child: widget.header,
+            ),
+          ),
+        ),
+        Expanded(
+          child: NotificationListener<ScrollUpdateNotification>(
+            onNotification: _handleScrollNotification,
+            child: widget.body,
+          ),
+        ),
+      ],
+    );
+  }
+}
