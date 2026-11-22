@@ -82,4 +82,46 @@ class AnalyticsDto {
           (json['totalNetworkDtcAlerts'] as num?)?.toInt() ?? 0,
     );
   }
+
+  /// Parses an [EmployeeAnalyticsSummary] from `GET /api/v1/analytics/me/employee-summary`.
+  static EmployeeAnalyticsSummary employeeSummaryFromJson(
+    Map<String, dynamic> json,
+  ) {
+    final rawBranchIds = json['branchIds'];
+    final branchIds = rawBranchIds is List
+        ? rawBranchIds.map((e) => e.toString()).toList()
+        : const <String>[];
+
+    final rawOrders = json['assignedWorkOrders'];
+    final assignedOrders = <EmployeeAssignedWorkOrderSummary>[];
+    if (rawOrders is List) {
+      for (final item in rawOrders.whereType<Map<String, dynamic>>()) {
+        assignedOrders.add(
+          EmployeeAssignedWorkOrderSummary(
+            workOrderId: (item['workOrderId'] ?? '').toString(),
+            branchId: (item['branchId'] ?? '').toString(),
+            vehicleId: (item['vehicleId'] ?? '').toString(),
+            internalNumber: (item['internalNumber'] as num?)?.toInt() ?? 0,
+            status: (item['status'] ?? 'PENDING').toString(),
+            assignedTasksCount:
+                (item['assignedTasksCount'] as num?)?.toInt() ?? 0,
+            pendingTasksCount:
+                (item['pendingTasksCount'] as num?)?.toInt() ?? 0,
+          ),
+        );
+      }
+    }
+
+    return EmployeeAnalyticsSummary(
+      employeeId: (json['employeeId'] ?? '').toString(),
+      branchIds: branchIds,
+      assignedWorkOrdersCount:
+          (json['assignedWorkOrdersCount'] as num?)?.toInt() ?? 0,
+      pendingTasksCount: (json['pendingTasksCount'] as num?)?.toInt() ?? 0,
+      completedTasksCount: (json['completedTasksCount'] as num?)?.toInt() ?? 0,
+      activeDtcAlertsCount:
+          (json['activeDtcAlertsCount'] as num?)?.toInt() ?? 0,
+      assignedWorkOrders: assignedOrders,
+    );
+  }
 }

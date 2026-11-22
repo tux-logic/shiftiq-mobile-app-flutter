@@ -43,6 +43,7 @@ import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/repositorie
 import 'package:shiftiq_mobile_app_flutter/features/analytics/infrastructure/remote/analytics_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/infrastructure/repositories/analytics_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/controllers/dashboard_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/controllers/employee_dashboard_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/application/operations_application.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/repositories/operations_repository.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/infrastructure/remote/service_api.dart';
@@ -314,6 +315,13 @@ void setupDependencies() {
       getNetworkAnalyticsSummaryUseCase:
           getIt<GetNetworkAnalyticsSummaryUseCase>(),
       manageWorkOrders: getIt<ManageWorkOrders>(),
+      sessionStorage: getIt<SessionStorage>(),
+    ),
+  );
+
+  getIt.registerFactory<EmployeeDashboardViewModel>(
+    () => EmployeeDashboardViewModel(
+      analyticsApi: getIt<AnalyticsApi>(),
       sessionStorage: getIt<SessionStorage>(),
     ),
   );
