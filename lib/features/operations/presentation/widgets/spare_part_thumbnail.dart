@@ -54,12 +54,18 @@ class SparePartThumbnail extends StatelessWidget {
           colors: [Color(0xFF0F172A), ShiftIQColors.primaryBlue],
         ),
       ),
-      child: Center(
-        child: Icon(
-          Icons.settings_suggest_outlined,
-          size: size * 0.52,
-          color: Colors.white.withValues(alpha: 0.9),
-        ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -size * 0.14,
+            bottom: -size * 0.16,
+            child: Icon(
+              Icons.inventory_2_rounded,
+              size: size * 0.92,
+              color: Colors.white.withValues(alpha: 0.10),
+            ),
+          ),
+        ],
       ),
     );
   }
