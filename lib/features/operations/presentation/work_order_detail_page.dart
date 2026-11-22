@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/core/auth/mobile_role_scope.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
@@ -6,7 +8,6 @@ import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.d
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
-import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_order_detail_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
@@ -205,8 +206,38 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
 
         if (order == null) {
           return Scaffold(
-            appBar: AppBar(title: Text(loc.translate('work_order_detail'))),
-            body: Center(child: Text(loc.translate('work_order_not_found'))),
+            backgroundColor: ShiftIQColors.warmNeutral,
+            body: Column(
+              children: [
+                ShiftIQPageHeader(
+                  title: loc.translate('work_order_detail'),
+                  showBackButton: true,
+                ),
+                Expanded(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const ShiftIQEmptyStateIcon(),
+                          const SizedBox(height: 16),
+                          Text(
+                            loc.translate('work_order_not_found'),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: ShiftIQColors.graphiteText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           );
         }
 
@@ -218,19 +249,13 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                 title: order.formattedNumber,
                 subtitle: '${order.vehicleModel} · ${order.vehiclePlate}',
                 showBackButton: true,
-                actions: [
-                  ShiftIQLiquidIconButton(
-                    tooltip: AppLocalizations.of(context)
-                        .translate('tooltip_refresh'),
-                    icon: Icons.refresh_rounded,
-                    onDarkBackground: true,
-                    onPressed: () => vm.loadOrder(order.id),
-                  ),
-                ],
               ),
               Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
+                child: ShiftIQPullToRefresh(
+                  onRefresh: () => vm.loadOrder(order.id),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -606,7 +631,8 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                 const SizedBox(height: 20),
               ],
             ),
-          ),
+                  ),
+                ),
               ),
             ],
           ),
