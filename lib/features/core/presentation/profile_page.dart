@@ -420,36 +420,38 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       const SizedBox(height: 14),
 
-                      // Branch & Role Context Card
-                      _ProfileSectionCard(
-                        icon: vm.isOwnerAdmin
-                            ? Icons.business_outlined
-                            : Icons.storefront_outlined,
-                        title: vm.isOwnerAdmin
-                            ? 'Organization & Active Branch'
-                            : 'Assigned Branch',
-                        children: [
-                          _InfoRow(
-                            label: 'Active Branch',
-                            value: vm.activeBranchName,
-                          ),
-                          if (!vm.isOwnerAdmin) ...[
-                            const SizedBox(height: 10),
+                      // Branch & Role Context Card (staff / owner only)
+                      if (vm.isOwnerAdmin || vm.isEmployee) ...[
+                        _ProfileSectionCard(
+                          icon: vm.isOwnerAdmin
+                              ? Icons.business_outlined
+                              : Icons.storefront_outlined,
+                          title: vm.isOwnerAdmin
+                              ? 'Organization & Active Branch'
+                              : 'Assigned Branch',
+                          children: [
                             _InfoRow(
-                              label: 'Specialty',
-                              value: vm.specialtyName,
+                              label: 'Active Branch',
+                              value: vm.activeBranchName,
                             ),
-                            if (vm.salary > 0) ...[
+                            if (!vm.isOwnerAdmin) ...[
                               const SizedBox(height: 10),
                               _InfoRow(
-                                label: 'Base Salary',
-                                value: 'S/ ${vm.salary.toStringAsFixed(2)}',
+                                label: 'Specialty',
+                                value: vm.specialtyName,
                               ),
+                              if (vm.salary > 0) ...[
+                                const SizedBox(height: 10),
+                                _InfoRow(
+                                  label: 'Base Salary',
+                                  value: 'S/ ${vm.salary.toStringAsFixed(2)}',
+                                ),
+                              ],
                             ],
                           ],
-                        ],
-                      ),
-                      const SizedBox(height: 14),
+                        ),
+                        const SizedBox(height: 14),
+                      ],
 
                       // Language Card
                       _ProfileSectionCard(
