@@ -13,6 +13,7 @@ import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_page
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 
 /// Redesigned user profile screen displaying live backend identity and branch context.
 class ProfilePage extends StatefulWidget {
@@ -245,41 +246,117 @@ class _ProfilePageState extends State<ProfilePage> {
     showDialog(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              const Icon(Icons.logout_rounded, color: ShiftIQColors.severityCrimson),
-              const SizedBox(width: 8),
-              Text(loc.translate('logout_dialog_title')),
-            ],
+        return Dialog(
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: const BorderSide(color: ShiftIQColors.borderSlate),
           ),
-          content: Text(loc.translate('customer_logout_confirm')),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(loc.translate('cancel_upper')),
-            ),
-            FilledButton(
-              key: const Key('btn_confirm_logout'),
-              style: FilledButton.styleFrom(
-                backgroundColor: ShiftIQColors.severityCrimson,
-              ),
-              onPressed: () async {
-                Navigator.of(dialogContext).pop();
-                await _viewModel.logout();
-                if (mounted) {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          LoginPage(viewModel: getIt<LoginViewModel>()),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(22, 24, 22, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    color: ShiftIQColors.severityCrimson.withAlpha(18),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: ShiftIQColors.severityCrimson.withAlpha(45),
                     ),
-                    (route) => false,
-                  );
-                }
-              },
-              child: Text(loc.translate('logout_upper')),
+                  ),
+                  child: const Icon(
+                    Icons.logout_rounded,
+                    color: ShiftIQColors.severityCrimson,
+                    size: 26,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  loc.translate('logout_dialog_title'),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: ShiftIQColors.graphiteText,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  loc.translate('customer_logout_confirm'),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    color: Color(0xFF64748B),
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 22),
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 46,
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.of(dialogContext).pop(),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: ShiftIQColors.graphiteText,
+                            side: const BorderSide(
+                              color: ShiftIQColors.borderSlate,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: Text(
+                            loc.translate('cancel'),
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: SizedBox(
+                        height: 46,
+                        child: FilledButton(
+                          key: const Key('btn_confirm_logout'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: ShiftIQColors.severityCrimson,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          onPressed: () async {
+                            Navigator.of(dialogContext).pop();
+                            await _viewModel.logout();
+                            if (mounted) {
+                              Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(
+                                  builder: (_) => LoginPage(
+                                    viewModel: getIt<LoginViewModel>(),
+                                  ),
+                                ),
+                                (route) => false,
+                              );
+                            }
+                          },
+                          child: const Text(
+                            'Cerrar sesión',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
         );
       },
     );
@@ -531,26 +608,18 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       const SizedBox(height: 22),
 
-                      SizedBox(
-                        height: 50,
-                        child: FilledButton.icon(
-                          key: const Key('btn_edit_profile'),
-                          onPressed: _showEditProfileBottomSheet,
-                          icon: const Icon(Icons.edit_outlined),
-                          label: Text(
-                            loc.translate('edit_profile'),
-                            style: const TextStyle(fontWeight: FontWeight.w700),
-                          ),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: ShiftIQColors.primaryBlue,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                        ),
+                      ShiftIQLiquidButton(
+                        key: const Key('btn_edit_profile'),
+                        expand: true,
+                        height: 48,
+                        borderRadius: 16,
+                        icon: Icons.edit_outlined,
+                        label: loc.translate('edit_profile'),
+                        onPressed: _showEditProfileBottomSheet,
                       ),
                       const SizedBox(height: 12),
 
+                      // Soft Crimson Logout button
                       SizedBox(
                         height: 50,
                         child: OutlinedButton.icon(
@@ -558,21 +627,25 @@ class _ProfilePageState extends State<ProfilePage> {
                           onPressed: _confirmLogout,
                           icon: const Icon(
                             Icons.logout_rounded,
+                            size: 19,
                             color: ShiftIQColors.severityCrimson,
                           ),
-                          label: Text(
-                            loc.translate('logout_upper'),
-                            style: const TextStyle(
+                          label: const Text(
+                            'Cerrar sesión',
+                            style: TextStyle(
                               fontWeight: FontWeight.w700,
                               color: ShiftIQColors.severityCrimson,
                             ),
                           ),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                              color: ShiftIQColors.severityCrimson,
+                            backgroundColor:
+                                ShiftIQColors.severityCrimson.withAlpha(14),
+                            side: BorderSide(
+                              color:
+                                  ShiftIQColors.severityCrimson.withAlpha(55),
                             ),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                           ),
                         ),
