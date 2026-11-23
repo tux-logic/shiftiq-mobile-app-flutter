@@ -133,6 +133,15 @@ class _ShiftIQProfileAvatarButtonState
                 child: Image.network(
                   imageUrl,
                   fit: BoxFit.cover,
+                  frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                    if (wasSynchronouslyLoaded) return child;
+                    return AnimatedOpacity(
+                      opacity: frame == null ? 0.0 : 1.0,
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOut,
+                      child: child,
+                    );
+                  },
                   errorBuilder: (_, _, _) => Container(
                     color: Colors.white.withAlpha(24),
                     child: const Icon(

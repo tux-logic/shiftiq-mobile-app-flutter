@@ -10,6 +10,7 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_floating_nav_bar
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_tactile_card.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_toast.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/dtc_alert_banner.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
@@ -38,6 +39,7 @@ class CustomerHomePage extends StatefulWidget {
 class _CustomerHomePageState extends State<CustomerHomePage> {
   CustomerHomeViewModel? _viewModel;
   int _selectedTab = 0;
+  int _transitionDirection = 1;
 
   @override
   void initState() {
@@ -129,7 +131,13 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
       bottomNavigationBar: ShiftIQFloatingNavBar(
         key: const Key('customer_navigation_bar'),
         selectedIndex: _selectedTab,
-        onDestinationSelected: (index) => setState(() => _selectedTab = index),
+        onDestinationSelected: (index) {
+          if (index == _selectedTab) return;
+          setState(() {
+            _transitionDirection = index > _selectedTab ? 1 : -1;
+            _selectedTab = index;
+          });
+        },
         items: const [
           ShiftIQNavItem(
             key: Key('customer_nav_summary'),
@@ -166,12 +174,28 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     String email,
     CustomerHomeViewModel? vm,
   ) {
-    final content = switch (_selectedTab) {
-      1 => _buildVehiclesTab(vm),
-      2 => _buildOrdersTab(vm),
-      3 => _buildQuotesAndPaymentsTab(context, vm),
-      _ => _buildSummaryTab(context, loc, email, vm),
-    };
+    final content = TweenAnimationBuilder<double>(
+      key: ValueKey<int>(_selectedTab),
+      tween: Tween<double>(begin: 0.0, end: 1.0),
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      builder: (context, progress, child) {
+        final dx = (1.0 - progress) * 0.03 * _transitionDirection;
+        return Opacity(
+          opacity: 0.55 + (0.45 * progress),
+          child: FractionalTranslation(
+            translation: Offset(dx, 0),
+            child: child,
+          ),
+        );
+      },
+      child: switch (_selectedTab) {
+        1 => _buildVehiclesTab(vm),
+        2 => _buildOrdersTab(vm),
+        3 => _buildQuotesAndPaymentsTab(context, vm),
+        _ => _buildSummaryTab(context, loc, email, vm),
+      },
+    );
 
     if (vm == null) return content;
 
@@ -697,19 +721,16 @@ class _CustomerActiveProgressCard extends StatelessWidget {
     final completedTasks = order.tasks.where((t) => t.isCompleted).length;
     final progress = totalTasks > 0 ? (completedTasks / totalTasks) : 0.15;
 
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(18),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: ShiftIQColors.borderSlate),
-          ),
-          child: Column(
+    return ShiftIQTactileCard(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: ShiftIQColors.borderSlate),
+        ),
+        child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
@@ -770,7 +791,6 @@ class _CustomerActiveProgressCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
     );
   }
 }
@@ -1045,18 +1065,22 @@ class _CustomerQuoteCard extends StatelessWidget {
                   ),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: statusColor.withAlpha(24),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  statusLabel,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: statusColor,
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: Container(
+                  key: ValueKey<String>(statusLabel),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusColor.withAlpha(24),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    statusLabel,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: statusColor,
+                    ),
                   ),
                 ),
               ),
@@ -1226,19 +1250,16 @@ class _CustomerWorkOrderCard extends StatelessWidget {
     final totalTasks = order.tasks.length;
     final statusColor = order.status.color;
 
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(18),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: ShiftIQColors.borderSlate),
-          ),
-          child: Column(
+    return ShiftIQTactileCard(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: ShiftIQColors.borderSlate),
+        ),
+        child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
@@ -1354,7 +1375,6 @@ class _CustomerWorkOrderCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
     );
   }
 }
