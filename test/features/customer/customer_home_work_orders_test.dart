@@ -241,4 +241,134 @@ void main() {
       expect(find.text('Pago con Mercado Pago'), findsOneWidget);
     },
   );
+
+  testWidgets(
+    'CustomerHomePage approves DRAFT quote via POST /api/v1/quotes/{id}/approvals and enables payment',
+    (tester) async {
+      final session = SessionStorage();
+      await session.saveSession(
+        accessToken: 'cust-token',
+        refreshToken: 'cust-refresh',
+        userId: 'user-1',
+        username: 'maria@test.com',
+        roles: ['ROLE_CUSTOMER'],
+      );
+
+      var calledApprove = false;
+      final mockClient = MockClient((request) async {
+        if (request.method == 'GET' && request.url.path == '/api/v1/work-orders/me') {
+          return http.Response(
+            jsonEncode([
+              {
+                'id': 'wo-1',
+                'appointmentId': 'appt-1',
+                'branchId': 'branch-1',
+                'vehicleId': 'veh-1',
+                'vehiclePlateNumber': 'XYZ-789',
+                'vehicleBrand': 'Mazda',
+                'vehicleModel': 'CX-5',
+                'vehicleYear': 2022,
+                'customerId': 'cust-1',
+                'customerName': 'Maria Fernandez',
+                'internalNumber': 2,
+                'formattedNumber': 'MOL-01-000002',
+                'status': 'COMPLETED',
+                'diagnosticSummary': 'Mantenimiento completo',
+                'mileageIn': 32000,
+                'totalAmount': 350.0,
+                'tasks': const [],
+                'entryInspectionImages': const [],
+              },
+            ]),
+            200,
+          );
+        }
+        if (request.method == 'GET' && request.url.path == '/api/v1/quotes/me') {
+          return http.Response(
+            jsonEncode([
+              {
+                'id': 'quote-draft-1',
+                'branchId': 'branch-1',
+                'workOrderId': 'wo-1',
+                'quoteNumber': 'COT-2026-0002',
+                'customerName': 'Maria Fernandez',
+                'vehiclePlate': 'XYZ-789',
+                'vehicleModel': 'Mazda CX-5 2022',
+                'status': 'DRAFT',
+                'subtotal': 350.0,
+                'discountPercentage': 0.0,
+                'discountAmount': 0.0,
+                'igvAmount': 0.0,
+                'totalAmount': 350.0,
+                'validUntil': '2026-12-31T00:00:00Z',
+                'createdAt': '2026-11-22T12:00:00Z',
+                'items': const [],
+              },
+            ]),
+            200,
+          );
+        }
+        if (request.method == 'POST' &&
+            request.url.path == '/api/v1/quotes/quote-draft-1/approvals') {
+          calledApprove = true;
+          return http.Response(
+            jsonEncode({
+              'id': 'quote-draft-1',
+              'branchId': 'branch-1',
+              'workOrderId': 'wo-1',
+              'quoteNumber': 'COT-2026-0002',
+              'customerName': 'Maria Fernandez',
+              'vehiclePlate': 'XYZ-789',
+              'vehicleModel': 'Mazda CX-5 2022',
+              'status': 'APPROVED',
+              'subtotal': 350.0,
+              'discountPercentage': 0.0,
+              'discountAmount': 0.0,
+              'igvAmount': 0.0,
+              'totalAmount': 350.0,
+              'validUntil': '2026-12-31T00:00:00Z',
+              'createdAt': '2026-11-22T12:00:00Z',
+              'items': const [],
+            }),
+            200,
+          );
+        }
+        return http.Response('Not Found', 404);
+      });
+
+      final apiClient = ApiClient(sessionStorage: session, client: mockClient);
+      final opsRepo = OperationsRepositoryImpl(
+        serviceApi: ServiceApi(apiClient: apiClient),
+        workOrderApi: WorkOrderApi(apiClient: apiClient),
+        workOrderTaskApi: WorkOrderTaskApi(apiClient: apiClient),
+      );
+      final billingRepo = BillingRepositoryImpl(
+        billingApi: BillingApi(apiClient: apiClient),
+      );
+      final vm = CustomerHomeViewModel(
+        manageWorkOrders: ManageWorkOrders(repository: opsRepo),
+        manageQuotes: ManageQuotes(repository: billingRepo),
+        manageCheckouts: ManageCheckouts(repository: billingRepo),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: const [AppLocalizations.delegate],
+          supportedLocales: const [Locale('es'), Locale('en')],
+          home: CustomerHomePage(viewModel: vm),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Aprobar cotización'), findsOneWidget);
+      expect(find.text('Pagar con Mercado Pago'), findsNothing);
+
+      await tester.ensureVisible(find.byKey(const Key('approve_quote_quote-draft-1')));
+      await tester.tap(find.byKey(const Key('approve_quote_quote-draft-1')));
+      await tester.pumpAndSettle();
+
+      expect(calledApprove, isTrue);
+      expect(find.text('Pagar con Mercado Pago'), findsOneWidget);
+    },
+  );
 }

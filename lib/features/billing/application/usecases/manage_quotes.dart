@@ -82,13 +82,14 @@ class ManageQuotes {
     );
   }
 
-  /// Approves a quote (DRAFT -> APPROVED), enabling voucher emission.
-  Future<Quote> approveQuote(String quoteId) async {
+  /// Approves a quote (DRAFT -> APPROVED), enabling voucher emission and payment.
+  Future<Quote> approveQuote(String quoteId, {Quote? currentQuote}) async {
     if (quoteId.trim().isEmpty) {
       throw ArgumentError('quoteId cannot be empty');
     }
 
-    final existing = await repository.getQuoteById(quoteId.trim());
+    final existing =
+        currentQuote ?? await repository.getQuoteById(quoteId.trim());
     if (existing.status == QuoteStatus.approved) {
       return existing;
     }

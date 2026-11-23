@@ -172,6 +172,9 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
               padding: const EdgeInsets.only(bottom: 12),
               child: _CustomerQuoteCard(
                 quote: quote,
+                canApprove: quote.status == QuoteStatus.draft,
+                isApproving: vm.approvingQuoteId == quote.id,
+                onApprove: () => _handleApproveQuote(context, vm, quote),
                 canPay: vm.canPayQuote(quote),
                 isPaying: vm.payingQuoteId == quote.id,
                 onPay: () => _handlePayQuote(context, vm, quote),
@@ -188,6 +191,23 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
       onRefresh: vm.load,
       skeleton: const ShiftIQSkeletonCardList(itemCount: 2),
       child: content,
+    );
+  }
+
+  Future<void> _handleApproveQuote(
+    BuildContext context,
+    CustomerHomeViewModel vm,
+    Quote quote,
+  ) async {
+    final ok = await vm.approveQuote(quote);
+    if (!context.mounted) return;
+
+    ShiftIQToast.show(
+      context,
+      message: ok
+          ? 'Cotización aprobada'
+          : (vm.error ?? 'No se pudo aprobar la cotización.'),
+      type: ok ? ShiftIQToastType.success : ShiftIQToastType.error,
     );
   }
 
@@ -396,12 +416,18 @@ class _CustomerMessageCard extends StatelessWidget {
 
 class _CustomerQuoteCard extends StatelessWidget {
   final Quote quote;
+  final bool canApprove;
+  final bool isApproving;
+  final VoidCallback onApprove;
   final bool canPay;
   final bool isPaying;
   final VoidCallback onPay;
 
   const _CustomerQuoteCard({
     required this.quote,
+    required this.canApprove,
+    required this.isApproving,
+    required this.onApprove,
     required this.canPay,
     required this.isPaying,
     required this.onPay,
@@ -495,6 +521,36 @@ class _CustomerQuoteCard extends StatelessWidget {
               ),
             ],
           ),
+          if (canApprove) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                key: Key('approve_quote_${quote.id}'),
+                onPressed: isApproving ? null : onApprove,
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF0F172A),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: isApproving
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.check_circle_outline_rounded, size: 18),
+                label: Text(
+                  isApproving ? 'Aprobando...' : 'Aprobar cotización',
+                ),
+              ),
+            ),
+          ],
           if (canPay) ...[
             const SizedBox(height: 12),
             SizedBox(

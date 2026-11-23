@@ -22,6 +22,9 @@ class CustomerHomeViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  String? _approvingQuoteId;
+  String? get approvingQuoteId => _approvingQuoteId;
+
   String? _payingQuoteId;
   String? get payingQuoteId => _payingQuoteId;
 
@@ -65,6 +68,37 @@ class CustomerHomeViewModel extends ChangeNotifier {
     final matchingOrder = _workOrders.where((o) => o.id == woId).firstOrNull;
     if (matchingOrder == null) return true;
     return matchingOrder.isCompleted;
+  }
+
+  /// Approves a `DRAFT` quote belonging to the customer (`POST /api/v1/quotes/{id}/approvals`).
+  Future<bool> approveQuote(Quote quote) async {
+    final quotesUseCase = manageQuotes;
+    if (quotesUseCase == null) {
+      _error = 'Quotes service is not available.';
+      notifyListeners();
+      return false;
+    }
+
+    _approvingQuoteId = quote.id;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final updated = await quotesUseCase.approveQuote(
+        quote.id,
+        currentQuote: quote,
+      );
+      _quotes = _quotes
+          .map((q) => q.id == updated.id ? updated : q)
+          .toList();
+      return true;
+    } catch (e) {
+      _error = 'No se pudo aprobar la cotización: $e';
+      return false;
+    } finally {
+      _approvingQuoteId = null;
+      notifyListeners();
+    }
   }
 
   /// Creates a Mercado Pago Checkout Pro preference for an approved [quote].
