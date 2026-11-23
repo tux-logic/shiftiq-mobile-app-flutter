@@ -13,7 +13,7 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton_dummies
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_view_model.dart';
-import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_profile_avatar_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/branch_cover_picker.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/branch_list_card.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/branch_location_picker.dart';
@@ -332,26 +332,10 @@ class _BranchSelectionPageState extends State<BranchSelectionPage> {
                               setState(() => _showMap = mapMode),
                         ),
                         const SizedBox(width: 8),
-                        IconButton(
+                        ShiftIQProfileAvatarButton(
                           key: const Key('btn_profile'),
                           tooltip: loc.translate('tooltip_profile'),
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => const ProfilePage(),
-                              ),
-                            );
-                          },
-                          icon: const Icon(
-                            Icons.person_outline_rounded,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                          style: IconButton.styleFrom(
-                            backgroundColor: Colors.white.withAlpha(22),
-                            minimumSize: const Size(38, 38),
-                            padding: const EdgeInsets.all(8),
-                          ),
+                          size: 38,
                         ),
                       ],
                     ),

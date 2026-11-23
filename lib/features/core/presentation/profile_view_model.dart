@@ -4,6 +4,7 @@ import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/core_dto.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/profile_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_profile_avatar_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/remote/employee_registration_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/shared/application/usecases/manage_media_uploads.dart';
 
@@ -151,6 +152,9 @@ class ProfileViewModel extends ChangeNotifier {
       final rawContext = await profileApi.getMyProfileContext();
       final dto = UserProfileContextDto.fromJson(rawContext);
       _profileContext = dto.toDomain();
+      ShiftIQProfileAvatarStore.setImageUrl(
+        _profileContext?.resolvedProfileImageUrl,
+      );
 
       // 2. Fetch employee registration details if employee exists
       if (_profileContext?.employee != null) {
@@ -269,6 +273,9 @@ class ProfileViewModel extends ChangeNotifier {
         uploadResult.url,
       );
       _profileContext = UserProfileContextDto.fromJson(updatedRaw).toDomain();
+      ShiftIQProfileAvatarStore.setImageUrl(
+        _profileContext?.resolvedProfileImageUrl,
+      );
       _successMessage = 'Profile photo updated.';
       return true;
     } catch (e) {
@@ -282,6 +289,7 @@ class ProfileViewModel extends ChangeNotifier {
 
   /// Terminates the current session, clearing all tokens and local cache.
   Future<void> logout() async {
+    ShiftIQProfileAvatarStore.clear();
     await sessionStorage.clearSession();
   }
 }

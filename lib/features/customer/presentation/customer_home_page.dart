@@ -13,8 +13,8 @@ import 'package:shiftiq_mobile_app_flutter/features/auth/application/usecases/lo
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
-import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_profile_avatar_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_order_detail_page.dart';
@@ -95,16 +95,9 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           title: loc.translate('customer_portal_title'),
           subtitle: email.isNotEmpty ? email : null,
           actions: [
-            ShiftIQLiquidIconButton(
+            ShiftIQProfileAvatarButton(
               key: const Key('customer_profile_button'),
               tooltip: loc.translate('tooltip_profile'),
-              icon: Icons.person_outline_rounded,
-              onDarkBackground: true,
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const ProfilePage()),
-                );
-              },
             ),
             ShiftIQLiquidIconButton(
               key: const Key('customer_logout_button'),

@@ -11,8 +11,7 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_but
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton_dummies.dart';
-import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
-import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_profile_avatar_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/create_work_order_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_order_detail_page.dart';
@@ -105,19 +104,10 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
               title: 'Órdenes de Trabajo',
               subtitle: vm.activeBranchName,
               actions: [
-                ShiftIQLiquidIconButton(
+                ShiftIQProfileAvatarButton(
                   key: const Key('work_orders_profile_button'),
                   tooltip:
                       AppLocalizations.of(context).translate('tooltip_profile'),
-                  icon: Icons.person_outline_rounded,
-                  onDarkBackground: true,
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const ProfilePage(),
-                      ),
-                    );
-                  },
                 ),
               ],
             ),

@@ -17,7 +17,7 @@ import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widge
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/revenue_trend_chart.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/billing_dashboard_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_page.dart';
-import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_profile_avatar_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/controllers/appointments_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/views/customer_directory_page.dart';
@@ -158,17 +158,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                   ),
                                 ],
                                 const SizedBox(width: 8),
-                                ShiftIQLiquidIconButton(
+                                ShiftIQProfileAvatarButton(
                                   tooltip: loc.translate('tooltip_profile'),
-                                  icon: Icons.person_outline_rounded,
-                                  onDarkBackground: true,
-                                  onPressed: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) => const ProfilePage(),
-                                      ),
-                                    );
-                                  },
                                 ),
                               ],
                             ),

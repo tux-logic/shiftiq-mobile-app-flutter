@@ -10,8 +10,7 @@ import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/analytics_d
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/controllers/employee_dashboard_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/dtc_alert_banner.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/employee_workload_charts.dart';
-import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
-import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_profile_avatar_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_order_detail_page.dart';
 
 /// Personal operational dashboard for workshop employees/mechanics,
@@ -58,17 +57,8 @@ class _EmployeeDashboardPageState extends State<EmployeeDashboardPage> {
             header: ShiftIQPageHeader(
               title: 'Mi Resumen',
               subtitle: 'Cola operativa · ${vm.activeBranchName}',
-              actions: [
-                ShiftIQLiquidIconButton(
-                  tooltip: 'Mi perfil',
-                  icon: Icons.person_outline_rounded,
-                  onDarkBackground: true,
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const ProfilePage()),
-                    );
-                  },
-                ),
+              actions: const [
+                ShiftIQProfileAvatarButton(tooltip: 'Mi perfil'),
               ],
             ),
             body: ShiftIQContentTransition(
