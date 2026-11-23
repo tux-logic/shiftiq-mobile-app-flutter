@@ -11,7 +11,6 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_toast.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/dtc_alert_banner.dart';
-import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/kpi_metric_card.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/application/usecases/logout.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
@@ -20,6 +19,7 @@ import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/sh
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_logout_sheet.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_profile_avatar_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/widgets/customer_analytics_charts.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/domain/iot_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/controllers/telemetry_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/views/live_sensors_monitor_page.dart';
@@ -218,12 +218,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
             const <Quote>[];
     final pendingQuotesCount =
         summary?.pendingQuotesCount ?? pendingQuotes.length;
-    final upcomingApptsCount = summary?.upcomingAppointmentsCount ?? 0;
-
-    final pendingQuoteTotal = pendingQuotes.fold<double>(
-      0.0,
-      (acc, q) => acc + q.totalAmount,
-    );
 
     final healthRatio = vehiclesCount <= 0
         ? 1.0
@@ -253,61 +247,16 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
         if (vm != null && vm.isLoading && vm.workOrders.isEmpty && summary == null)
           const ShiftIQSkeletonCardList(itemCount: 2)
         else ...[
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 1.25,
-            children: [
-              KpiMetricCard(
-                title: 'Mis Vehículos',
-                value: '$vehiclesCount',
-                numericValue: vehiclesCount.toDouble(),
-                icon: Icons.directions_car_filled_rounded,
-                accentColor: ShiftIQColors.primaryBlue,
-                subtitle: dtcCount == 0
-                    ? 'Estado óptimo OBD-II'
-                    : '$dtcCount alerta(s) activas',
-                onTap: () => setState(() => _selectedTab = 1),
-              ),
-              KpiMetricCard(
-                title: 'Órdenes Activas',
-                value: '$activeOrdersCount',
-                numericValue: activeOrdersCount.toDouble(),
-                icon: Icons.build_circle_rounded,
-                accentColor: ShiftIQColors.secondaryTeal,
-                subtitle: activeOrders.isNotEmpty
-                    ? activeOrders.first.vehiclePlate
-                    : 'Sin trabajos en curso',
-                onTap: () => setState(() => _selectedTab = 2),
-              ),
-              KpiMetricCard(
-                title: 'Cotizaciones',
-                value: '$pendingQuotesCount',
-                numericValue: pendingQuotesCount.toDouble(),
-                icon: Icons.receipt_long_rounded,
-                accentColor: const Color(0xFFD97706),
-                subtitle: pendingQuoteTotal > 0
-                    ? 'S/ ${pendingQuoteTotal.toStringAsFixed(2)}'
-                    : 'Todo al día',
-                onTap: () => setState(() => _selectedTab = 2),
-              ),
-              KpiMetricCard(
-                title: 'Citas Próximas',
-                value: '$upcomingApptsCount',
-                numericValue: upcomingApptsCount.toDouble(),
-                icon: Icons.calendar_month_rounded,
-                accentColor: ShiftIQColors.preventiveGreen,
-                subtitle: summary != null && summary.upcomingAppointments.isNotEmpty
-                    ? _formatShortDate(
-                        summary.upcomingAppointments.first.scheduledStart,
-                      )
-                    : 'Sin citas programadas',
-              ),
-            ],
+          CustomerFleetHealthRingChart(
+            activeVehiclesCount: vehiclesCount,
+            activeDtcAlertsCount: dtcCount,
+            activeWorkOrdersCount: activeOrdersCount,
+            pendingQuotesCount: pendingQuotesCount,
           ),
+          if (vm != null && vm.workOrders.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            CustomerWorkOrderSpendingChart(workOrders: vm.workOrders),
+          ],
           if (activeOrders.isNotEmpty) ...[
             const SizedBox(height: 22),
             const Text(
@@ -696,15 +645,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
         ],
       ),
     );
-  }
-
-  static String _formatShortDate(DateTime? dt) {
-    if (dt == null) return 'Programada';
-    final day = dt.day.toString().padLeft(2, '0');
-    final month = dt.month.toString().padLeft(2, '0');
-    final hour = dt.hour.toString().padLeft(2, '0');
-    final min = dt.minute.toString().padLeft(2, '0');
-    return '$day/$month · $hour:$min';
   }
 }
 
