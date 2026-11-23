@@ -5,6 +5,7 @@ enum MediaFolder {
   vehicles('vehicles'),
   inspections('inspections'),
   products('products'),
+  customers('customers'),
   avatars('avatars'),
   workorders('workorders'),
   uploads('uploads');

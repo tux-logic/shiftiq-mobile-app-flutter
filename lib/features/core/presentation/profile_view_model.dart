@@ -5,6 +5,7 @@ import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart
 import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/core_dto.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/profile_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/remote/employee_registration_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/shared/application/usecases/manage_media_uploads.dart';
 
 /// ViewModel managing profile viewing, editing, and session termination
 /// strictly consuming live endpoints from the deployed Render backend.
@@ -12,11 +13,13 @@ class ProfileViewModel extends ChangeNotifier {
   final ProfileApi profileApi;
   final EmployeeRegistrationApi employeeRegistrationApi;
   final SessionStorage sessionStorage;
+  final ManageMediaUploads? manageMediaUploads;
 
   ProfileViewModel({
     required this.profileApi,
     required this.employeeRegistrationApi,
     required this.sessionStorage,
+    this.manageMediaUploads,
   });
 
   bool _isLoading = false;
@@ -24,6 +27,9 @@ class ProfileViewModel extends ChangeNotifier {
 
   bool _isSaving = false;
   bool get isSaving => _isSaving;
+
+  bool _isUploadingImage = false;
+  bool get isUploadingImage => _isUploadingImage;
 
   String? _error;
   String? get error => _error;
@@ -33,6 +39,8 @@ class ProfileViewModel extends ChangeNotifier {
 
   UserProfileContext? _profileContext;
   UserProfileContext? get profileContext => _profileContext;
+
+  String? get profileImageUrl => _profileContext?.resolvedProfileImageUrl;
 
   String _userEmail = '';
   String get userEmail => _userEmail;
@@ -76,6 +84,9 @@ class ProfileViewModel extends ChangeNotifier {
     if (_profileContext?.owner != null) {
       return _profileContext!.owner!.fullName;
     }
+    if (_profileContext?.customer != null) {
+      return _profileContext!.customer!.displayName;
+    }
     return _userEmail.isNotEmpty ? _userEmail : 'Usuario ShiftIQ';
   }
 
@@ -91,6 +102,11 @@ class ProfileViewModel extends ChangeNotifier {
     if (roles.contains('ROLE_EMPLOYEE') || roles.contains('EMPLOYEE')) {
       return 'Mecánico Especialista (B2B Staff)';
     }
+    if (roles.contains('ROLE_CUSTOMER') ||
+        roles.contains('CUSTOMER') ||
+        roles.contains('ROLE_USER')) {
+      return 'Cliente ShiftIQ';
+    }
     return 'Personal del Taller';
   }
 
@@ -103,6 +119,10 @@ class ProfileViewModel extends ChangeNotifier {
     if (owner != null && owner.documentNumber.isNotEmpty) {
       return '${owner.documentType}: ${owner.documentNumber}';
     }
+    final customer = _profileContext?.customer;
+    if (customer != null && customer.documentNumber.isNotEmpty) {
+      return '${customer.documentType}: ${customer.documentNumber}';
+    }
     return 'No registrado';
   }
 
@@ -111,6 +131,8 @@ class ProfileViewModel extends ChangeNotifier {
     if (emp != null && emp.phone.isNotEmpty) return emp.phone;
     final owner = _profileContext?.owner;
     if (owner != null && owner.phone.isNotEmpty) return owner.phone;
+    final customer = _profileContext?.customer;
+    if (customer != null && customer.phone.isNotEmpty) return customer.phone;
     return 'No registrado';
   }
 
@@ -170,6 +192,7 @@ class ProfileViewModel extends ChangeNotifier {
     try {
       final employee = _profileContext?.employee;
       final owner = _profileContext?.owner;
+      final customer = _profileContext?.customer;
 
       if (employee != null) {
         // Send PUT /api/v1/employees/{employeeId} to Render
@@ -191,8 +214,19 @@ class ProfileViewModel extends ChangeNotifier {
           documentNumber: owner.documentNumber,
           phone: phone.trim(),
         );
+      } else if (customer != null) {
+        // Send PUT /api/v1/customers/{customerId} to Render
+        await profileApi.updateCustomerProfile(
+          customerId: customer.customerId,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          businessName: customer.businessName,
+          documentType: customer.documentType,
+          documentNumber: customer.documentNumber,
+          phone: phone.trim(),
+        );
       } else {
-        throw Exception('No se encontró un perfil de empleado ni de propietario activo.');
+        throw Exception('No active profile found for this account.');
       }
 
       await init(); // Refresh profile context
@@ -204,6 +238,44 @@ class ProfileViewModel extends ChangeNotifier {
       return false;
     } finally {
       _isSaving = false;
+      notifyListeners();
+    }
+  }
+
+  /// Uploads an image to Cloudinary and persists `profileImageUrl` via
+  /// `PUT /api/v1/profiles/me/image` across all caller Core profiles.
+  Future<bool> uploadAndSetProfileImage({
+    required List<int> fileBytes,
+    required String fileName,
+  }) async {
+    final uploader = manageMediaUploads;
+    if (uploader == null) {
+      _error = 'Media upload service is not available.';
+      notifyListeners();
+      return false;
+    }
+
+    _isUploadingImage = true;
+    _error = null;
+    _successMessage = null;
+    notifyListeners();
+
+    try {
+      final uploadResult = await uploader.uploadAvatarPhoto(
+        fileBytes: fileBytes,
+        fileName: fileName,
+      );
+      final updatedRaw = await profileApi.updateMyProfileImage(
+        uploadResult.url,
+      );
+      _profileContext = UserProfileContextDto.fromJson(updatedRaw).toDomain();
+      _successMessage = 'Profile photo updated.';
+      return true;
+    } catch (e) {
+      _error = 'Error updating profile photo: $e';
+      return false;
+    } finally {
+      _isUploadingImage = false;
       notifyListeners();
     }
   }

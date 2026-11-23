@@ -279,6 +279,7 @@ void setupDependencies() {
       profileApi: getIt<ProfileApi>(),
       employeeRegistrationApi: getIt<EmployeeRegistrationApi>(),
       sessionStorage: getIt<SessionStorage>(),
+      manageMediaUploads: getIt<ManageMediaUploads>(),
     ),
   );
 

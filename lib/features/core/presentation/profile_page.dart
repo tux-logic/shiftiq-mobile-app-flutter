@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
@@ -25,6 +26,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   late final ProfileViewModel _viewModel;
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void initState() {
@@ -35,19 +37,99 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
+  Future<void> _pickAndUploadAvatar(ImageSource source) async {
+    try {
+      final picked = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+      if (picked == null || !mounted) return;
+
+      final bytes = await picked.readAsBytes();
+      if (!mounted) return;
+
+      final ok = await _viewModel.uploadAndSetProfileImage(
+        fileBytes: bytes,
+        fileName: picked.name,
+      );
+      if (!mounted) return;
+
+      ShiftIQToast.show(
+        context,
+        message: ok
+            ? 'Foto de perfil actualizada'
+            : (_viewModel.error ?? 'No se pudo actualizar la foto de perfil'),
+        type: ok ? ShiftIQToastType.success : ShiftIQToastType.error,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ShiftIQToast.show(
+        context,
+        message: 'No se pudo seleccionar la imagen: $e',
+        type: ShiftIQToastType.error,
+      );
+    }
+  }
+
+  void _showAvatarSourceSheet() {
+    if (_viewModel.isUploadingImage) return;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(
+                  Icons.photo_camera_outlined,
+                  color: ShiftIQColors.primaryBlue,
+                ),
+                title: const Text('Tomar foto'),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  _pickAndUploadAvatar(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.photo_library_outlined,
+                  color: ShiftIQColors.primaryBlue,
+                ),
+                title: const Text('Elegir de la galería'),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  _pickAndUploadAvatar(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showEditProfileBottomSheet() {
     final loc = AppLocalizations.of(context);
     final emp = _viewModel.profileContext?.employee;
     final owner = _viewModel.profileContext?.owner;
+    final customer = _viewModel.profileContext?.customer;
 
     final firstNameController = TextEditingController(
-      text: emp?.firstName ?? owner?.firstName ?? '',
+      text: emp?.firstName ?? owner?.firstName ?? customer?.firstName ?? '',
     );
     final lastNameController = TextEditingController(
-      text: emp?.lastName ?? owner?.lastName ?? '',
+      text: emp?.lastName ?? owner?.lastName ?? customer?.lastName ?? '',
     );
     final phoneController = TextEditingController(
-      text: emp?.phone ?? owner?.phone ?? '',
+      text: emp?.phone ?? owner?.phone ?? customer?.phone ?? '',
     );
     final formKey = GlobalKey<FormState>();
 
@@ -249,18 +331,60 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         child: Column(
                           children: [
-                            CircleAvatar(
-                              radius: 34,
-                              backgroundColor: Colors.white.withAlpha(30),
-                              child: Text(
-                                vm.displayName.isNotEmpty
-                                    ? vm.displayName[0].toUpperCase()
-                                    : 'U',
-                                style: const TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                ),
+                            GestureDetector(
+                              key: const Key('profile_avatar_button'),
+                              onTap: _showAvatarSourceSheet,
+                              child: Stack(
+                                alignment: Alignment.bottomRight,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 36,
+                                    backgroundColor: Colors.white.withAlpha(30),
+                                    backgroundImage:
+                                        vm.profileImageUrl != null
+                                            ? NetworkImage(vm.profileImageUrl!)
+                                            : null,
+                                    child: vm.isUploadingImage
+                                        ? const SizedBox(
+                                            width: 24,
+                                            height: 24,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2.2,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : (vm.profileImageUrl == null
+                                            ? Text(
+                                                vm.displayName.isNotEmpty
+                                                    ? vm.displayName[0]
+                                                        .toUpperCase()
+                                                    : 'U',
+                                                style: const TextStyle(
+                                                  fontSize: 28,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: Colors.white,
+                                                ),
+                                              )
+                                            : null),
+                                  ),
+                                  Container(
+                                    width: 24,
+                                    height: 24,
+                                    decoration: BoxDecoration(
+                                      color: ShiftIQColors.primaryBlue,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.camera_alt_rounded,
+                                      size: 13,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             const SizedBox(height: 12),

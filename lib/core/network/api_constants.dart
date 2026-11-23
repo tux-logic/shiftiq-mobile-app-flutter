@@ -50,6 +50,7 @@ class ApiConstants {
       '/api/v1/customers?userId=$userId';
   static const String profiles = '/api/v1/profiles';
   static const String profilesMe = '/api/v1/profiles/me';
+  static const String profilesMeImage = '/api/v1/profiles/me/image';
   static String profileRoles(String userId) =>
       '/api/v1/profiles/roles?userId=$userId';
   static String profileByDocument(String documentNumber) =>

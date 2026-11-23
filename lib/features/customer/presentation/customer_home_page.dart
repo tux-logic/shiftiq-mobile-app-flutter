@@ -7,6 +7,7 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart
 import 'package:shiftiq_mobile_app_flutter/features/auth/application/usecases/logout.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 
 /// Dedicated mobile landing shell for `ROLE_USER` / `ROLE_CUSTOMER` accounts.
@@ -62,6 +63,17 @@ class CustomerHomePage extends StatelessWidget {
           title: loc.translate('customer_portal_title'),
           subtitle: email.isNotEmpty ? email : null,
           actions: [
+            ShiftIQLiquidIconButton(
+              key: const Key('customer_profile_button'),
+              tooltip: loc.translate('tooltip_profile'),
+              icon: Icons.person_outline_rounded,
+              onDarkBackground: true,
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ProfilePage()),
+                );
+              },
+            ),
             ShiftIQLiquidIconButton(
               key: const Key('customer_logout_button'),
               tooltip: loc.translate('logout_dialog_title'),

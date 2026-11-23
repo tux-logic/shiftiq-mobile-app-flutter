@@ -7,6 +7,7 @@ class OwnerProfile {
   final String documentType;
   final String documentNumber;
   final String phone;
+  final String? profileImageUrl;
 
   const OwnerProfile({
     required this.id,
@@ -16,6 +17,7 @@ class OwnerProfile {
     required this.documentType,
     required this.documentNumber,
     required this.phone,
+    this.profileImageUrl,
   });
 
   String get fullName => '$firstName $lastName'.trim();
@@ -30,6 +32,7 @@ class EmployeeProfile {
   final String documentType;
   final String documentNumber;
   final String phone;
+  final String? profileImageUrl;
 
   const EmployeeProfile({
     required this.employeeId,
@@ -39,6 +42,7 @@ class EmployeeProfile {
     required this.documentType,
     required this.documentNumber,
     required this.phone,
+    this.profileImageUrl,
   });
 
   String get fullName => '$firstName $lastName'.trim();
@@ -55,6 +59,7 @@ class CustomerProfile {
   final String documentType;
   final String documentNumber;
   final String phone;
+  final String? profileImageUrl;
 
   const CustomerProfile({
     required this.customerId,
@@ -66,6 +71,7 @@ class CustomerProfile {
     required this.documentType,
     required this.documentNumber,
     required this.phone,
+    this.profileImageUrl,
   });
 
   String get displayName =>
@@ -79,6 +85,7 @@ class CustomerProfile {
 class UserProfileContext {
   final String userId;
   final List<String> roles;
+  final String? profileImageUrl;
   final OwnerProfile? owner;
   final EmployeeProfile? employee;
   final CustomerProfile? customer;
@@ -86,10 +93,25 @@ class UserProfileContext {
   const UserProfileContext({
     required this.userId,
     this.roles = const [],
+    this.profileImageUrl,
     this.owner,
     this.employee,
     this.customer,
   });
+
+  String? get resolvedProfileImageUrl {
+    for (final candidate in [
+      profileImageUrl,
+      employee?.profileImageUrl,
+      owner?.profileImageUrl,
+      customer?.profileImageUrl,
+    ]) {
+      if (candidate != null && candidate.trim().isNotEmpty) {
+        return candidate.trim();
+      }
+    }
+    return null;
+  }
 
   bool get isOwner => owner != null || roles.contains('ROLE_OWNER');
   bool get isEmployee => employee != null || roles.contains('ROLE_EMPLOYEE');
