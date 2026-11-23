@@ -5,10 +5,13 @@ import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.d
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_floating_nav_bar.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_toast.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/dtc_alert_banner.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/kpi_metric_card.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/application/usecases/logout.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
@@ -17,10 +20,15 @@ import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/sh
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_logout_sheet.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_profile_avatar_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/domain/iot_domain.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/controllers/telemetry_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/views/live_sensors_monitor_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_order_detail_page.dart';
 
-/// Dedicated mobile landing shell for `ROLE_USER` / `ROLE_CUSTOMER` accounts.
+/// Dedicated mobile portal shell for `ROLE_USER` / `ROLE_CUSTOMER` accounts,
+/// reusing the shared ShiftIQ floating nav bar, KPIs, OBD-II telemetry,
+/// read-only work orders, and self-service quote approvals/payments.
 class CustomerHomePage extends StatefulWidget {
   final CustomerHomeViewModel? viewModel;
 
@@ -32,6 +40,7 @@ class CustomerHomePage extends StatefulWidget {
 
 class _CustomerHomePageState extends State<CustomerHomePage> {
   CustomerHomeViewModel? _viewModel;
+  int _selectedTab = 0;
 
   @override
   void initState() {
@@ -61,6 +70,37 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     );
   }
 
+  void _openWorkOrder(WorkOrder order) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => WorkOrderDetailPage(
+          workOrderId: order.id,
+          readOnly: true,
+        ),
+      ),
+    );
+  }
+
+  void _openVehicleObd2(Vehicle vehicle) {
+    if (!getIt.isRegistered<TelemetryViewModel>()) {
+      ShiftIQToast.show(
+        context,
+        message: 'Monitor OBD-II no disponible en este contexto.',
+        type: ShiftIQToastType.info,
+      );
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => LiveSensorsMonitorPage(
+          vehiclePlate: vehicle.plateNumber,
+          vehicleId: vehicle.id,
+          viewModel: getIt<TelemetryViewModel>(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
@@ -68,12 +108,25 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
         ? (getIt<SessionStorage>().username ?? '')
         : '';
 
+    final headerSubtitle = switch (_selectedTab) {
+      1 => 'Tus vehículos y diagnóstico OBD-II',
+      2 => 'Seguimiento de órdenes y pagos',
+      _ => email.isNotEmpty ? email : null,
+    };
+
+    final headerTitle = switch (_selectedTab) {
+      1 => 'Mis Vehículos',
+      2 => 'Órdenes & Pagos',
+      _ => loc.translate('customer_portal_title'),
+    };
+
     return Scaffold(
+      extendBody: true,
       backgroundColor: ShiftIQColors.warmNeutral,
       body: ShiftIQCollapsibleHeaderBody(
         header: ShiftIQPageHeader(
-          title: loc.translate('customer_portal_title'),
-          subtitle: email.isNotEmpty ? email : null,
+          title: headerTitle,
+          subtitle: headerSubtitle,
           actions: [
             ShiftIQProfileAvatarButton(
               key: const Key('customer_profile_button'),
@@ -89,31 +142,285 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           ],
         ),
         body: _viewModel == null
-            ? _buildBodyContent(context, loc, email, null)
+            ? _buildBodyForTab(context, loc, email, null)
             : ListenableBuilder(
                 listenable: _viewModel!,
                 builder: (context, _) =>
-                    _buildBodyContent(context, loc, email, _viewModel),
+                    _buildBodyForTab(context, loc, email, _viewModel),
               ),
+      ),
+      bottomNavigationBar: ShiftIQFloatingNavBar(
+        key: const Key('customer_navigation_bar'),
+        selectedIndex: _selectedTab,
+        onDestinationSelected: (index) => setState(() => _selectedTab = index),
+        items: const [
+          ShiftIQNavItem(
+            key: Key('customer_nav_summary'),
+            icon: Icons.dashboard_outlined,
+            selectedIcon: Icons.dashboard_rounded,
+            label: 'Resumen',
+          ),
+          ShiftIQNavItem(
+            key: Key('customer_nav_vehicles'),
+            icon: Icons.directions_car_outlined,
+            selectedIcon: Icons.directions_car_rounded,
+            label: 'Vehículos',
+          ),
+          ShiftIQNavItem(
+            key: Key('customer_nav_orders'),
+            icon: Icons.build_circle_outlined,
+            selectedIcon: Icons.build_circle_rounded,
+            label: 'Órdenes',
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildBodyContent(
+  Widget _buildBodyForTab(
     BuildContext context,
     AppLocalizations loc,
     String email,
     CustomerHomeViewModel? vm,
   ) {
-    final content = ListView(
+    final content = switch (_selectedTab) {
+      1 => _buildVehiclesTab(vm),
+      2 => _buildOrdersAndQuotesTab(context, vm),
+      _ => _buildSummaryTab(context, loc, email, vm),
+    };
+
+    if (vm == null) return content;
+
+    return ShiftIQPullToRefresh(
+      onRefresh: vm.load,
+      skeleton: const ShiftIQSkeletonDetail(),
+      child: content,
+    );
+  }
+
+  Widget _buildSummaryTab(
+    BuildContext context,
+    AppLocalizations loc,
+    String email,
+    CustomerHomeViewModel? vm,
+  ) {
+    final summary = vm?.summary;
+    final vehiclesCount =
+        summary?.activeVehiclesCount ?? vm?.vehicles.length ?? 0;
+    final dtcCount = vm?.totalDtcAlertsCount ?? 0;
+    final activeOrders =
+        vm?.workOrders.where((o) => !o.isCompleted && !o.isPaid).toList() ??
+            const <WorkOrder>[];
+    final activeOrdersCount =
+        summary?.activeWorkOrdersCount ?? activeOrders.length;
+    final pendingQuotes =
+        vm?.quotes.where((q) => q.status != QuoteStatus.canceled).toList() ??
+            const <Quote>[];
+    final pendingQuotesCount =
+        summary?.pendingQuotesCount ?? pendingQuotes.length;
+    final upcomingApptsCount = summary?.upcomingAppointmentsCount ?? 0;
+
+    final pendingQuoteTotal = pendingQuotes.fold<double>(
+      0.0,
+      (acc, q) => acc + q.totalAmount,
+    );
+
+    final healthRatio = vehiclesCount <= 0
+        ? 1.0
+        : ((vehiclesCount - dtcCount.clamp(0, vehiclesCount)) / vehiclesCount)
+            .clamp(0.0, 1.0);
+    final healthPercent = (healthRatio * 100).round();
+
+    return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 36),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
       children: [
-        _buildWelcomeHero(loc, email),
-        const SizedBox(height: 24),
-        Text(
+        _buildWelcomeHero(
+          loc,
+          email,
+          healthPercent: healthPercent,
+          healthRatio: healthRatio,
+          dtcCount: dtcCount,
+        ),
+        if (dtcCount > 0) ...[
+          const SizedBox(height: 16),
+          DtcAlertBanner(
+            alertCount: dtcCount,
+            onDetailsPressed: () => setState(() => _selectedTab = 1),
+          ),
+        ],
+        const SizedBox(height: 20),
+        if (vm != null && vm.isLoading && vm.workOrders.isEmpty && summary == null)
+          const ShiftIQSkeletonCardList(itemCount: 2)
+        else ...[
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 1.25,
+            children: [
+              KpiMetricCard(
+                title: 'Mis Vehículos',
+                value: '$vehiclesCount',
+                numericValue: vehiclesCount.toDouble(),
+                icon: Icons.directions_car_filled_rounded,
+                accentColor: ShiftIQColors.primaryBlue,
+                subtitle: dtcCount == 0
+                    ? 'Estado óptimo OBD-II'
+                    : '$dtcCount alerta(s) activas',
+                onTap: () => setState(() => _selectedTab = 1),
+              ),
+              KpiMetricCard(
+                title: 'Órdenes Activas',
+                value: '$activeOrdersCount',
+                numericValue: activeOrdersCount.toDouble(),
+                icon: Icons.build_circle_rounded,
+                accentColor: ShiftIQColors.secondaryTeal,
+                subtitle: activeOrders.isNotEmpty
+                    ? activeOrders.first.vehiclePlate
+                    : 'Sin trabajos en curso',
+                onTap: () => setState(() => _selectedTab = 2),
+              ),
+              KpiMetricCard(
+                title: 'Cotizaciones',
+                value: '$pendingQuotesCount',
+                numericValue: pendingQuotesCount.toDouble(),
+                icon: Icons.receipt_long_rounded,
+                accentColor: const Color(0xFFD97706),
+                subtitle: pendingQuoteTotal > 0
+                    ? 'S/ ${pendingQuoteTotal.toStringAsFixed(2)}'
+                    : 'Todo al día',
+                onTap: () => setState(() => _selectedTab = 2),
+              ),
+              KpiMetricCard(
+                title: 'Citas Próximas',
+                value: '$upcomingApptsCount',
+                numericValue: upcomingApptsCount.toDouble(),
+                icon: Icons.calendar_month_rounded,
+                accentColor: ShiftIQColors.preventiveGreen,
+                subtitle: summary != null && summary.upcomingAppointments.isNotEmpty
+                    ? _formatShortDate(
+                        summary.upcomingAppointments.first.scheduledStart,
+                      )
+                    : 'Sin citas programadas',
+              ),
+            ],
+          ),
+          if (activeOrders.isNotEmpty) ...[
+            const SizedBox(height: 22),
+            const Text(
+              'PROGRESO EN TALLER',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF64748B),
+                letterSpacing: 0.6,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...activeOrders.take(2).map(
+                  (order) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _CustomerActiveProgressCard(
+                      order: order,
+                      onTap: () => _openWorkOrder(order),
+                    ),
+                  ),
+                ),
+          ],
+          if (vm != null &&
+              vm.quotes.any(
+                (q) => q.status == QuoteStatus.draft || vm.canPayQuote(q),
+              )) ...[
+            const SizedBox(height: 12),
+            const Text(
+              'ACCIONES PENDIENTES',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF64748B),
+                letterSpacing: 0.6,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...vm.quotes
+                .where(
+                  (q) => q.status == QuoteStatus.draft || vm.canPayQuote(q),
+                )
+                .map(
+                  (quote) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _CustomerQuoteCard(
+                      quote: quote,
+                      canApprove: quote.status == QuoteStatus.draft,
+                      isApproving: vm.approvingQuoteId == quote.id,
+                      isRejecting: vm.rejectingQuoteId == quote.id,
+                      onApprove: () => _handleApproveQuote(context, vm, quote),
+                      onReject: () => _handleRejectQuote(context, vm, quote),
+                      canPay: vm.canPayQuote(quote),
+                      isPaying: vm.payingQuoteId == quote.id,
+                      onPay: () => _handlePayQuote(context, vm, quote),
+                    ),
+                  ),
+                ),
+          ],
+        ],
+      ],
+    );
+  }
+
+  Widget _buildVehiclesTab(CustomerHomeViewModel? vm) {
+    final vehicles = vm?.vehicles ?? const <Vehicle>[];
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
+      children: [
+        const Text(
+          'MIS VEHÍCULOS Y TELEMETRÍA OBD-II',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF64748B),
+            letterSpacing: 0.6,
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (vm != null && vm.isLoading && vehicles.isEmpty)
+          const ShiftIQSkeletonCardList(itemCount: 2)
+        else if (vehicles.isEmpty)
+          const _CustomerMessageCard(
+            title: 'Sin vehículos registrados',
+            subtitle:
+                'Cuando registres o vincules un vehículo con el taller verás aquí su estado OBD-II y alertas DTC.',
+          )
+        else
+          ...vehicles.map(
+            (vehicle) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _CustomerVehicleCard(
+                vehicle: vehicle,
+                alerts: vm?.dtcAlertsForVehicle(vehicle.id) ?? const [],
+                onOpenObd2: () => _openVehicleObd2(vehicle),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildOrdersAndQuotesTab(
+    BuildContext context,
+    CustomerHomeViewModel? vm,
+  ) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
+      children: [
+        const Text(
           'MIS ÓRDENES DE TRABAJO',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w800,
             color: Color(0xFF64748B),
@@ -142,16 +449,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
               padding: const EdgeInsets.only(bottom: 12),
               child: _CustomerWorkOrderCard(
                 order: order,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => WorkOrderDetailPage(
-                        workOrderId: order.id,
-                        readOnly: true,
-                      ),
-                    ),
-                  );
-                },
+                onTap: () => _openWorkOrder(order),
               ),
             ),
           ),
@@ -174,7 +472,9 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                 quote: quote,
                 canApprove: quote.status == QuoteStatus.draft,
                 isApproving: vm.approvingQuoteId == quote.id,
+                isRejecting: vm.rejectingQuoteId == quote.id,
                 onApprove: () => _handleApproveQuote(context, vm, quote),
+                onReject: () => _handleRejectQuote(context, vm, quote),
                 canPay: vm.canPayQuote(quote),
                 isPaying: vm.payingQuoteId == quote.id,
                 onPay: () => _handlePayQuote(context, vm, quote),
@@ -183,14 +483,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           ),
         ],
       ],
-    );
-
-    if (vm == null) return content;
-
-    return ShiftIQPullToRefresh(
-      onRefresh: vm.load,
-      skeleton: const ShiftIQSkeletonCardList(itemCount: 2),
-      child: content,
     );
   }
 
@@ -208,6 +500,23 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           ? 'Cotización aprobada'
           : (vm.error ?? 'No se pudo aprobar la cotización.'),
       type: ok ? ShiftIQToastType.success : ShiftIQToastType.error,
+    );
+  }
+
+  Future<void> _handleRejectQuote(
+    BuildContext context,
+    CustomerHomeViewModel vm,
+    Quote quote,
+  ) async {
+    final ok = await vm.rejectQuote(quote);
+    if (!context.mounted) return;
+
+    ShiftIQToast.show(
+      context,
+      message: ok
+          ? 'Cotización rechazada'
+          : (vm.error ?? 'No se pudo rechazar la cotización.'),
+      type: ok ? ShiftIQToastType.info : ShiftIQToastType.error,
     );
   }
 
@@ -286,7 +595,17 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     );
   }
 
-  Widget _buildWelcomeHero(AppLocalizations loc, String email) {
+  Widget _buildWelcomeHero(
+    AppLocalizations loc,
+    String email, {
+    required int healthPercent,
+    required double healthRatio,
+    required int dtcCount,
+  }) {
+    final healthColor = dtcCount > 0
+        ? ShiftIQColors.severityAmber
+        : ShiftIQColors.secondaryTeal;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -300,34 +619,47 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 4,
-            ),
-            decoration: BoxDecoration(
-              color: ShiftIQColors.secondaryTeal.withAlpha(45),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: ShiftIQColors.secondaryTeal.withAlpha(120),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: ShiftIQColors.secondaryTeal.withAlpha(45),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: ShiftIQColors.secondaryTeal.withAlpha(120),
+                  ),
+                ),
+                child: Text(
+                  loc.translate('role_customer_badge'),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.4,
+                  ),
+                ),
               ),
-            ),
-            child: Text(
-              loc.translate('role_customer_badge'),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.4,
+              const Spacer(),
+              Text(
+                'Salud $healthPercent%',
+                style: TextStyle(
+                  color: healthColor,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            ),
+            ],
           ),
           const SizedBox(height: 14),
           Text(
             loc.translate('customer_welcome_title'),
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 22,
+              fontSize: 21,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -337,18 +669,265 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
               email,
               style: const TextStyle(
                 color: Colors.white70,
-                fontSize: 13,
+                fontSize: 12.5,
               ),
             ),
           ],
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: healthRatio,
+              minHeight: 7,
+              backgroundColor: Colors.white.withAlpha(32),
+              valueColor: AlwaysStoppedAnimation<Color>(healthColor),
+            ),
+          ),
+          const SizedBox(height: 8),
           Text(
-            loc.translate('customer_welcome_subtitle'),
+            dtcCount == 0
+                ? 'Tus vehículos operan sin alertas OBD-II activas.'
+                : 'Se detectaron $dtcCount alerta(s) DTC. Revisa la pestaña Vehículos.',
             style: const TextStyle(
               color: Colors.white70,
-              fontSize: 13,
-              height: 1.4,
+              fontSize: 12,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static String _formatShortDate(DateTime? dt) {
+    if (dt == null) return 'Programada';
+    final day = dt.day.toString().padLeft(2, '0');
+    final month = dt.month.toString().padLeft(2, '0');
+    final hour = dt.hour.toString().padLeft(2, '0');
+    final min = dt.minute.toString().padLeft(2, '0');
+    return '$day/$month · $hour:$min';
+  }
+}
+
+class _CustomerActiveProgressCard extends StatelessWidget {
+  final WorkOrder order;
+  final VoidCallback onTap;
+
+  const _CustomerActiveProgressCard({
+    required this.order,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final totalTasks = order.tasks.length;
+    final completedTasks = order.tasks.where((t) => t.isCompleted).length;
+    final progress = totalTasks > 0 ? (completedTasks / totalTasks) : 0.15;
+
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: ShiftIQColors.borderSlate),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    '${order.vehiclePlate} · ${order.formattedNumber}',
+                    style: const TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w800,
+                      color: ShiftIQColors.graphiteText,
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: order.status.color.withAlpha(24),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      order.status.label,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: order.status.color,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(999),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 7,
+                  backgroundColor: const Color(0xFFE2E8F0),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    order.status.color,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                totalTasks > 0
+                    ? '$completedTasks de $totalTasks tareas completadas'
+                    : order.diagnosticSummary,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CustomerVehicleCard extends StatelessWidget {
+  final Vehicle vehicle;
+  final List<DtcAlert> alerts;
+  final VoidCallback onOpenObd2;
+
+  const _CustomerVehicleCard({
+    required this.vehicle,
+    required this.alerts,
+    required this.onOpenObd2,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final activeAlerts =
+        alerts.where((a) => a.status != DtcStatus.resolved).toList();
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: ShiftIQColors.borderSlate),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: ShiftIQColors.primaryBlue.withAlpha(18),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.directions_car_filled_rounded,
+                  color: ShiftIQColors.primaryBlue,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      vehicle.displayName,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: ShiftIQColors.graphiteText,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Placa ${vehicle.plateNumber} · VIN ${vehicle.vin.isNotEmpty ? vehicle.vin : "-"}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: (activeAlerts.isEmpty
+                          ? ShiftIQColors.preventiveGreen
+                          : ShiftIQColors.severityCrimson)
+                      .withAlpha(22),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  activeAlerts.isEmpty
+                      ? 'Sin alertas'
+                      : '${activeAlerts.length} DTC',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: activeAlerts.isEmpty
+                        ? ShiftIQColors.preventiveGreen
+                        : ShiftIQColors.severityCrimson,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (activeAlerts.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: activeAlerts.take(3).map((alert) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: alert.severity.color.withAlpha(18),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: alert.severity.color.withAlpha(55),
+                    ),
+                  ),
+                  child: Text(
+                    '${alert.code} · ${alert.severity.label}',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: alert.severity.color,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+          const SizedBox(height: 14),
+          ShiftIQLiquidButton(
+            key: Key('obd2_vehicle_${vehicle.id}'),
+            expand: true,
+            height: 44,
+            borderRadius: 14,
+            icon: Icons.sensors_rounded,
+            label: 'Ver sensores OBD-II',
+            onPressed: onOpenObd2,
           ),
         ],
       ),
@@ -418,7 +997,9 @@ class _CustomerQuoteCard extends StatelessWidget {
   final Quote quote;
   final bool canApprove;
   final bool isApproving;
+  final bool isRejecting;
   final VoidCallback onApprove;
+  final VoidCallback onReject;
   final bool canPay;
   final bool isPaying;
   final VoidCallback onPay;
@@ -427,7 +1008,9 @@ class _CustomerQuoteCard extends StatelessWidget {
     required this.quote,
     required this.canApprove,
     required this.isApproving,
+    required this.isRejecting,
     required this.onApprove,
+    required this.onReject,
     required this.canPay,
     required this.isPaying,
     required this.onPay,
@@ -523,32 +1106,53 @@ class _CustomerQuoteCard extends StatelessWidget {
           ),
           if (canApprove) ...[
             const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                key: Key('approve_quote_${quote.id}'),
-                onPressed: isApproving ? null : onApprove,
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF0F172A),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    key: Key('reject_quote_${quote.id}'),
+                    onPressed: (isApproving || isRejecting) ? null : onReject,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: ShiftIQColors.severityCrimson,
+                      side: BorderSide(
+                        color: ShiftIQColors.severityCrimson.withAlpha(80),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(isRejecting ? 'Rechazando...' : 'Rechazar'),
                   ),
                 ),
-                icon: isApproving
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.check_circle_outline_rounded, size: 18),
-                label: Text(
-                  isApproving ? 'Aprobando...' : 'Aprobar cotización',
+                const SizedBox(width: 10),
+                Expanded(
+                  flex: 2,
+                  child: FilledButton.icon(
+                    key: Key('approve_quote_${quote.id}'),
+                    onPressed: (isApproving || isRejecting) ? null : onApprove,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF0F172A),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: isApproving
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.check_circle_outline_rounded, size: 18),
+                    label: Text(
+                      isApproving ? 'Aprobando...' : 'Aprobar cotización',
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ],
           if (canPay) ...[
@@ -578,6 +1182,15 @@ class _CustomerQuoteCard extends StatelessWidget {
                 label: Text(
                   isPaying ? 'Generando enlace...' : 'Pagar con Mercado Pago',
                 ),
+              ),
+            ),
+          ] else if (quote.status == QuoteStatus.approved) ...[
+            const SizedBox(height: 8),
+            const Text(
+              'Aprobada · El pago se habilitará cuando el taller complete la orden.',
+              style: TextStyle(
+                fontSize: 11.5,
+                color: Color(0xFF64748B),
               ),
             ),
           ],
@@ -695,7 +1308,7 @@ class _CustomerWorkOrderCard extends StatelessWidget {
                   ),
                   if (totalTasks > 0) ...[
                     const SizedBox(width: 12),
-                    Icon(
+                    const Icon(
                       Icons.checklist_rounded,
                       size: 14,
                       color: ShiftIQColors.primaryBlue,

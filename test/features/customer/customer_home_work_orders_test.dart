@@ -98,6 +98,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      await tester.tap(find.byKey(const Key('customer_nav_orders')));
+      await tester.pumpAndSettle();
+
       expect(calledMeEndpoint, isTrue);
       expect(vm.workOrders.first.tasks.first.assignedMechanicName, equals('Luis Mendoza'));
       expect(find.text('ABC-123'), findsOneWidget);
@@ -232,6 +235,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      await tester.tap(find.byKey(const Key('customer_nav_orders')));
+      await tester.pumpAndSettle();
+
       expect(calledQuotesMe, isTrue);
       expect(find.text('MIS COTIZACIONES'), findsOneWidget);
       expect(find.text('Pagar con Mercado Pago'), findsOneWidget);
@@ -361,6 +367,9 @@ void main() {
           home: CustomerHomePage(viewModel: vm),
         ),
       );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('customer_nav_orders')));
       await tester.pumpAndSettle();
 
       expect(find.text('Aprobar cotización'), findsOneWidget);
