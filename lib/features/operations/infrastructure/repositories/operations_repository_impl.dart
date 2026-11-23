@@ -99,6 +99,12 @@ class OperationsRepositoryImpl implements OperationsRepository {
   }
 
   @override
+  Future<List<WorkOrder>> getMyWorkOrders() async {
+    final rawList = await workOrderApi.getMyWorkOrders();
+    return OperationsDto.workOrderListFromJson(rawList);
+  }
+
+  @override
   Future<WorkOrder> getWorkOrderById(String id) async {
     final raw = await workOrderApi.getWorkOrderById(id);
     return OperationsDto.workOrderFromJson(raw);

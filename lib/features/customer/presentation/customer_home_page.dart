@@ -3,16 +3,44 @@ import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/application/usecases/logout.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
+import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_order_detail_page.dart';
 
 /// Dedicated mobile landing shell for `ROLE_USER` / `ROLE_CUSTOMER` accounts.
-class CustomerHomePage extends StatelessWidget {
-  const CustomerHomePage({super.key});
+class CustomerHomePage extends StatefulWidget {
+  final CustomerHomeViewModel? viewModel;
+
+  const CustomerHomePage({super.key, this.viewModel});
+
+  @override
+  State<CustomerHomePage> createState() => _CustomerHomePageState();
+}
+
+class _CustomerHomePageState extends State<CustomerHomePage> {
+  CustomerHomeViewModel? _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.viewModel != null) {
+      _viewModel = widget.viewModel;
+    } else if (getIt.isRegistered<CustomerHomeViewModel>()) {
+      _viewModel = getIt<CustomerHomeViewModel>();
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _viewModel?.load();
+    });
+  }
 
   Future<void> _handleLogout(BuildContext context) async {
     final loc = AppLocalizations.of(context);
@@ -53,8 +81,9 @@ class CustomerHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
-    final session = getIt<SessionStorage>();
-    final email = session.username ?? '';
+    final email = getIt.isRegistered<SessionStorage>()
+        ? (getIt<SessionStorage>().username ?? '')
+        : '';
 
     return Scaffold(
       backgroundColor: ShiftIQColors.warmNeutral,
@@ -83,172 +112,356 @@ class CustomerHomePage extends StatelessWidget {
             ),
           ],
         ),
-        body: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF0F172A), ShiftIQColors.primaryBlue],
-                ),
-                borderRadius: BorderRadius.circular(20),
+        body: _viewModel == null
+            ? _buildBodyContent(context, loc, email, null)
+            : ListenableBuilder(
+                listenable: _viewModel!,
+                builder: (context, _) =>
+                    _buildBodyContent(context, loc, email, _viewModel),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: ShiftIQColors.secondaryTeal.withAlpha(45),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: ShiftIQColors.secondaryTeal.withAlpha(120),
+      ),
+    );
+  }
+
+  Widget _buildBodyContent(
+    BuildContext context,
+    AppLocalizations loc,
+    String email,
+    CustomerHomeViewModel? vm,
+  ) {
+    final content = ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 36),
+      children: [
+        _buildWelcomeHero(loc, email),
+        const SizedBox(height: 24),
+        Text(
+          'MIS ÓRDENES DE TRABAJO',
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF64748B),
+            letterSpacing: 0.6,
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (vm != null && vm.isLoading && vm.workOrders.isEmpty)
+          const ShiftIQSkeletonCardList(itemCount: 2)
+        else if (vm != null && vm.error != null && vm.workOrders.isEmpty)
+          _CustomerMessageCard(
+            title: 'No se pudieron cargar tus órdenes',
+            subtitle: vm.error!,
+            actionLabel: 'Reintentar',
+            onAction: vm.load,
+          )
+        else if (vm == null || vm.workOrders.isEmpty)
+          const _CustomerMessageCard(
+            title: 'Sin órdenes de trabajo registradas',
+            subtitle:
+                'Cuando tu vehículo ingrese al taller podrás seguir aquí su diagnóstico, tareas y evidencias.',
+          )
+        else
+          ...vm.workOrders.map(
+            (order) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _CustomerWorkOrderCard(
+                order: order,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => WorkOrderDetailPage(
+                        workOrderId: order.id,
+                        readOnly: true,
                       ),
                     ),
-                    child: Text(
-                      loc.translate('role_customer_badge'),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.4,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    loc.translate('customer_welcome_title'),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  if (email.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      email,
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 12),
-                  Text(
-                    loc.translate('customer_welcome_subtitle'),
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 13,
-                      height: 1.4,
-                    ),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
-            const SizedBox(height: 24),
-            Text(
-              loc.translate('customer_services_section'),
+          ),
+      ],
+    );
+
+    if (vm == null) return content;
+
+    return ShiftIQPullToRefresh(
+      onRefresh: vm.load,
+      skeleton: const ShiftIQSkeletonCardList(itemCount: 2),
+      child: content,
+    );
+  }
+
+  Widget _buildWelcomeHero(AppLocalizations loc, String email) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF0F172A), ShiftIQColors.primaryBlue],
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 4,
+            ),
+            decoration: BoxDecoration(
+              color: ShiftIQColors.secondaryTeal.withAlpha(45),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: ShiftIQColors.secondaryTeal.withAlpha(120),
+              ),
+            ),
+            child: Text(
+              loc.translate('role_customer_badge'),
               style: const TextStyle(
-                fontSize: 13,
+                color: Colors.white,
+                fontSize: 11,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF64748B),
-                letterSpacing: 0.5,
+                letterSpacing: 0.4,
               ),
             ),
-            const SizedBox(height: 12),
-            _CustomerModuleCard(
-              icon: Icons.directions_car_filled_outlined,
-              accentColor: ShiftIQColors.primaryBlue,
-              title: loc.translate('customer_vehicles_title'),
-              subtitle: loc.translate('customer_vehicles_subtitle'),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            loc.translate('customer_welcome_title'),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
             ),
-            const SizedBox(height: 12),
-            _CustomerModuleCard(
-              icon: Icons.calendar_month_outlined,
-              accentColor: ShiftIQColors.secondaryTeal,
-              title: loc.translate('customer_appointments_title'),
-              subtitle: loc.translate('customer_appointments_subtitle'),
-            ),
-            const SizedBox(height: 12),
-            _CustomerModuleCard(
-              icon: Icons.build_circle_outlined,
-              accentColor: ShiftIQColors.preventiveGreen,
-              title: loc.translate('customer_orders_title'),
-              subtitle: loc.translate('customer_orders_subtitle'),
+          ),
+          if (email.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              email,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 13,
+              ),
             ),
           ],
-        ),
+          const SizedBox(height: 12),
+          Text(
+            loc.translate('customer_welcome_subtitle'),
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 13,
+              height: 1.4,
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _CustomerModuleCard extends StatelessWidget {
-  final IconData icon;
-  final Color accentColor;
+class _CustomerMessageCard extends StatelessWidget {
   final String title;
   final String subtitle;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
-  const _CustomerModuleCard({
-    required this.icon,
-    required this.accentColor,
+  const _CustomerMessageCard({
     required this.title,
     required this.subtitle,
+    this.actionLabel,
+    this.onAction,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: ShiftIQColors.borderSlate),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: accentColor.withAlpha(20),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: accentColor, size: 24),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: ShiftIQColors.graphiteText,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF64748B),
-                    height: 1.35,
-                  ),
-                ),
-              ],
+          const ShiftIQEmptyStateIcon(),
+          const SizedBox(height: 14),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: ShiftIQColors.graphiteText,
             ),
           ),
+          const SizedBox(height: 6),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 12.5,
+              color: Color(0xFF64748B),
+              height: 1.4,
+            ),
+          ),
+          if (actionLabel != null && onAction != null) ...[
+            const SizedBox(height: 14),
+            OutlinedButton(
+              onPressed: onAction,
+              child: Text(actionLabel!),
+            ),
+          ],
         ],
+      ),
+    );
+  }
+}
+
+class _CustomerWorkOrderCard extends StatelessWidget {
+  final WorkOrder order;
+  final VoidCallback onTap;
+
+  const _CustomerWorkOrderCard({
+    required this.order,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final completedTasks = order.tasks.where((t) => t.isCompleted).length;
+    final totalTasks = order.tasks.length;
+    final statusColor = order.status.color;
+
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: ShiftIQColors.borderSlate),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 9,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ShiftIQColors.graphiteText,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      order.vehiclePlate,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      order.vehicleModel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: ShiftIQColors.graphiteText,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusColor.withAlpha(24),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      order.status.label,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: statusColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                order.diagnosticSummary,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF475569),
+                  height: 1.35,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Text(
+                    order.formattedNumber,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
+                  if (totalTasks > 0) ...[
+                    const SizedBox(width: 12),
+                    Icon(
+                      Icons.checklist_rounded,
+                      size: 14,
+                      color: ShiftIQColors.primaryBlue,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$completedTasks/$totalTasks tareas',
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        color: ShiftIQColors.primaryBlue,
+                      ),
+                    ),
+                  ],
+                  const Spacer(),
+                  Text(
+                    order.formattedAmount,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: ShiftIQColors.graphiteText,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    size: 18,
+                    color: Color(0xFF94A3B8),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

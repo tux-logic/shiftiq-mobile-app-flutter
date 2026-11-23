@@ -95,6 +95,7 @@ class ApiConstants {
   static String serviceById(String id) => '/api/v1/services/$id';
 
   static const String workOrders = '/api/v1/work-orders';
+  static const String workOrdersMe = '/api/v1/work-orders/me';
   static String workOrderById(String id) => '/api/v1/work-orders/$id';
   static String workOrderComplete(String id) => '/api/v1/work-orders/$id/complete';
 

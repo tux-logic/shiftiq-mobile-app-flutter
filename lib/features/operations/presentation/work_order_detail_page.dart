@@ -21,11 +21,13 @@ import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/c
 class WorkOrderDetailPage extends StatefulWidget {
   final String workOrderId;
   final WorkOrderDetailViewModel? viewModel;
+  final bool readOnly;
 
   const WorkOrderDetailPage({
     super.key,
     required this.workOrderId,
     this.viewModel,
+    this.readOnly = false,
   });
 
   @override
@@ -35,7 +37,15 @@ class WorkOrderDetailPage extends StatefulWidget {
 class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
   late final WorkOrderDetailViewModel _viewModel;
 
+  bool get _isCustomer {
+    if (widget.readOnly) return true;
+    if (!getIt.isRegistered<SessionStorage>()) return false;
+    return RoleRouter.resolveScope(getIt<SessionStorage>().roles) ==
+        MobileRoleScope.customer;
+  }
+
   bool get _isOwnerAdmin {
+    if (_isCustomer) return false;
     if (!getIt.isRegistered<SessionStorage>()) return false;
     return RoleRouter.resolveScope(getIt<SessionStorage>().roles) ==
         MobileRoleScope.ownerAdmin;
@@ -671,7 +681,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
     WorkOrderDetailViewModel vm,
   ) {
     final orderCompleted = vm.order?.isCompleted ?? false;
-    final canExecute = _isOwnerAdmin || vm.canExecuteTask(task);
+    final canExecute = !_isCustomer && (_isOwnerAdmin || vm.canExecuteTask(task));
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -762,7 +772,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
     WorkOrderTask task,
     WorkOrderDetailViewModel vm,
   ) {
-    final canExecute = _isOwnerAdmin || vm.canExecuteTask(task);
+    final canExecute = !_isCustomer && (_isOwnerAdmin || vm.canExecuteTask(task));
     return WorkOrderTaskCard(
       task: task,
       canExecute: canExecute,

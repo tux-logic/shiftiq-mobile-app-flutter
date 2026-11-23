@@ -140,6 +140,9 @@ class FakeOperationsRepository implements OperationsRepository {
   }
 
   @override
+  Future<List<WorkOrder>> getMyWorkOrders() async => workOrders;
+
+  @override
   Future<List<WorkOrder>> getWorkOrders({
     String? branchId,
     String? vehicleId,

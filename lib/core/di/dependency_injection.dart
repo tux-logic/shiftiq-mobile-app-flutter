@@ -36,6 +36,7 @@ import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/w
 import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/repositories/core_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_branch_financial_analytics.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_branch_summary.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_network_analytics_summary.dart';
@@ -607,5 +608,12 @@ void setupDependencies() {
 
   getIt.registerLazySingleton<ManageIdentityValidations>(
     () => ManageIdentityValidations(repository: getIt<SharedRepository>()),
+  );
+
+  // 11. Customer Portal Context
+  getIt.registerFactory<CustomerHomeViewModel>(
+    () => CustomerHomeViewModel(
+      manageWorkOrders: getIt<ManageWorkOrders>(),
+    ),
   );
 }

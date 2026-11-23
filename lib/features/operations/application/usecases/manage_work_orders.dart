@@ -71,6 +71,11 @@ class ManageWorkOrders {
     );
   }
 
+  /// Queries work orders belonging to the authenticated customer (read-only).
+  Future<List<WorkOrder>> getMyWorkOrders() {
+    return repository.getMyWorkOrders();
+  }
+
   /// Retrieves detailed information for a specific work order.
   Future<WorkOrder> getWorkOrderById(String id) async {
     final trimmedId = id.trim();
