@@ -526,7 +526,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                 const SizedBox(height: 20),
 
                 // Finalize Order Button (owner/admin settlement only)
-                if (!order.isCompleted && _isOwnerAdmin)
+                if (!order.isCompleted && !order.isPaid && _isOwnerAdmin)
                   ElevatedButton(
                     onPressed: () async {
                       final confirmed = await showDialog<bool>(
@@ -544,7 +544,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                             ElevatedButton(
                               onPressed: () => Navigator.of(ctx).pop(true),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: ShiftIQColors.preventiveGreen,
+                                backgroundColor: const Color(0xFF0F172A),
                                 foregroundColor: Colors.white,
                               ),
                               child: Text(loc.translate('confirm_and_settle')),
@@ -558,7 +558,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: ShiftIQColors.preventiveGreen,
+                      backgroundColor: const Color(0xFF0F172A),
                       foregroundColor: Colors.white,
                       elevation: 0,
                       minimumSize: const Size.fromHeight(50),
@@ -581,35 +581,49 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                       ],
                     ),
                   )
-                else ...[
+                else if (order.isCompleted || order.isPaid) ...[
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: ShiftIQColors.preventiveGreen.withAlpha(20),
-                      borderRadius: BorderRadius.circular(8),
+                      color: (order.isPaid
+                              ? ShiftIQColors.primaryBlue
+                              : ShiftIQColors.preventiveGreen)
+                          .withAlpha(20),
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: ShiftIQColors.preventiveGreen.withAlpha(80),
+                        color: (order.isPaid
+                                ? ShiftIQColors.primaryBlue
+                                : ShiftIQColors.preventiveGreen)
+                            .withAlpha(80),
                       ),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
                           Icons.check_circle,
-                          color: ShiftIQColors.preventiveGreen,
+                          color: order.isPaid
+                              ? ShiftIQColors.primaryBlue
+                              : ShiftIQColors.preventiveGreen,
                         ),
-                        SizedBox(width: 8),
-                        Text(
-                          'ORDEN FINALIZADA Y LIQUIDADA',
-                          style: TextStyle(
-                            color: ShiftIQColors.preventiveGreen,
-                            fontWeight: FontWeight.bold,
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            order.isPaid
+                                ? 'ORDEN PAGADA'
+                                : 'ORDEN COMPLETADA · PENDIENTE DE PAGO',
+                            style: TextStyle(
+                              color: order.isPaid
+                                  ? ShiftIQColors.primaryBlue
+                                  : ShiftIQColors.preventiveGreen,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  if (_isOwnerAdmin) ...[
+                  if (_isOwnerAdmin && !order.isPaid) ...[
                     const SizedBox(height: 12),
                     ElevatedButton.icon(
                       onPressed: () {
