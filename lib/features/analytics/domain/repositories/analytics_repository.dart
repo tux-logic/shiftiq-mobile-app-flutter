@@ -15,4 +15,7 @@ abstract class AnalyticsRepository {
 
   /// Retrieves consolidated multi-branch network analytics for platform owners and administrators.
   Future<NetworkAnalyticsSummary> getNetworkSummary();
+
+  /// Retrieves self-service summary analytics for the authenticated customer.
+  Future<CustomerAnalyticsSummary> getCustomerSummary();
 }

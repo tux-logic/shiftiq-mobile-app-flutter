@@ -39,6 +39,7 @@ import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_vi
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_branch_financial_analytics.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_branch_summary.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_customer_summary.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_network_analytics_summary.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/repositories/analytics_repository.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/infrastructure/remote/analytics_api.dart';
@@ -305,6 +306,12 @@ void setupDependencies() {
 
   getIt.registerLazySingleton<GetNetworkAnalyticsSummaryUseCase>(
     () => GetNetworkAnalyticsSummaryUseCase(
+      repository: getIt<AnalyticsRepository>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<GetCustomerSummaryUseCase>(
+    () => GetCustomerSummaryUseCase(
       repository: getIt<AnalyticsRepository>(),
     ),
   );

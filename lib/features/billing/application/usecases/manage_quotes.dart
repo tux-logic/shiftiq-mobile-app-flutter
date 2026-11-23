@@ -101,12 +101,13 @@ class ManageQuotes {
   }
 
   /// Cancels a quotation (DRAFT or APPROVED -> CANCELED).
-  Future<Quote> cancelQuote(String quoteId) async {
+  Future<Quote> cancelQuote(String quoteId, {Quote? currentQuote}) async {
     if (quoteId.trim().isEmpty) {
       throw ArgumentError('quoteId cannot be empty');
     }
 
-    final existing = await repository.getQuoteById(quoteId.trim());
+    final existing =
+        currentQuote ?? await repository.getQuoteById(quoteId.trim());
     if (existing.status == QuoteStatus.canceled) {
       return existing;
     }
