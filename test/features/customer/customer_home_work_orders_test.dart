@@ -235,11 +235,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const Key('customer_nav_orders')));
+      await tester.tap(find.byKey(const Key('customer_nav_quotes')));
       await tester.pumpAndSettle();
 
       expect(calledQuotesMe, isTrue);
-      expect(find.text('MIS COTIZACIONES'), findsOneWidget);
+      expect(find.text('MIS COTIZACIONES Y PAGOS'), findsOneWidget);
       expect(find.text('Pagar con Mercado Pago'), findsOneWidget);
 
       await tester.ensureVisible(find.byKey(const Key('pay_quote_quote-1')));
@@ -368,7 +368,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const Key('customer_nav_orders')));
+      await tester.tap(find.byKey(const Key('customer_nav_quotes')));
       await tester.pumpAndSettle();
 
       expect(find.text('Aprobar cotización'), findsOneWidget);
@@ -380,6 +380,106 @@ void main() {
 
       expect(calledApprove, isTrue);
       expect(find.text('Pagar con Mercado Pago'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'CustomerHomePage hides Mercado Pago button and shows Pagado badge when work order is PAID',
+    (tester) async {
+      final session = SessionStorage();
+      await session.saveSession(
+        accessToken: 'cust-token',
+        refreshToken: 'cust-refresh',
+        userId: 'user-1',
+        username: 'maria@test.com',
+        roles: ['ROLE_CUSTOMER'],
+      );
+
+      final mockClient = MockClient((request) async {
+        if (request.method == 'GET' && request.url.path == '/api/v1/work-orders/me') {
+          return http.Response(
+            jsonEncode([
+              {
+                'id': 'wo-paid-1',
+                'appointmentId': 'appt-1',
+                'branchId': 'branch-1',
+                'vehicleId': 'veh-1',
+                'vehiclePlateNumber': 'PAY-999',
+                'vehicleBrand': 'Kia',
+                'vehicleModel': 'Sportage',
+                'vehicleYear': 2023,
+                'customerId': 'cust-1',
+                'customerName': 'Maria Fernandez',
+                'internalNumber': 3,
+                'formattedNumber': 'MOL-01-000003',
+                'status': 'PAID',
+                'diagnosticSummary': 'Afinamiento',
+                'mileageIn': 15000,
+                'totalAmount': 250.0,
+                'tasks': const [],
+                'entryInspectionImages': const [],
+              },
+            ]),
+            200,
+          );
+        }
+        if (request.method == 'GET' && request.url.path == '/api/v1/quotes/me') {
+          return http.Response(
+            jsonEncode([
+              {
+                'id': 'quote-paid-1',
+                'branchId': 'branch-1',
+                'workOrderId': 'wo-paid-1',
+                'quoteNumber': 'COT-2026-0003',
+                'customerName': 'Maria Fernandez',
+                'vehiclePlate': 'PAY-999',
+                'vehicleModel': 'Kia Sportage 2023',
+                'status': 'APPROVED',
+                'subtotal': 250.0,
+                'discountPercentage': 0.0,
+                'discountAmount': 0.0,
+                'igvAmount': 0.0,
+                'totalAmount': 250.0,
+                'validUntil': '2026-12-31T00:00:00Z',
+                'createdAt': '2026-11-22T12:00:00Z',
+                'items': const [],
+              },
+            ]),
+            200,
+          );
+        }
+        return http.Response('Not Found', 404);
+      });
+
+      final apiClient = ApiClient(sessionStorage: session, client: mockClient);
+      final opsRepo = OperationsRepositoryImpl(
+        serviceApi: ServiceApi(apiClient: apiClient),
+        workOrderApi: WorkOrderApi(apiClient: apiClient),
+        workOrderTaskApi: WorkOrderTaskApi(apiClient: apiClient),
+      );
+      final billingRepo = BillingRepositoryImpl(
+        billingApi: BillingApi(apiClient: apiClient),
+      );
+      final vm = CustomerHomeViewModel(
+        manageWorkOrders: ManageWorkOrders(repository: opsRepo),
+        manageQuotes: ManageQuotes(repository: billingRepo),
+        manageCheckouts: ManageCheckouts(repository: billingRepo),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: const [AppLocalizations.delegate],
+          supportedLocales: const [Locale('es'), Locale('en')],
+          home: CustomerHomePage(viewModel: vm),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('customer_nav_quotes')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Pagar con Mercado Pago'), findsNothing);
+      expect(find.text('Pagado · Comprobante registrado'), findsOneWidget);
     },
   );
 }

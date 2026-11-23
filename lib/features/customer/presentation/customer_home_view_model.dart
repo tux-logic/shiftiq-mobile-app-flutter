@@ -201,15 +201,24 @@ class CustomerHomeViewModel extends ChangeNotifier {
     }
   }
 
+  /// Returns whether the work order associated with [quote] is already `PAID`.
+  bool isQuotePaid(Quote quote) {
+    final woId = quote.workOrderId;
+    if (woId == null || woId.isEmpty) return false;
+    final matchingOrder = _workOrders.where((o) => o.id == woId).firstOrNull;
+    return matchingOrder?.isPaid ?? false;
+  }
+
   /// Returns whether [quote] can be paid online by the customer
-  /// (approved quote whose associated work order is completed).
+  /// (approved quote whose associated work order is `COMPLETED` and not yet `PAID`).
   bool canPayQuote(Quote quote) {
     if (quote.status != QuoteStatus.approved) return false;
+    if (isQuotePaid(quote)) return false;
     final woId = quote.workOrderId;
     if (woId == null || woId.isEmpty) return true;
     final matchingOrder = _workOrders.where((o) => o.id == woId).firstOrNull;
     if (matchingOrder == null) return true;
-    return matchingOrder.isCompleted;
+    return matchingOrder.status == WorkOrderStatus.completed;
   }
 
   /// Creates a virtual payment session (`POST /api/v1/payments/sessions`) for an approved [quote].

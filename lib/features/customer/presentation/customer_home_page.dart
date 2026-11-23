@@ -111,13 +111,15 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
     final headerSubtitle = switch (_selectedTab) {
       1 => 'Tus vehículos y diagnóstico OBD-II',
-      2 => 'Seguimiento de órdenes y pagos',
+      2 => 'Seguimiento de órdenes en taller',
+      3 => 'Aprobación de presupuestos y pagos',
       _ => email.isNotEmpty ? email : null,
     };
 
     final headerTitle = switch (_selectedTab) {
       1 => 'Mis Vehículos',
-      2 => 'Órdenes & Pagos',
+      2 => 'Mis Órdenes',
+      3 => 'Cotizaciones & Pagos',
       _ => loc.translate('customer_portal_title'),
     };
 
@@ -173,6 +175,12 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
             selectedIcon: Icons.build_circle_rounded,
             label: 'Órdenes',
           ),
+          ShiftIQNavItem(
+            key: Key('customer_nav_quotes'),
+            icon: Icons.receipt_long_outlined,
+            selectedIcon: Icons.receipt_long_rounded,
+            label: 'Pagos',
+          ),
         ],
       ),
     );
@@ -186,7 +194,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   ) {
     final content = switch (_selectedTab) {
       1 => _buildVehiclesTab(vm),
-      2 => _buildOrdersAndQuotesTab(context, vm),
+      2 => _buildOrdersTab(vm),
+      3 => _buildQuotesAndPaymentsTab(context, vm),
       _ => _buildSummaryTab(context, loc, email, vm),
     };
 
@@ -214,9 +223,13 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
             const <WorkOrder>[];
     final activeOrdersCount =
         summary?.activeWorkOrdersCount ?? activeOrders.length;
-    final pendingQuotes =
-        vm?.quotes.where((q) => q.status != QuoteStatus.canceled).toList() ??
-            const <Quote>[];
+    final pendingQuotes = vm?.quotes
+            .where(
+              (q) =>
+                  q.status != QuoteStatus.canceled && !vm.isQuotePaid(q),
+            )
+            .toList() ??
+        const <Quote>[];
     final pendingQuotesCount =
         summary?.pendingQuotesCount ?? pendingQuotes.length;
 
@@ -304,6 +317,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     padding: const EdgeInsets.only(bottom: 12),
                     child: _CustomerQuoteCard(
                       quote: quote,
+                      isPaid: vm.isQuotePaid(quote),
                       canApprove: quote.status == QuoteStatus.draft,
                       isApproving: vm.approvingQuoteId == quote.id,
                       isRejecting: vm.rejectingQuoteId == quote.id,
@@ -360,10 +374,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     );
   }
 
-  Widget _buildOrdersAndQuotesTab(
-    BuildContext context,
-    CustomerHomeViewModel? vm,
-  ) {
+  Widget _buildOrdersTab(CustomerHomeViewModel? vm) {
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
@@ -403,23 +414,44 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
               ),
             ),
           ),
-        if (vm != null && vm.quotes.isNotEmpty) ...[
-          const SizedBox(height: 20),
-          const Text(
-            'MIS COTIZACIONES',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF64748B),
-              letterSpacing: 0.6,
-            ),
+      ],
+    );
+  }
+
+  Widget _buildQuotesAndPaymentsTab(
+    BuildContext context,
+    CustomerHomeViewModel? vm,
+  ) {
+    final quotes = vm?.quotes ?? const <Quote>[];
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
+      children: [
+        const Text(
+          'MIS COTIZACIONES Y PAGOS',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF64748B),
+            letterSpacing: 0.6,
           ),
-          const SizedBox(height: 12),
-          ...vm.quotes.map(
+        ),
+        const SizedBox(height: 12),
+        if (vm != null && vm.isLoading && quotes.isEmpty)
+          const ShiftIQSkeletonCardList(itemCount: 2)
+        else if (quotes.isEmpty)
+          const _CustomerMessageCard(
+            title: 'Sin cotizaciones registradas',
+            subtitle:
+                'Cuando el taller genere una cotización para tu vehículo podrás aprobarla y pagarla aquí.',
+          )
+        else
+          ...quotes.map(
             (quote) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: _CustomerQuoteCard(
                 quote: quote,
+                isPaid: vm!.isQuotePaid(quote),
                 canApprove: quote.status == QuoteStatus.draft,
                 isApproving: vm.approvingQuoteId == quote.id,
                 isRejecting: vm.rejectingQuoteId == quote.id,
@@ -431,7 +463,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
               ),
             ),
           ),
-        ],
       ],
     );
   }
@@ -964,6 +995,7 @@ class _CustomerMessageCard extends StatelessWidget {
 
 class _CustomerQuoteCard extends StatelessWidget {
   final Quote quote;
+  final bool isPaid;
   final bool canApprove;
   final bool isApproving;
   final bool isRejecting;
@@ -975,6 +1007,7 @@ class _CustomerQuoteCard extends StatelessWidget {
 
   const _CustomerQuoteCard({
     required this.quote,
+    required this.isPaid,
     required this.canApprove,
     required this.isApproving,
     required this.isRejecting,
@@ -987,11 +1020,14 @@ class _CustomerQuoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = switch (quote.status) {
-      QuoteStatus.approved => ShiftIQColors.preventiveGreen,
-      QuoteStatus.canceled => ShiftIQColors.severityCrimson,
-      QuoteStatus.draft => const Color(0xFFD97706),
-    };
+    final statusColor = isPaid
+        ? ShiftIQColors.primaryBlue
+        : switch (quote.status) {
+            QuoteStatus.approved => ShiftIQColors.preventiveGreen,
+            QuoteStatus.canceled => ShiftIQColors.severityCrimson,
+            QuoteStatus.draft => const Color(0xFFD97706),
+          };
+    final statusLabel = isPaid ? 'Pagado' : quote.status.label;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -1042,7 +1078,7 @@ class _CustomerQuoteCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  quote.status.label,
+                  statusLabel,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -1124,7 +1160,39 @@ class _CustomerQuoteCard extends StatelessWidget {
               ],
             ),
           ],
-          if (canPay) ...[
+          if (isPaid) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: ShiftIQColors.primaryBlue.withAlpha(18),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: ShiftIQColors.primaryBlue.withAlpha(60),
+                ),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.verified_rounded,
+                    size: 18,
+                    color: ShiftIQColors.primaryBlue,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'Pagado · Comprobante registrado',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: ShiftIQColors.primaryBlue,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else if (canPay) ...[
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
