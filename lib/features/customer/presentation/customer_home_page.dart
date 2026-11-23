@@ -12,12 +12,8 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_toast.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/dtc_alert_banner.dart';
-import 'package:shiftiq_mobile_app_flutter/features/auth/application/usecases/logout.dart';
-import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_page.dart';
-import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
-import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_logout_sheet.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_profile_avatar_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/widgets/customer_analytics_charts.dart';
@@ -54,21 +50,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _viewModel?.load();
     });
-  }
-
-  Future<void> _handleLogout(BuildContext context) async {
-    final confirmed = await showShiftIQLogoutConfirmationSheet(context);
-    if (!confirmed || !context.mounted) return;
-
-    await getIt<LogoutUseCase>().execute();
-    if (!context.mounted) return;
-
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) => LoginPage(viewModel: getIt<LoginViewModel>()),
-      ),
-      (route) => false,
-    );
   }
 
   void _openWorkOrder(WorkOrder order) {
@@ -134,13 +115,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
             ShiftIQProfileAvatarButton(
               key: const Key('customer_profile_button'),
               tooltip: loc.translate('tooltip_profile'),
-            ),
-            ShiftIQLiquidIconButton(
-              key: const Key('customer_logout_button'),
-              tooltip: loc.translate('logout_dialog_title'),
-              icon: Icons.logout_rounded,
-              onDarkBackground: true,
-              onPressed: () => _handleLogout(context),
             ),
           ],
         ),
