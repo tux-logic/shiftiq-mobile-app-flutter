@@ -247,7 +247,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(calledMpPref, isTrue);
-      expect(find.text('Pago con Mercado Pago'), findsOneWidget);
     },
   );
 

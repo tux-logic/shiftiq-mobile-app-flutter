@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
@@ -489,6 +490,34 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     final checkoutUrl =
         pref.initPoint.isNotEmpty ? pref.initPoint : pref.sandboxInitPoint;
 
+    if (checkoutUrl.isNotEmpty) {
+      final uri = Uri.tryParse(checkoutUrl);
+      if (uri != null) {
+        var launched = false;
+        try {
+          launched = await launchUrl(
+            uri,
+            mode: LaunchMode.inAppBrowserView,
+          );
+          if (!launched) {
+            launched = await launchUrl(
+              uri,
+              mode: LaunchMode.externalApplication,
+            );
+          }
+        } catch (_) {
+          launched = false;
+        }
+        if (launched) {
+          if (context.mounted) {
+            await vm.load();
+          }
+          return;
+        }
+      }
+    }
+
+    if (!context.mounted) return;
     await showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
