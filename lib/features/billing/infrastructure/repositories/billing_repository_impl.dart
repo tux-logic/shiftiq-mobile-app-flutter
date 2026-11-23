@@ -76,6 +76,14 @@ class BillingRepositoryImpl implements BillingRepository {
   }
 
   @override
+  Future<List<Quote>> getMyQuotes() async {
+    final dtos = await billingApi.getMyQuotes();
+    final list = dtos.map((d) => d.toDomain()).toList();
+    list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return list;
+  }
+
+  @override
   Future<List<Quote>> getQuotes({required String branchId}) async {
     final dtos = await billingApi.getQuotes(branchId: branchId);
     return dtos.map((d) => d.toDomain()).toList();

@@ -9,6 +9,8 @@ abstract class BillingRepository {
   // Quotes Lifecycle
   Future<List<Quote>> getQuotes({required String branchId});
 
+  Future<List<Quote>> getMyQuotes();
+
   Future<Quote> getQuoteById(String quoteId);
 
   Future<Quote> createQuote({

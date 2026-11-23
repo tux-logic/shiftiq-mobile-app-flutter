@@ -46,6 +46,11 @@ class ManageQuotes {
     return repository.getQuotes(branchId: branchId.trim());
   }
 
+  /// Retrieves all quotations belonging to the authenticated customer (read-only).
+  Future<List<Quote>> getMyQuotes() {
+    return repository.getMyQuotes();
+  }
+
   /// Retrieves a quotation with its itemized breakdown.
   Future<Quote> getQuoteById(String quoteId) async {
     if (quoteId.trim().isEmpty) {

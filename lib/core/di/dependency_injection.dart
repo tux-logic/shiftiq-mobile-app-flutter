@@ -614,6 +614,8 @@ void setupDependencies() {
   getIt.registerFactory<CustomerHomeViewModel>(
     () => CustomerHomeViewModel(
       manageWorkOrders: getIt<ManageWorkOrders>(),
+      manageQuotes: getIt<ManageQuotes>(),
+      manageCheckouts: getIt<ManageCheckouts>(),
     ),
   );
 }

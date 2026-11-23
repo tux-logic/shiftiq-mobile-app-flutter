@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
@@ -7,9 +8,11 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_toast.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/application/usecases/logout.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_view_model.dart';
@@ -179,6 +182,30 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
               ),
             ),
           ),
+        if (vm != null && vm.quotes.isNotEmpty) ...[
+          const SizedBox(height: 20),
+          const Text(
+            'MIS COTIZACIONES',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF64748B),
+              letterSpacing: 0.6,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...vm.quotes.map(
+            (quote) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _CustomerQuoteCard(
+                quote: quote,
+                canPay: vm.canPayQuote(quote),
+                isPaying: vm.payingQuoteId == quote.id,
+                onPay: () => _handlePayQuote(context, vm, quote),
+              ),
+            ),
+          ),
+        ],
       ],
     );
 
@@ -188,6 +215,81 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
       onRefresh: vm.load,
       skeleton: const ShiftIQSkeletonCardList(itemCount: 2),
       child: content,
+    );
+  }
+
+  Future<void> _handlePayQuote(
+    BuildContext context,
+    CustomerHomeViewModel vm,
+    Quote quote,
+  ) async {
+    final pref = await vm.createMercadoPagoPreference(quote);
+    if (!context.mounted) return;
+
+    if (pref == null) {
+      ShiftIQToast.show(
+        context,
+        message: vm.error ?? 'No se pudo generar el enlace de pago.',
+        type: ShiftIQToastType.error,
+      );
+      return;
+    }
+
+    final checkoutUrl =
+        pref.initPoint.isNotEmpty ? pref.initPoint : pref.sandboxInitPoint;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Pago con Mercado Pago'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Monto a pagar: ${pref.currency} ${pref.amount.toStringAsFixed(2)}',
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Copia el enlace oficial de Mercado Pago para completar el pago desde tu navegador.',
+              style: TextStyle(fontSize: 13, color: Color(0xFF475569)),
+            ),
+            if (checkoutUrl.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              SelectableText(
+                checkoutUrl,
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  color: ShiftIQColors.primaryBlue,
+                ),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cerrar'),
+          ),
+          if (checkoutUrl.isNotEmpty)
+            FilledButton.icon(
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: checkoutUrl));
+                if (!dialogContext.mounted) return;
+                Navigator.of(dialogContext).pop();
+                if (!context.mounted) return;
+                ShiftIQToast.show(
+                  context,
+                  message: 'Enlace de Mercado Pago copiado al portapapeles',
+                  type: ShiftIQToastType.success,
+                );
+              },
+              icon: const Icon(Icons.copy_rounded, size: 16),
+              label: const Text('Copiar enlace'),
+            ),
+        ],
+      ),
     );
   }
 
@@ -311,6 +413,143 @@ class _CustomerMessageCard extends StatelessWidget {
             OutlinedButton(
               onPressed: onAction,
               child: Text(actionLabel!),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _CustomerQuoteCard extends StatelessWidget {
+  final Quote quote;
+  final bool canPay;
+  final bool isPaying;
+  final VoidCallback onPay;
+
+  const _CustomerQuoteCard({
+    required this.quote,
+    required this.canPay,
+    required this.isPaying,
+    required this.onPay,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final statusColor = switch (quote.status) {
+      QuoteStatus.approved => ShiftIQColors.preventiveGreen,
+      QuoteStatus.canceled => ShiftIQColors.severityCrimson,
+      QuoteStatus.draft => const Color(0xFFD97706),
+    };
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: ShiftIQColors.borderSlate),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                decoration: BoxDecoration(
+                  color: ShiftIQColors.primaryBlue.withAlpha(20),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  quote.vehiclePlate.isNotEmpty ? quote.vehiclePlate : 'COT',
+                  style: const TextStyle(
+                    color: ShiftIQColors.primaryBlue,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  quote.vehicleModel.isNotEmpty
+                      ? quote.vehicleModel
+                      : 'Cotización de servicio',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: ShiftIQColors.graphiteText,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withAlpha(24),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  quote.status.label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: statusColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Text(
+                '${quote.items.length} ítems',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+              const Spacer(),
+              Text(
+                'S/ ${quote.totalAmount.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: ShiftIQColors.graphiteText,
+                ),
+              ),
+            ],
+          ),
+          if (canPay) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                key: Key('pay_quote_${quote.id}'),
+                onPressed: isPaying ? null : onPay,
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF009EE3),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: isPaying
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.payment_rounded, size: 18),
+                label: Text(
+                  isPaying ? 'Generando enlace...' : 'Pagar con Mercado Pago',
+                ),
+              ),
             ),
           ],
         ],

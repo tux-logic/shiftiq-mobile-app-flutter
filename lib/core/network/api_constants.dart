@@ -182,6 +182,7 @@ class ApiConstants {
 
   // Billing Context
   static const String quotes = '/api/v1/quotes';
+  static const String quotesMe = '/api/v1/quotes/me';
   static const String vouchers = '/api/v1/vouchers';
   static const String checkouts = '/api/v1/checkouts';
 

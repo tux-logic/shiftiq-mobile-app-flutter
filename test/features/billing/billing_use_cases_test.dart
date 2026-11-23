@@ -221,6 +221,9 @@ class MockBillingRepository implements BillingRepository {
   }
 
   @override
+  Future<List<Quote>> getMyQuotes() async => List<Quote>.from(_quotes);
+
+  @override
   Future<List<Quote>> getQuotes({required String branchId}) async {
     return _quotes.where((q) => q.branchId == branchId || branchId.isEmpty).toList();
   }
