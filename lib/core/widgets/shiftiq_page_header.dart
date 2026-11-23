@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
-import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 
 /// Unified dark-navy ShiftIQ gradient header shared across role-scoped screens.
 class ShiftIQPageHeader extends StatelessWidget {
@@ -42,13 +41,22 @@ class ShiftIQPageHeader extends StatelessWidget {
           child: Row(
             children: [
               if (showBackButton) ...[
-                ShiftIQLiquidIconButton(
-                  icon: Icons.arrow_back_rounded,
-                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-                  onDarkBackground: true,
+                IconButton(
                   onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
+                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                  padding: const EdgeInsets.all(6),
+                  constraints: const BoxConstraints(
+                    minWidth: 34,
+                    minHeight: 34,
+                  ),
+                  splashRadius: 20,
+                  icon: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 6),
               ],
               Expanded(
                 child: Column(
