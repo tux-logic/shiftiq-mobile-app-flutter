@@ -173,7 +173,7 @@ class _CheckoutVoucherPageState extends State<CheckoutVoucherPage> {
           body: ShiftIQCollapsibleHeaderBody(
             header: ShiftIQPageHeader(
               title: loc.translate('liquidation_billing_title'),
-              subtitle: 'Emisión de comprobante SUNAT',
+              subtitle: 'Emisión de comprobante interno',
               showBackButton: true,
             ),
             body: SingleChildScrollView(
@@ -222,7 +222,7 @@ class _CheckoutVoucherPageState extends State<CheckoutVoucherPage> {
 
                   // Tipo de Comprobante
                   const Text(
-                    'TIPO DE COMPROBANTE FISCAL (SUNAT)',
+                    'TIPO DE COMPROBANTE',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                   ),
                   const SizedBox(height: 8),
@@ -441,7 +441,7 @@ class _CheckoutVoucherPageState extends State<CheckoutVoucherPage> {
                       ),
                       child: viewModel.isLoading
                           ? const ShiftIQInlineProgress(
-                              label: 'EMITIENDO A SUNAT...',
+                              label: 'EMITIENDO COMPROBANTE...',
                               fontSize: 13.5,
                             )
                           : Row(

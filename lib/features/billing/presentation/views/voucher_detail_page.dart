@@ -384,7 +384,7 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'FIRMA ELECTRÓNICA SUNAT',
+                              'CÓDIGO DE VERIFICACIÓN INTERNO',
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
@@ -402,7 +402,7 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
                             ),
                             const SizedBox(height: 6),
                             const Text(
-                              'Representación impresa de la Boleta/Factura Electrónica consultable en www.sunat.gob.pe',
+                              'Comprobante interno generado por ShiftIQ Workshop.',
                               style: TextStyle(
                                 fontSize: 10,
                                 color: Colors.black54,
@@ -440,7 +440,7 @@ class _VoucherDetailPageState extends State<VoucherDetailPage> {
                           ShiftIQToast.show(
                             context,
                             message:
-                                'Descargando PDF oficial SUNAT (${voucher.fullCode}.pdf)...',
+                                'Comprobante ${voucher.fullCode} listo para impresión interna.',
                             type: ShiftIQToastType.info,
                           );
                         },

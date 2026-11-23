@@ -80,7 +80,7 @@ class _BillingDashboardPageState extends State<BillingDashboardPage> {
               ShiftIQCollapsibleHeaderBody(
                 header: ShiftIQPageHeader(
                   title: loc.translate('billing_title'),
-                  subtitle: 'Comprobantes SUNAT y cotizaciones',
+                  subtitle: 'Comprobantes internos y cotizaciones',
                   showBackButton: true,
                 ),
                 body: Column(
