@@ -157,8 +157,14 @@ class ShiftIQCollapsibleHeaderBody extends StatefulWidget {
 
 class _ShiftIQCollapsibleHeaderBodyState
     extends State<ShiftIQCollapsibleHeaderBody> {
-  bool _headerVisible = true;
+  final ValueNotifier<bool> _headerVisibleNotifier = ValueNotifier<bool>(true);
   double _accumulatedDelta = 0;
+
+  @override
+  void dispose() {
+    _headerVisibleNotifier.dispose();
+    super.dispose();
+  }
 
   bool _handleScrollNotification(ScrollUpdateNotification notification) {
     if (notification.metrics.axis != Axis.vertical) return false;
@@ -168,8 +174,8 @@ class _ShiftIQCollapsibleHeaderBodyState
 
     // Always keep header visible near the top or during pull-to-refresh overscroll.
     if (metrics.pixels <= 16) {
-      if (!_headerVisible) {
-        setState(() => _headerVisible = true);
+      if (!_headerVisibleNotifier.value) {
+        _headerVisibleNotifier.value = true;
       }
       _accumulatedDelta = 0;
       return false;
@@ -187,11 +193,11 @@ class _ShiftIQCollapsibleHeaderBodyState
     }
     _accumulatedDelta += delta;
 
-    if (_accumulatedDelta > 18 && _headerVisible) {
-      setState(() => _headerVisible = false);
+    if (_accumulatedDelta > 18 && _headerVisibleNotifier.value) {
+      _headerVisibleNotifier.value = false;
       _accumulatedDelta = 0;
-    } else if (_accumulatedDelta < -12 && !_headerVisible) {
-      setState(() => _headerVisible = true);
+    } else if (_accumulatedDelta < -12 && !_headerVisibleNotifier.value) {
+      _headerVisibleNotifier.value = true;
       _accumulatedDelta = 0;
     }
     return false;
@@ -201,24 +207,36 @@ class _ShiftIQCollapsibleHeaderBodyState
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ClipRect(
-          child: AnimatedAlign(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOutCubic,
-            alignment: Alignment.topCenter,
-            heightFactor: _headerVisible ? 1.0 : 0.0,
-            child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.easeOut,
-              opacity: _headerVisible ? 1.0 : 0.0,
-              child: widget.header,
-            ),
-          ),
+        ValueListenableBuilder<bool>(
+          valueListenable: _headerVisibleNotifier,
+          builder: (context, visible, child) {
+            return ClipRect(
+              child: AnimatedAlign(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                alignment: Alignment.topCenter,
+                heightFactor: visible ? 1.0 : 0.0,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOut,
+                  opacity: visible ? 1.0 : 0.0,
+                  child: child,
+                ),
+              ),
+            );
+          },
+          child: widget.header,
         ),
         Expanded(
-          child: SafeArea(
-            top: !_headerVisible,
-            bottom: false,
+          child: ValueListenableBuilder<bool>(
+            valueListenable: _headerVisibleNotifier,
+            builder: (context, visible, child) {
+              return SafeArea(
+                top: !visible,
+                bottom: false,
+                child: child!,
+              );
+            },
             child: NotificationListener<ScrollUpdateNotification>(
               onNotification: _handleScrollNotification,
               child: widget.body,

@@ -42,7 +42,8 @@ class ShiftIQFloatingNavBar extends StatelessWidget {
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-        child: Container(
+        child: RepaintBoundary(
+          child: Container(
           height: 64,
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
@@ -129,6 +130,7 @@ class ShiftIQFloatingNavBar extends StatelessWidget {
               );
             },
           ),
+        ),
         ),
       ),
     );

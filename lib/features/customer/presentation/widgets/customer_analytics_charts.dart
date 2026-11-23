@@ -111,7 +111,8 @@ class _CustomerFleetHealthRingChartState
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    PieChart(
+                    RepaintBoundary(
+                      child: PieChart(
                       PieChartData(
                         pieTouchData: PieTouchData(
                           touchCallback: (event, response) {
@@ -149,6 +150,7 @@ class _CustomerFleetHealthRingChartState
                                   ),
                               ],
                       ),
+                    ),
                     ),
                     Column(
                       mainAxisSize: MainAxisSize.min,
@@ -305,7 +307,8 @@ class _CustomerWorkOrderSpendingChartState
           const SizedBox(height: 18),
           SizedBox(
             height: 148,
-            child: BarChart(
+            child: RepaintBoundary(
+              child: BarChart(
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
                 maxY: maxAmount * 1.2,
@@ -408,6 +411,7 @@ class _CustomerWorkOrderSpendingChartState
                     ),
                 ],
               ),
+            ),
             ),
           ),
         ],
