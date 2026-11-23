@@ -675,11 +675,22 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
     );
   }
 
+  WorkOrderTask _displayTask(WorkOrderTask task) {
+    if (_isCustomer &&
+        task.assignedMechanicName == 'Sin asignar' &&
+        task.assignedMechanicId.isNotEmpty &&
+        task.assignedMechanicId != 'ereg-unassigned') {
+      return task.copyWith(assignedMechanicName: 'Mecánico asignado');
+    }
+    return task;
+  }
+
   void _showTaskDetailSheet(
     BuildContext context,
     WorkOrderTask task,
     WorkOrderDetailViewModel vm,
   ) {
+    final displayTask = _displayTask(task);
     final orderCompleted = vm.order?.isCompleted ?? false;
     final canExecute = !_isCustomer && (_isOwnerAdmin || vm.canExecuteTask(task));
     showModalBottomSheet<void>(
@@ -690,7 +701,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (_) => TaskDetailSheet(
-        task: task,
+        task: displayTask,
         onAddProduct: canExecute && !task.isCompleted && !orderCompleted
             ? () => _showAddProductSheet(context, task)
             : null,
@@ -772,11 +783,12 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
     WorkOrderTask task,
     WorkOrderDetailViewModel vm,
   ) {
+    final displayTask = _displayTask(task);
     final canExecute = !_isCustomer && (_isOwnerAdmin || vm.canExecuteTask(task));
     return WorkOrderTaskCard(
-      task: task,
+      task: displayTask,
       canExecute: canExecute,
-      onTap: () => _showTaskDetailSheet(context, task, vm),
+      onTap: () => _showTaskDetailSheet(context, displayTask, vm),
       onStart: () => vm.startTask(task.id),
       onComplete: () => vm.completeTask(task.id),
     );

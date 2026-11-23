@@ -99,6 +99,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(calledMeEndpoint, isTrue);
+      expect(vm.workOrders.first.tasks.first.assignedMechanicName, equals('Luis Mendoza'));
       expect(find.text('ABC-123'), findsOneWidget);
       expect(find.text('Toyota Corolla Cross 2023'), findsOneWidget);
       expect(find.text('MOL-01-000001'), findsOneWidget);
