@@ -209,6 +209,31 @@ class BillingRepositoryImpl implements BillingRepository {
   }
 
   @override
+  Future<MercadoPagoPreference> createPaymentSession({
+    required String quoteId,
+    String provider = 'MERCADO_PAGO',
+    VoucherType? type,
+    String? customerDocumentType,
+    String? customerDocumentNumber,
+    String? customerName,
+  }) async {
+    final Map<String, dynamic> body = {
+      'quoteId': quoteId,
+      'provider': provider,
+    };
+    if (type != null) body['type'] = type.code;
+    if (customerDocumentType != null) {
+      body['customerDocumentType'] = customerDocumentType;
+    }
+    if (customerDocumentNumber != null) {
+      body['customerDocumentNumber'] = customerDocumentNumber;
+    }
+    if (customerName != null) body['customerName'] = customerName;
+    final res = await billingApi.createPaymentSession(body);
+    return MercadoPagoPreferenceDto.fromJson(res).toDomain();
+  }
+
+  @override
   Future<MercadoPagoPreference> createMercadoPagoPreference({
     required String quoteId,
     VoucherType? type,

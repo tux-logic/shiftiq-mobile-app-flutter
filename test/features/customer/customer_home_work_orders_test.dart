@@ -185,21 +185,24 @@ void main() {
           );
         }
         if (request.method == 'POST' &&
-            request.url.path == '/api/v1/payments/mercadopago/preferences') {
+            request.url.path == '/api/v1/payments/sessions') {
           calledMpPref = true;
           final body = jsonDecode(request.body) as Map<String, dynamic>;
           expect(body['quoteId'], equals('quote-1'));
+          expect(body['provider'], equals('MERCADO_PAGO'));
           return http.Response(
             jsonEncode({
-              'preferenceId': 'pref-123',
-              'initPoint': 'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=pref-123',
-              'sandboxInitPoint':
-                  'https://sandbox.mercadopago.com.pe/checkout/v1/redirect?pref_id=pref-123',
+              'provider': 'MERCADO_PAGO',
+              'sessionId': 'sess-123',
+              'checkoutUrl':
+                  'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=sess-123',
+              'sandboxCheckoutUrl':
+                  'https://sandbox.mercadopago.com.pe/checkout/v1/redirect?pref_id=sess-123',
               'amount': 350.0,
               'currency': 'PEN',
               'externalReference': 'quote-1',
             }),
-            200,
+            201,
           );
         }
         return http.Response('Not Found', 404);

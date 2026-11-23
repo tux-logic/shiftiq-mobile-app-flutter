@@ -427,6 +427,23 @@ class MockBillingRepository implements BillingRepository {
   }
 
   @override
+  Future<MercadoPagoPreference> createPaymentSession({
+    required String quoteId,
+    String provider = 'MERCADO_PAGO',
+    VoucherType? type,
+    String? customerDocumentType,
+    String? customerDocumentNumber,
+    String? customerName,
+  }) =>
+      createMercadoPagoPreference(
+        quoteId: quoteId,
+        type: type,
+        customerDocumentType: customerDocumentType,
+        customerDocumentNumber: customerDocumentNumber,
+        customerName: customerName,
+      );
+
+  @override
   Future<MercadoPagoPreference> createMercadoPagoPreference({
     required String quoteId,
     VoucherType? type,

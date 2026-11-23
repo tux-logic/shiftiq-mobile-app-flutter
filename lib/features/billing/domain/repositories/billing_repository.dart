@@ -93,6 +93,15 @@ abstract class BillingRepository {
     String? branchId,
   });
 
+  Future<MercadoPagoPreference> createPaymentSession({
+    required String quoteId,
+    String provider = 'MERCADO_PAGO',
+    VoucherType? type,
+    String? customerDocumentType,
+    String? customerDocumentNumber,
+    String? customerName,
+  });
+
   Future<MercadoPagoPreference> createMercadoPagoPreference({
     required String quoteId,
     VoucherType? type,

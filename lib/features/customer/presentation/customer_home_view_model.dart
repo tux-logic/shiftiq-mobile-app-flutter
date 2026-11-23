@@ -115,8 +115,9 @@ class CustomerHomeViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      return await checkouts.createMercadoPagoPreference(
+      return await checkouts.createPaymentSession(
         quoteId: quote.id,
+        provider: 'MERCADO_PAGO',
       );
     } catch (e) {
       _error = 'No se pudo iniciar el pago con Mercado Pago: $e';

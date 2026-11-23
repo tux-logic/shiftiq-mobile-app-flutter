@@ -69,6 +69,29 @@ class ManageCheckouts {
     );
   }
 
+  /// Generates a virtual payment session (`POST /api/v1/payments/sessions`) for an approved quotation.
+  Future<MercadoPagoPreference> createPaymentSession({
+    required String quoteId,
+    String provider = 'MERCADO_PAGO',
+    VoucherType? type,
+    String? customerDocumentType,
+    String? customerDocumentNumber,
+    String? customerName,
+  }) async {
+    if (quoteId.trim().isEmpty) {
+      throw ArgumentError('quoteId cannot be empty');
+    }
+
+    return repository.createPaymentSession(
+      quoteId: quoteId.trim(),
+      provider: provider.trim().isEmpty ? 'MERCADO_PAGO' : provider.trim(),
+      type: type,
+      customerDocumentType: customerDocumentType?.trim().toUpperCase(),
+      customerDocumentNumber: customerDocumentNumber?.trim(),
+      customerName: customerName?.trim(),
+    );
+  }
+
   /// Generates a Mercado Pago Checkout Pro payment preference for an approved quotation.
   Future<MercadoPagoPreference> createMercadoPagoPreference({
     required String quoteId,

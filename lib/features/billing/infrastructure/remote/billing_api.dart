@@ -125,6 +125,17 @@ class BillingApi {
     return VoucherDto.fromJson(response as Map<String, dynamic>);
   }
 
+  // Virtual Payment Sessions (Gateway-agnostic Strategy Pattern)
+  Future<Map<String, dynamic>> createPaymentSession(
+    Map<String, dynamic> body,
+  ) async {
+    final response = await apiClient.post(
+      '/api/v1/payments/sessions',
+      body: body,
+    );
+    return response as Map<String, dynamic>;
+  }
+
   // Mercado Pago Preferences
   Future<Map<String, dynamic>> createMercadoPagoPreference(
     Map<String, dynamic> body,

@@ -185,6 +185,7 @@ class ApiConstants {
   static const String quotesMe = '/api/v1/quotes/me';
   static const String vouchers = '/api/v1/vouchers';
   static const String checkouts = '/api/v1/checkouts';
+  static const String paymentSessions = '/api/v1/payments/sessions';
 
   // Shared Context
   static const String rootPing = '/';
