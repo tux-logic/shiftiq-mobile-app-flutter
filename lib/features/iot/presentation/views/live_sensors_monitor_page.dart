@@ -9,11 +9,13 @@ import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/widgets/sen
 
 class LiveSensorsMonitorPage extends StatefulWidget {
   final String vehiclePlate;
+  final String? vehicleId;
   final TelemetryViewModel viewModel;
 
   const LiveSensorsMonitorPage({
     super.key,
     required this.vehiclePlate,
+    this.vehicleId,
     required this.viewModel,
   });
 
@@ -22,10 +24,12 @@ class LiveSensorsMonitorPage extends StatefulWidget {
 }
 
 class _LiveSensorsMonitorPageState extends State<LiveSensorsMonitorPage> {
+  String get _targetId => widget.vehicleId ?? widget.vehiclePlate;
+
   @override
   void initState() {
     super.initState();
-    widget.viewModel.loadLiveSensors(widget.vehiclePlate);
+    widget.viewModel.loadLiveSensors(_targetId);
   }
 
   @override
@@ -45,7 +49,7 @@ class _LiveSensorsMonitorPageState extends State<LiveSensorsMonitorPage> {
             ),
             body: ShiftIQPullToRefresh(
                   onRefresh: () =>
-                      widget.viewModel.loadLiveSensors(widget.vehiclePlate),
+                      widget.viewModel.loadLiveSensors(_targetId),
                   skeleton: const ShiftIQSkeletonCardList(itemCount: 3),
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),

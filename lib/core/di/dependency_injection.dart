@@ -623,6 +623,10 @@ void setupDependencies() {
       manageWorkOrders: getIt<ManageWorkOrders>(),
       manageQuotes: getIt<ManageQuotes>(),
       manageCheckouts: getIt<ManageCheckouts>(),
+      getCustomerSummary: getIt<GetCustomerSummaryUseCase>(),
+      getCustomerVehicles: getIt<GetCustomerVehicles>(),
+      getUserProfileContext: getIt<GetUserProfileContextUseCase>(),
+      getDtcAlerts: getIt<GetDtcAlerts>(),
     ),
   );
 }
