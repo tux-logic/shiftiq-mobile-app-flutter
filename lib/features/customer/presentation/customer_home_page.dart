@@ -14,6 +14,7 @@ import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_page
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_logout_sheet.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_profile_avatar_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
@@ -46,29 +47,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   }
 
   Future<void> _handleLogout(BuildContext context) async {
-    final loc = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(loc.translate('logout_dialog_title')),
-        content: Text(loc.translate('customer_logout_confirm')),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(loc.translate('cancel')),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            style: FilledButton.styleFrom(
-              backgroundColor: ShiftIQColors.severityCrimson,
-            ),
-            child: Text(loc.translate('logout_upper')),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true || !context.mounted) return;
+    final confirmed = await showShiftIQLogoutConfirmationSheet(context);
+    if (!confirmed || !context.mounted) return;
 
     await getIt<LogoutUseCase>().execute();
     if (!context.mounted) return;
