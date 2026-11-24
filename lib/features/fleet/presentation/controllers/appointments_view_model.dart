@@ -4,39 +4,61 @@ import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/g
 import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/get_customer_registrations.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/update_appointment.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/fleet_domain.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/application/usecases/manage_services.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/domain/models/workshop_service.dart';
 
 class AppointmentsViewModel extends ChangeNotifier {
   final GetAppointmentsByBranchQueryService getAppointmentsQuery;
   final GetCustomerDirectoryQueryService getCustomerDirectoryQuery;
   final CreateAppointmentCommandService createAppointmentCommand;
   final UpdateAppointmentStatusCommandService updateStatusCommand;
+  final ManageServices? manageServices;
 
   AppointmentsViewModel({
     required this.getAppointmentsQuery,
     required this.getCustomerDirectoryQuery,
     required this.createAppointmentCommand,
     required this.updateStatusCommand,
+    this.manageServices,
   }) {
     final now = DateTime.now();
     _selectedDate = DateTime(now.year, now.month, now.day);
   }
 
   bool _isLoading = false;
+  bool _isLoadingServices = false;
   String? _errorMessage;
   late DateTime _selectedDate;
   AppointmentStatus? _selectedStatusFilter;
   List<Appointment> _allAppointments = [];
   List<Appointment> _appointments = [];
   List<CustomerRegistration> _customers = [];
+  List<WorkshopService> _branchServices = [];
   String _customerSearchQuery = '';
 
   bool get isLoading => _isLoading;
+  bool get isLoadingServices => _isLoadingServices;
   String? get errorMessage => _errorMessage;
   DateTime get selectedDate => _selectedDate;
   AppointmentStatus? get selectedStatusFilter => _selectedStatusFilter;
   List<Appointment> get appointments => _appointments;
   List<CustomerRegistration> get customers => _customers;
+  List<WorkshopService> get branchServices => _branchServices;
   String get customerSearchQuery => _customerSearchQuery;
+
+  Future<void> loadBranchServices(String branchId) async {
+    if (manageServices == null || branchId.trim().isEmpty) return;
+    _isLoadingServices = true;
+    notifyListeners();
+    try {
+      _branchServices = await manageServices!.getBranchServices(branchId);
+    } catch (_) {
+      _branchServices = [];
+    } finally {
+      _isLoadingServices = false;
+      notifyListeners();
+    }
+  }
 
   /// Returns appointments for [status] from the loaded date cache.
   List<Appointment> appointmentsForStatus(AppointmentStatus? status) {

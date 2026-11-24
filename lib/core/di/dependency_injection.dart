@@ -3,6 +3,7 @@ import 'package:shiftiq_mobile_app_flutter/core/app_database.dart';
 import 'package:shiftiq_mobile_app_flutter/core/domain/event/domain_event_bus.dart';
 import 'package:shiftiq_mobile_app_flutter/core/infrastructure/event/stream_domain_event_bus.dart';
 import 'package:shiftiq_mobile_app_flutter/core/network/api_client.dart';
+import 'package:shiftiq_mobile_app_flutter/core/security/biometric_auth_service.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/application/usecases/get_user_profile.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/application/usecases/login_with_google.dart';
@@ -110,6 +111,10 @@ void setupDependencies() {
 
   getIt.registerLazySingleton<SessionStorage>(
     () => SessionStorage(appDatabase: getIt<AppDatabase>()),
+  );
+
+  getIt.registerLazySingleton<BiometricAuthService>(
+    () => BiometricAuthService(),
   );
 
   getIt.registerLazySingleton<DomainEventBus>(() => StreamDomainEventBus());
@@ -413,6 +418,8 @@ void setupDependencies() {
       appointmentApi: getIt<AppointmentApi>(),
       customerRegistrationApi: getIt<CustomerRegistrationApi>(),
       employeeRegistrationApi: getIt<EmployeeRegistrationApi>(),
+      profileApi: getIt<ProfileApi>(),
+      workOrderApi: getIt<WorkOrderApi>(),
     ),
   );
 
@@ -466,6 +473,7 @@ void setupDependencies() {
       getCustomerDirectoryQuery: getIt<GetCustomerRegistrationsUseCase>(),
       createAppointmentCommand: getIt<CreateAppointmentCommandService>(),
       updateStatusCommand: getIt<UpdateAppointmentUseCase>(),
+      manageServices: getIt<ManageServices>(),
     ),
   );
 
