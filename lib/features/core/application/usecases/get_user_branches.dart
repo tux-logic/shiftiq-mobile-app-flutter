@@ -36,16 +36,41 @@ class GetUserBranchesUseCase {
       }
 
       // Case 2: Employee profile (Mechanic / Assistant / Manager)
-      if (profile.employee != null &&
-          profile.employee!.workshopId.isNotEmpty) {
-        final branches = await repository.getBranchesByWorkshop(
-          profile.employee!.workshopId,
-        );
-        if (branches.isNotEmpty) return branches;
+      if (profile.employee != null) {
+        if (profile.employee!.workshopId.isNotEmpty) {
+          final branches = await repository.getBranchesByWorkshop(
+            profile.employee!.workshopId,
+          );
+          if (branches.isNotEmpty) return branches;
+        }
+
+        if (employeeRegistrationApi != null) {
+          final registrations = await employeeRegistrationApi!
+              .getEmployeeRegistrations(employeeId: profile.employee!.employeeId);
+          final branchIds = <String>{};
+          for (final reg in registrations) {
+            final status = (reg['status'] ?? 'ACTIVE').toString().toUpperCase();
+            final branchId = (reg['branchId'] ?? '').toString();
+            if (branchId.isNotEmpty &&
+                (status == 'ACTIVE' || status == 'APPROVED')) {
+              branchIds.add(branchId);
+            }
+          }
+
+          final branches = <Branch>[];
+          for (final branchId in branchIds) {
+            try {
+              branches.add(await repository.getBranchById(branchId));
+            } catch (_) {}
+          }
+          return branches;
+        }
+
+        return const [];
       }
     } catch (_) {}
 
-    // Fallback attempt via repository workshops
+    // Fallback attempt via repository workshops (owner/admin only)
     final workshops = await repository.getWorkshops(ownerId: ownerId);
     final allBranches = <Branch>[];
     for (final workshop in workshops) {

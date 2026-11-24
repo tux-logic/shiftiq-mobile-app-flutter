@@ -99,6 +99,12 @@ class OperationsRepositoryImpl implements OperationsRepository {
   }
 
   @override
+  Future<List<WorkOrder>> getMyWorkOrders() async {
+    final rawList = await workOrderApi.getMyWorkOrders();
+    return OperationsDto.workOrderListFromJson(rawList);
+  }
+
+  @override
   Future<WorkOrder> getWorkOrderById(String id) async {
     final raw = await workOrderApi.getWorkOrderById(id);
     return OperationsDto.workOrderFromJson(raw);
@@ -170,6 +176,13 @@ class OperationsRepositoryImpl implements OperationsRepository {
       description: description,
       evidenceImages: evidenceImages,
     );
+    if (raw['tasks'] is List) {
+      final order = OperationsDto.workOrderFromJson(raw);
+      return order.tasks.firstWhere(
+        (t) => t.id == taskId,
+        orElse: () => order.tasks.first,
+      );
+    }
     return OperationsDto.workOrderTaskFromJson(raw);
   }
 

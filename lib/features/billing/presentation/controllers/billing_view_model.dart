@@ -137,7 +137,7 @@ class BillingViewModel extends ChangeNotifier {
       await loadBillingData(branchId);
       return emitted;
     } catch (e) {
-      _errorMessage = 'Error al emitir comprobante SUNAT: $e';
+      _errorMessage = 'Error al emitir comprobante: $e';
       notifyListeners();
       return null;
     } finally {

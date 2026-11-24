@@ -45,15 +45,13 @@ class DtcDetailPage extends StatelessWidget {
     final loc = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ShiftIQColors.warmNeutral,
-      body: Column(
-        children: [
-          ShiftIQPageHeader(
-            title: 'Diagnóstico ${alert.code}',
-            subtitle: '${alert.vehiclePlate} · ${alert.vehicleModel}',
-            showBackButton: true,
-          ),
-          Expanded(
-            child: SingleChildScrollView(
+      body: ShiftIQCollapsibleHeaderBody(
+        header: ShiftIQPageHeader(
+          title: 'Diagnóstico ${alert.code}',
+          subtitle: '${alert.vehiclePlate} · ${alert.vehicleModel}',
+          showBackButton: true,
+        ),
+        body: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 36),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,8 +262,6 @@ class DtcDetailPage extends StatelessWidget {
           ],
         ),
       ),
-          ),
-        ],
       ),
     );
   }

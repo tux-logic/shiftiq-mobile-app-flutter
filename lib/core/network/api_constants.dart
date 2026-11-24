@@ -50,6 +50,7 @@ class ApiConstants {
       '/api/v1/customers?userId=$userId';
   static const String profiles = '/api/v1/profiles';
   static const String profilesMe = '/api/v1/profiles/me';
+  static const String profilesMeImage = '/api/v1/profiles/me/image';
   static String profileRoles(String userId) =>
       '/api/v1/profiles/roles?userId=$userId';
   static String profileByDocument(String documentNumber) =>
@@ -94,6 +95,7 @@ class ApiConstants {
   static String serviceById(String id) => '/api/v1/services/$id';
 
   static const String workOrders = '/api/v1/work-orders';
+  static const String workOrdersMe = '/api/v1/work-orders/me';
   static String workOrderById(String id) => '/api/v1/work-orders/$id';
   static String workOrderComplete(String id) => '/api/v1/work-orders/$id/complete';
 
@@ -180,8 +182,10 @@ class ApiConstants {
 
   // Billing Context
   static const String quotes = '/api/v1/quotes';
+  static const String quotesMe = '/api/v1/quotes/me';
   static const String vouchers = '/api/v1/vouchers';
   static const String checkouts = '/api/v1/checkouts';
+  static const String paymentSessions = '/api/v1/payments/sessions';
 
   // Shared Context
   static const String rootPing = '/';

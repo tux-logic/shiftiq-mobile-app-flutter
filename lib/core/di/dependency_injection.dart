@@ -3,6 +3,7 @@ import 'package:shiftiq_mobile_app_flutter/core/app_database.dart';
 import 'package:shiftiq_mobile_app_flutter/core/domain/event/domain_event_bus.dart';
 import 'package:shiftiq_mobile_app_flutter/core/infrastructure/event/stream_domain_event_bus.dart';
 import 'package:shiftiq_mobile_app_flutter/core/network/api_client.dart';
+import 'package:shiftiq_mobile_app_flutter/core/security/biometric_auth_service.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/application/usecases/get_user_profile.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/application/usecases/login_with_google.dart';
@@ -36,13 +37,16 @@ import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/w
 import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/repositories/core_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_branch_financial_analytics.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_branch_summary.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_customer_summary.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_network_analytics_summary.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/repositories/analytics_repository.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/infrastructure/remote/analytics_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/infrastructure/repositories/analytics_repository_impl.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/controllers/dashboard_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/controllers/employee_dashboard_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/application/operations_application.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/repositories/operations_repository.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/infrastructure/remote/service_api.dart';
@@ -107,6 +111,10 @@ void setupDependencies() {
 
   getIt.registerLazySingleton<SessionStorage>(
     () => SessionStorage(appDatabase: getIt<AppDatabase>()),
+  );
+
+  getIt.registerLazySingleton<BiometricAuthService>(
+    () => BiometricAuthService(),
   );
 
   getIt.registerLazySingleton<DomainEventBus>(() => StreamDomainEventBus());
@@ -240,7 +248,10 @@ void setupDependencies() {
   );
 
   getIt.registerLazySingleton<GetUserBranchesUseCase>(
-    () => GetUserBranchesUseCase(repository: getIt<CoreRepository>()),
+    () => GetUserBranchesUseCase(
+      repository: getIt<CoreRepository>(),
+      employeeRegistrationApi: getIt<EmployeeRegistrationApi>(),
+    ),
   );
 
   getIt.registerLazySingleton<SelectActiveBranchUseCase>(
@@ -275,6 +286,7 @@ void setupDependencies() {
       profileApi: getIt<ProfileApi>(),
       employeeRegistrationApi: getIt<EmployeeRegistrationApi>(),
       sessionStorage: getIt<SessionStorage>(),
+      manageMediaUploads: getIt<ManageMediaUploads>(),
     ),
   );
 
@@ -303,6 +315,12 @@ void setupDependencies() {
     ),
   );
 
+  getIt.registerLazySingleton<GetCustomerSummaryUseCase>(
+    () => GetCustomerSummaryUseCase(
+      repository: getIt<AnalyticsRepository>(),
+    ),
+  );
+
   getIt.registerFactory<DashboardViewModel>(
     () => DashboardViewModel(
       getBranchSummaryUseCase: getIt<GetBranchSummaryUseCase>(),
@@ -312,6 +330,15 @@ void setupDependencies() {
           getIt<GetNetworkAnalyticsSummaryUseCase>(),
       manageWorkOrders: getIt<ManageWorkOrders>(),
       sessionStorage: getIt<SessionStorage>(),
+    ),
+  );
+
+  getIt.registerFactory<EmployeeDashboardViewModel>(
+    () => EmployeeDashboardViewModel(
+      analyticsApi: getIt<AnalyticsApi>(),
+      sessionStorage: getIt<SessionStorage>(),
+      manageWorkOrders: getIt<ManageWorkOrders>(),
+      employeeRegistrationApi: getIt<EmployeeRegistrationApi>(),
     ),
   );
 
@@ -356,6 +383,8 @@ void setupDependencies() {
     () => WorkOrdersViewModel(
       manageWorkOrders: getIt<ManageWorkOrders>(),
       sessionStorage: getIt<SessionStorage>(),
+      analyticsApi: getIt<AnalyticsApi>(),
+      employeeRegistrationApi: getIt<EmployeeRegistrationApi>(),
     ),
   );
 
@@ -364,6 +393,10 @@ void setupDependencies() {
       manageWorkOrders: getIt<ManageWorkOrders>(),
       manageWorkOrderTasks: getIt<ManageWorkOrderTasks>(),
       manageTaskProducts: getIt<ManageTaskProducts>(),
+      manageProducts: getIt<ManageProducts>(),
+      coreRepository: getIt<CoreRepository>(),
+      employeeRegistrationApi: getIt<EmployeeRegistrationApi>(),
+      sharedApi: getIt<SharedApi>(),
     ),
   );
 
@@ -385,6 +418,8 @@ void setupDependencies() {
       appointmentApi: getIt<AppointmentApi>(),
       customerRegistrationApi: getIt<CustomerRegistrationApi>(),
       employeeRegistrationApi: getIt<EmployeeRegistrationApi>(),
+      profileApi: getIt<ProfileApi>(),
+      workOrderApi: getIt<WorkOrderApi>(),
     ),
   );
 
@@ -438,6 +473,7 @@ void setupDependencies() {
       getCustomerDirectoryQuery: getIt<GetCustomerRegistrationsUseCase>(),
       createAppointmentCommand: getIt<CreateAppointmentCommandService>(),
       updateStatusCommand: getIt<UpdateAppointmentUseCase>(),
+      manageServices: getIt<ManageServices>(),
     ),
   );
 
@@ -587,5 +623,18 @@ void setupDependencies() {
 
   getIt.registerLazySingleton<ManageIdentityValidations>(
     () => ManageIdentityValidations(repository: getIt<SharedRepository>()),
+  );
+
+  // 11. Customer Portal Context
+  getIt.registerFactory<CustomerHomeViewModel>(
+    () => CustomerHomeViewModel(
+      manageWorkOrders: getIt<ManageWorkOrders>(),
+      manageQuotes: getIt<ManageQuotes>(),
+      manageCheckouts: getIt<ManageCheckouts>(),
+      getCustomerSummary: getIt<GetCustomerSummaryUseCase>(),
+      getCustomerVehicles: getIt<GetCustomerVehicles>(),
+      getUserProfileContext: getIt<GetUserProfileContextUseCase>(),
+      getDtcAlerts: getIt<GetDtcAlerts>(),
+    ),
   );
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/auth/mobile_role_scope.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
+import 'package:shiftiq_mobile_app_flutter/core/security/biometric_auth_service.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/forgot_password_page.dart';
@@ -43,12 +44,143 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     if (success && mounted) {
+      await _maybePromptBiometricEnrollment();
+      if (!mounted) return;
       final destination = RoleRouter.resolveHomeForSession(
         getIt<SessionStorage>(),
       );
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => destination),
       );
+    }
+  }
+
+  Future<void> _maybePromptBiometricEnrollment() async {
+    if (!getIt.isRegistered<BiometricAuthService>() ||
+        !getIt.isRegistered<SessionStorage>()) {
+      return;
+    }
+    final userId = getIt<SessionStorage>().userId ?? '';
+    if (userId.isEmpty) return;
+
+    final biometric = getIt<BiometricAuthService>();
+    final capability = await biometric.getCapability();
+    if (capability != BiometricCapability.fingerprintOnly &&
+        capability != BiometricCapability.faceOnly &&
+        capability != BiometricCapability.both) {
+      return;
+    }
+
+    final alreadyEnabled = await biometric.isBiometricEnabledForUser(userId);
+    final alreadyPrompted =
+        await biometric.hasPromptedEnrollmentForUser(userId);
+    if (alreadyEnabled || alreadyPrompted || !mounted) return;
+
+    final iconData = capability == BiometricCapability.faceOnly
+        ? Icons.face_rounded
+        : Icons.fingerprint_rounded;
+    final bodyText = switch (capability) {
+      BiometricCapability.fingerprintOnly =>
+        'Usa tu huella digital para desbloquear tu sesión al abrir ShiftIQ. También puedes configurarlo después en tu Perfil.',
+      BiometricCapability.faceOnly =>
+        'Usa tu reconocimiento facial para desbloquear tu sesión al abrir ShiftIQ. También puedes configurarlo después en tu Perfil.',
+      _ =>
+        'Usa tu huella dactilar o reconocimiento facial para desbloquear tu sesión al abrir ShiftIQ. También puedes configurarlo después en tu Perfil.',
+    };
+    final ctaLabel = switch (capability) {
+      BiometricCapability.fingerprintOnly => 'Activar Huella Digital',
+      BiometricCapability.faceOnly => 'Activar Reconocimiento Facial',
+      _ => 'Activar Huella / Rostro',
+    };
+    final authReason = switch (capability) {
+      BiometricCapability.fingerprintOnly =>
+        'Confirma tu huella digital para activar el desbloqueo rápido',
+      BiometricCapability.faceOnly =>
+        'Confirma tu reconocimiento facial para activar el desbloqueo rápido',
+      _ =>
+        'Confirma tu huella o rostro para activar el desbloqueo rápido',
+    };
+
+    final enable = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: ShiftIQColors.primaryBlue.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    iconData,
+                    size: 32,
+                    color: ShiftIQColors.primaryBlue,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  AppLocalizations.of(context)
+                      .translate('biometric_optin_title'),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: ShiftIQColors.graphiteText,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  bodyText,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 13.5, color: Color(0xFF64748B)),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: () => Navigator.of(sheetContext).pop(true),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: ShiftIQColors.primaryBlue,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      ctaLabel,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () => Navigator.of(sheetContext).pop(false),
+                  child: Text(
+                    AppLocalizations.of(context).translate('biometric_not_now'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (enable == true) {
+      final result = await biometric.authenticate(reason: authReason);
+      await biometric.setBiometricEnabled(userId, result.isSuccess);
+    } else {
+      await biometric.markEnrollmentPrompted(userId);
     }
   }
 

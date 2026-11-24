@@ -2,7 +2,25 @@
 
 **Base Path**: `/api/v1/quotes`  
 **Context**: Billing Domain  
-**Description**: Cotizaciones generadas desde Órdenes de Trabajo. Flujo: `DRAFT` → `APPROVED` → `CANCELED`.
+**Description**: Cotizaciones generadas desde Órdenes de Trabajo. Flujo: `DRAFT` → `APPROVED` / `CANCELED`.
+
+---
+
+## Flujos de Operación en el Taller (Web & Mobile)
+
+Ambos flujos parten de la recepción del vehículo (`POST /api/v1/appointments`) y la apertura de la Orden de Trabajo (`POST /api/v1/work-orders` con diagnóstico inicial y tareas):
+
+1. **Servicio Estándar / Directo (cobro al finalizar):**
+   - El mecánico ejecuta las tareas directamente (`start` → repuestos → `evidenceImages` → `complete`), mientras el cliente sigue el avance en solo lectura (`GET /api/v1/work-orders/me`).
+   - El taller finaliza la OT (`POST /api/v1/work-orders/{id}/complete` → `COMPLETED`) y recién genera la cotización (`POST /api/v1/quotes`).
+   - El cliente aprueba la cotización (`POST /api/v1/quotes/{id}/approvals`) y paga en línea (`POST /api/v1/payments/sessions`) o presencial en caja (`POST /api/v1/checkouts`).
+
+2. **Servicio con Presupuesto Previo (autorización antes de ejecutar):**
+   - Tras la revisión inicial, el taller carga las tareas/repuestos estimados en la OT y genera la cotización (`POST /api/v1/quotes` en estado `DRAFT`).
+   - Si surgen ajustes antes de aprobar (tareas o repuestos agregados/modificados/retirados en la OT), cualquier cotización en **`DRAFT`** se **recalcula automáticamente** mediante evento de dominio (`WorkOrderTotalChangedEvent`); también sigue disponible `PUT /api/v1/quotes/{id}/sync` para sincronización manual.
+   - El cliente revisa el presupuesto (`GET /api/v1/quotes/me`) y lo aprueba (`POST /api/v1/quotes/{id}/approvals` → `APPROVED`) o lo rechaza (`POST /api/v1/quotes/{id}/cancellations` → `CANCELED`). *(El pago en línea permanece bloqueado hasta que la OT pase a `COMPLETED`.)*
+   - **Control de repuestos (reserva de stock):** Al agregar un repuesto a una tarea solo se *reserva* el stock en inventario (sin abrir/instalar la pieza física). Si el cliente rechaza el presupuesto adicional, el taller retira el repuesto (`DELETE /api/v1/work-order-tasks/{taskId}/products/{productId}`) y el stock vuelve intacto al inventario.
+   - El mecánico ejecuta las tareas asignadas (`PENDING` → `DOING` → `COMPLETED`), el taller finaliza la OT (`COMPLETED`) y recién entonces se habilita el pago para el cliente.
 
 ---
 
@@ -57,6 +75,26 @@
 - **Cálculo**: `subtotalAmount` = suma tasks (servicios + productos) de la OT
 - **Descuento**: Se aplica sobre subtotal → `totalAmount = subtotal * (1 - discount/100)`
 - **Estado**: Nace `DRAFT` → editable hasta `APPROVED`
+- **Re-cotización**: Solo se permite 1 cotización activa (no `CANCELED`) por OT; si una cotización en `DRAFT` se cancela (`POST /api/v1/quotes/{id}/cancellations`, permitido tanto al staff como al cliente dueño de la OT), el taller puede volver a cotizar la OT.
+
+---
+
+## `PUT /api/v1/quotes/{id}/sync` — Recalcular Cotización desde la Orden de Trabajo
+
+**Security**: `Permission.QUOTE_CREATE` en la sede  
+**Description**: Sincroniza `subtotalAmount` y `totalAmount` de una cotización en estado `DRAFT` con el `totalAmount` actual de su Orden de Trabajo (útil cuando se agregan tareas o repuestos después de emitir el presupuesto inicial).
+
+### Success Response (200 OK)
+
+Retorna `QuoteResource` recalculado.
+
+### Error Responses
+
+| HTTP Code | Error Code | Descripción |
+|-----------|------------|-------------|
+| 403 | `ACCESS_DENIED` | Sin permiso en la sede |
+| 404 | `NOT_FOUND` | Cotización u OT no existe |
+| 409 | `CONFLICT` | Cotización no está en estado `DRAFT` (`INVALID_QUOTE_STATE`) |
 
 ---
 
@@ -94,6 +132,17 @@
   ]
 }
 ```
+
+---
+
+## `GET /api/v1/quotes/me` — Listar Mis Cotizaciones (Cliente — Solo Lectura)
+
+**Security**: `@PreAuthorize("isAuthenticated()")`  
+**Description**: Lista todas las cotizaciones asociadas a las órdenes de trabajo del cliente autenticado (incluyendo cotizaciones `APPROVED` listas para pago desde la app móvil).
+
+### Success Response (200 OK)
+
+Array de `QuoteResource`.
 
 ---
 
@@ -149,8 +198,8 @@ Array de `QuoteResource` (resumen sin items).
 
 ## `POST /api/v1/quotes/{id}/approvals` — Aprobar Cotización
 
-**Security**: Validación manual `isAuthorizedForBranch(quote.branchId)`  
-**Description**: `DRAFT` → `APPROVED`. Habilita emisión de comprobante (`POST /vouchers`) y pago.
+**Security**: Staff autorizado de la sede (`Permission.QUOTE_APPROVE`) o el **cliente dueño de la orden de trabajo**  
+**Description**: `DRAFT` → `APPROVED`. Habilita el pago en línea (`POST /api/v1/payments/sessions` o `POST /api/v1/payments/mercadopago/preferences`) y el checkout presencial (`POST /api/v1/checkouts`).
 
 ### Success Response (200 OK)
 

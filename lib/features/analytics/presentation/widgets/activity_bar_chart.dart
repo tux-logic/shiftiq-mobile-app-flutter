@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/models/financial_analytics_snapshot.dart';
 
@@ -61,11 +62,14 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
       (sum, item) => sum + item.totalAppointmentsCount,
     );
 
+    final loc = AppLocalizations.of(context);
+    final woLabel = loc.translate('work_orders_short');
+    final apptLabel = loc.translate('appointments_tab');
     final localeCode = Localizations.localeOf(context).languageCode;
     final dateFmt = DateFormat('d MMM', localeCode);
     final caption = selected != null
-        ? '${dateFmt.format(selected.snapshotDate)} · ${selected.completedWorkOrdersCount} OTs · ${selected.totalAppointmentsCount} Citas'
-        : '$totalOrders OTs · $totalAppointments Citas';
+        ? '${dateFmt.format(selected.snapshotDate)} · ${selected.completedWorkOrdersCount} $woLabel · ${selected.totalAppointmentsCount} $apptLabel'
+        : '$totalOrders $woLabel · $totalAppointments $apptLabel';
 
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
@@ -91,7 +95,7 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Actividad operativa',
+                      loc.translate('operational_activity'),
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w500,
@@ -118,14 +122,14 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
                   ],
                 ),
               ),
-              const _LegendDot(
+              _LegendDot(
                 color: ShiftIQColors.primaryBlue,
-                label: 'OTs',
+                label: woLabel,
               ),
               const SizedBox(width: 12),
-              const _LegendDot(
+              _LegendDot(
                 color: ShiftIQColors.secondaryTeal,
-                label: 'Citas',
+                label: apptLabel,
               ),
             ],
           ),
@@ -135,7 +139,7 @@ class _ActivityBarChartState extends State<ActivityBarChart> {
               height: 96,
               child: Center(
                 child: Text(
-                  'Sin actividad registrada',
+                  loc.translate('no_activity_recorded'),
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.blueGrey.shade400,

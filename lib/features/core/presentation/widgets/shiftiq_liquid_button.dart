@@ -29,7 +29,8 @@ class ShiftIQLiquidButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(borderRadius);
 
-    return DecoratedBox(
+    return RepaintBoundary(
+      child: DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: radius,
         boxShadow: [
@@ -92,6 +93,7 @@ class ShiftIQLiquidButton extends StatelessWidget {
             ),
           ),
         ),
+      ),
       ),
     );
   }

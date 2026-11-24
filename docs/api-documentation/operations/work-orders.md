@@ -47,7 +47,12 @@
   "appointmentId": "appt1appt2-appt3-appt4-appt5appt6appt7",
   "branchId": "c3d4e5f6-3333-4444-5555-666677778888",
   "vehicleId": "veh1veh2-veh3-veh4-veh5-veh6veh7veh8",
+  "vehiclePlateNumber": "ABC-123",
+  "vehicleBrand": "Toyota",
+  "vehicleModel": "Corolla Cross",
+  "vehicleYear": 2023,
   "customerId": "cust1cust2-cust3-cust4-cust5-cust6cust7cu",
+  "customerName": "María Fernández",
   "internalNumber": 1,
   "formattedNumber": "MOL-01-000001",
   "status": "PENDING",
@@ -128,9 +133,20 @@
 
 ---
 
+## `GET /api/v1/work-orders/me` — Listar Mis Órdenes de Trabajo (Cliente — Solo Lectura)
+
+**Security**: `@PreAuthorize("isAuthenticated()")`  
+**Description**: Retorna todas las Órdenes de Trabajo del cliente autenticado en modo solo lectura, incluyendo el progreso de cada tarea, repuestos y fotos de evidencia (`evidenceImages`) subidas por el mecánico.
+
+### Success Response (200 OK)
+
+Array de `WorkOrderResource` con `tasks`, `products`, `evidenceImages`, `customerName` y datos del vehículo (`vehiclePlateNumber`, `vehicleBrand`, `vehicleModel`, `vehicleYear`).
+
+---
+
 ## `GET /api/v1/work-orders/{id}` — Detalle Completo de OT
 
-**Security**: Validación manual `isAuthorizedForBranch(ot.branchId)`  
+**Security**: Staff autorizado de la sede (`isAuthorizedForBranch(ot.branchId)`) o el cliente dueño de la OT (solo lectura)  
 **Description**: **Endpoint principal** — retorna OT con tareas, mecánicos asignados, repuestos, fotos y montos consolidados.
 
 ### Success Response (200 OK)
@@ -141,7 +157,12 @@
   "appointmentId": "appt1appt2-appt3-appt4-appt5appt6appt7",
   "branchId": "c3d4e5f6-3333-4444-5555-666677778888",
   "vehicleId": "veh1veh2-veh3-veh4-veh5-veh6veh7veh8",
+  "vehiclePlateNumber": "ABC-123",
+  "vehicleBrand": "Toyota",
+  "vehicleModel": "Corolla Cross",
+  "vehicleYear": 2023,
   "customerId": "cust1cust2-cust3-cust4-cust5-cust6cust7cu",
+  "customerName": "María Fernández",
   "internalNumber": 1,
   "formattedNumber": "MOL-01-000001",
   "status": "IN_PROGRESS",
@@ -154,6 +175,7 @@
       "serviceId": "srv1srv2-srv3-srv4-srv5-srv6srv7srv8",
       "branchId": "c3d4e5f6-3333-4444-5555-666677778888",
       "assignedMechanicId": "ereg1ereg2-ereg3-ereg4-ereg5ereg6ereg7",
+      "assignedMechanicName": "Reynaldo Machacca Gonzales",
       "status": "DOING",
       "description": "Rectificado discos + pastillas",
       "price": 200.00,

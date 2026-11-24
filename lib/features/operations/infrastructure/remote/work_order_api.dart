@@ -51,6 +51,12 @@ class WorkOrderApi {
     return response as List<dynamic>;
   }
 
+  /// GET /api/v1/work-orders/me (Customer read-only list)
+  Future<List<dynamic>> getMyWorkOrders() async {
+    final response = await apiClient.get(ApiConstants.workOrdersMe);
+    return response is List<dynamic> ? response : const [];
+  }
+
   /// GET /api/v1/work-orders/{id}
   Future<Map<String, dynamic>> getWorkOrderById(String id) async {
     final response = await apiClient.get(ApiConstants.workOrderById(id));

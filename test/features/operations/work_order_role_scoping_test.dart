@@ -182,5 +182,44 @@ void main() {
         expect(find.byIcon(Icons.receipt_long), findsOneWidget);
       },
     );
+
+    testWidgets(
+      'WorkOrderDetailPage hides completed banner when IN_PROGRESS order is viewed in readOnly mode',
+      (tester) async {
+        getIt.registerSingleton<SessionStorage>(
+          _FakeSessionStorage(const ['ROLE_CUSTOMER']),
+        );
+
+        final inProgressOrder = WorkOrder(
+          id: 'wo-2',
+          appointmentId: 'appt-2',
+          branchId: 'b-1',
+          vehicleId: 'v-1',
+          customerId: 'c-1',
+          internalNumber: 2,
+          formattedNumber: 'MOL-01-000002',
+          status: WorkOrderStatus.inProgress,
+          diagnosticSummary: 'Cambio de frenos',
+          mileageIn: 12000,
+          totalAmount: 180.0,
+          createdAt: DateTime(2026, 11, 23),
+        );
+
+        await tester.pumpWidget(
+          _wrapWithApp(
+            WorkOrderDetailPage(
+              workOrderId: 'wo-2',
+              readOnly: true,
+              viewModel: _FakeWorkOrderDetailViewModel(inProgressOrder),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.textContaining('ORDEN COMPLETADA'), findsNothing);
+        expect(find.textContaining('ORDEN PAGADA'), findsNothing);
+        expect(find.textContaining('FINALIZAR Y LIQUIDAR'), findsNothing);
+      },
+    );
   });
 }

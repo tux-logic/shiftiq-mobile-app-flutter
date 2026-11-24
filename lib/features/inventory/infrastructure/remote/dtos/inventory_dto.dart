@@ -102,6 +102,7 @@ class ProductDto {
   final int minimumStock;
   final int currentStock;
   final bool lowStockAlert;
+  final String? imageUrl;
   final List<ProductBatchDto> batches;
   final String? createdAt;
   final String unitOfMeasure;
@@ -118,6 +119,7 @@ class ProductDto {
     required this.minimumStock,
     this.currentStock = 0,
     this.lowStockAlert = false,
+    this.imageUrl,
     this.batches = const [],
     this.createdAt,
     this.unitOfMeasure = 'UND',
@@ -159,6 +161,8 @@ class ProductDto {
           currentStock: ((json['currentStock'] ?? json['current_stock'] ?? 0) as num).toInt(),
           lowStockAlert: json['lowStockAlert'] == true ||
               (((json['currentStock'] ?? 0) as num).toInt() <= minStock.toInt()),
+          imageUrl: (json['imageUrl'] ?? json['productImageUrl'] ?? json['image_url'])
+              ?.toString(),
           batches: parsedBatches,
           createdAt: json['createdAt']?.toString() ?? json['created_at']?.toString(),
           unitOfMeasure: json['unitOfMeasure']?.toString() ?? json['unit_of_measure']?.toString() ?? 'UND',
@@ -218,6 +222,7 @@ class ProductDto {
       currentStock: currentStock,
       minimumStock: minimumStock,
       lowStockAlert: lowStockAlert,
+      imageUrl: imageUrl,
       batches: batches.map((b) => b.toDomain()).toList(),
       createdAt: createdAt != null ? DateTime.tryParse(createdAt!) : null,
     );

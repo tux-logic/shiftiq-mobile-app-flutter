@@ -46,6 +46,11 @@ class ManageQuotes {
     return repository.getQuotes(branchId: branchId.trim());
   }
 
+  /// Retrieves all quotations belonging to the authenticated customer (read-only).
+  Future<List<Quote>> getMyQuotes() {
+    return repository.getMyQuotes();
+  }
+
   /// Retrieves a quotation with its itemized breakdown.
   Future<Quote> getQuoteById(String quoteId) async {
     if (quoteId.trim().isEmpty) {
@@ -77,13 +82,14 @@ class ManageQuotes {
     );
   }
 
-  /// Approves a quote (DRAFT -> APPROVED), enabling voucher emission.
-  Future<Quote> approveQuote(String quoteId) async {
+  /// Approves a quote (DRAFT -> APPROVED), enabling voucher emission and payment.
+  Future<Quote> approveQuote(String quoteId, {Quote? currentQuote}) async {
     if (quoteId.trim().isEmpty) {
       throw ArgumentError('quoteId cannot be empty');
     }
 
-    final existing = await repository.getQuoteById(quoteId.trim());
+    final existing =
+        currentQuote ?? await repository.getQuoteById(quoteId.trim());
     if (existing.status == QuoteStatus.approved) {
       return existing;
     }
@@ -95,12 +101,13 @@ class ManageQuotes {
   }
 
   /// Cancels a quotation (DRAFT or APPROVED -> CANCELED).
-  Future<Quote> cancelQuote(String quoteId) async {
+  Future<Quote> cancelQuote(String quoteId, {Quote? currentQuote}) async {
     if (quoteId.trim().isEmpty) {
       throw ArgumentError('quoteId cannot be empty');
     }
 
-    final existing = await repository.getQuoteById(quoteId.trim());
+    final existing =
+        currentQuote ?? await repository.getQuoteById(quoteId.trim());
     if (existing.status == QuoteStatus.canceled) {
       return existing;
     }

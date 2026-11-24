@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/auth/mobile_role_scope.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
+import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_loading_helpers.dart';
@@ -9,8 +11,7 @@ import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_but
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton_dummies.dart';
-import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
-import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_profile_avatar_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/create_work_order_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_order_detail_page.dart';
@@ -19,8 +20,13 @@ import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/widg
 
 class WorkOrdersPage extends StatefulWidget {
   final WorkOrdersViewModel? viewModel;
+  final MobileRoleScope? roleScope;
 
-  const WorkOrdersPage({super.key, this.viewModel});
+  const WorkOrdersPage({
+    super.key,
+    this.viewModel,
+    this.roleScope,
+  });
 
   @override
   State<WorkOrdersPage> createState() => _WorkOrdersPageState();
@@ -30,13 +36,23 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
     with SingleTickerProviderStateMixin {
   static const List<WorkOrderStatus?> _tabStatuses = [
     null,
-    WorkOrderStatus.inProgress,
     WorkOrderStatus.pending,
+    WorkOrderStatus.inProgress,
     WorkOrderStatus.completed,
   ];
 
   late final WorkOrdersViewModel _viewModel;
   late final TabController _tabController;
+
+  MobileRoleScope get _effectiveScope {
+    if (widget.roleScope != null) return widget.roleScope!;
+    if (getIt.isRegistered<SessionStorage>()) {
+      return RoleRouter.resolveScope(getIt<SessionStorage>().roles);
+    }
+    return MobileRoleScope.employee;
+  }
+
+  bool get _canCreateWorkOrder => _effectiveScope == MobileRoleScope.ownerAdmin;
 
   @override
   void initState() {
@@ -80,32 +96,25 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
       listenable: _viewModel,
       builder: (context, _) {
         final vm = _viewModel;
+        final loc = AppLocalizations.of(context);
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
-          body: Column(
-            children: [
-              ShiftIQPageHeader(
-                title: 'Órdenes de Trabajo',
-                subtitle: vm.activeBranchName,
-                actions: [
-                  ShiftIQLiquidIconButton(
-                    key: const Key('work_orders_profile_button'),
-                    tooltip:
-                        AppLocalizations.of(context).translate('tooltip_profile'),
-                    icon: Icons.person_outline_rounded,
-                    onDarkBackground: true,
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const ProfilePage(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              // Minimalist underline TabBar for Kanban columns
+          body: ShiftIQCollapsibleHeaderBody(
+            header: ShiftIQPageHeader(
+              title: 'Órdenes de Trabajo',
+              subtitle: vm.activeBranchName,
+              actions: [
+                ShiftIQProfileAvatarButton(
+                  key: const Key('work_orders_profile_button'),
+                  tooltip:
+                      AppLocalizations.of(context).translate('tooltip_profile'),
+                ),
+              ],
+            ),
+            body: Column(
+              children: [
+                // Minimalist underline TabBar for Kanban columns
               Container(
                 color: Colors.white,
                 child: TabBar(
@@ -129,17 +138,20 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
                     fontWeight: FontWeight.w600,
                   ),
                   tabs: [
-                    _buildTab('Todas', vm.ordersForStatus(null).length),
                     _buildTab(
-                      'En Progreso',
-                      vm.ordersForStatus(WorkOrderStatus.inProgress).length,
+                      loc.translate('all'),
+                      vm.ordersForStatus(null).length,
                     ),
                     _buildTab(
-                      'Pendientes',
+                      loc.translate('pending_plural'),
                       vm.ordersForStatus(WorkOrderStatus.pending).length,
                     ),
                     _buildTab(
-                      'Completadas',
+                      loc.translate('in_progress_status'),
+                      vm.ordersForStatus(WorkOrderStatus.inProgress).length,
+                    ),
+                    _buildTab(
+                      loc.translate('completed_plural'),
                       vm.ordersForStatus(WorkOrderStatus.completed).length,
                     ),
                   ],
@@ -157,10 +169,12 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
               ),
             ],
           ),
+          ),
           floatingActionButton: ListenableBuilder(
             listenable: _viewModel,
             builder: (context, _) {
-              if (_viewModel.ordersForStatus(_viewModel.statusFilter).isEmpty) {
+              if (!_canCreateWorkOrder ||
+                  _viewModel.ordersForStatus(_viewModel.statusFilter).isEmpty) {
                 return const SizedBox.shrink();
               }
               return Padding(
@@ -246,22 +260,26 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
                       ),
                     ),
                     const SizedBox(height: 6),
-                    const Text(
-                      'Registra una nueva orden para comenzar.',
+                    Text(
+                      _canCreateWorkOrder
+                          ? 'Registra una nueva orden para comenzar.'
+                          : 'No hay órdenes de trabajo disponibles en esta sede.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 13,
                         color: Color(0xFF64748B),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    Center(
-                      child: ShiftIQPrimaryPillButton(
-                        label: 'Nueva OT',
-                        icon: Icons.add_rounded,
-                        onPressed: () => _openCreateWorkOrder(vm),
+                    if (_canCreateWorkOrder) ...[
+                      const SizedBox(height: 20),
+                      Center(
+                        child: ShiftIQPrimaryPillButton(
+                          label: 'Nueva OT',
+                          icon: Icons.add_rounded,
+                          onPressed: () => _openCreateWorkOrder(vm),
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 )
               : ListView.builder(

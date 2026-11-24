@@ -3,8 +3,10 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/auth/mobile_role_scope.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
+import 'package:shiftiq_mobile_app_flutter/core/security/biometric_auth_service.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/biometric_lock_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
 
@@ -13,14 +15,26 @@ void main() async {
   setupDependencies();
   await getIt<SessionStorage>().initialize();
   final savedLocale = getIt<SessionStorage>().savedLocale;
-  if (savedLocale != null && savedLocale.isNotEmpty) {
-    appLocaleNotifier.value = Locale(savedLocale);
+  final systemLocale = WidgetsBinding.instance.platformDispatcher.locale;
+  appLocaleNotifier.value = AppLocalizations.resolveInitialLocale(
+    savedLocale,
+    systemLocale,
+  );
+  final session = getIt<SessionStorage>();
+  var requireBiometricUnlock = false;
+  if (session.isAuthenticated && session.userId != null) {
+    final biometric = getIt<BiometricAuthService>();
+    final supported = await biometric.isDeviceSupported();
+    final enabled = await biometric.isBiometricEnabledForUser(session.userId!);
+    requireBiometricUnlock = supported && enabled;
   }
-  runApp(const ShiftIqApp());
+  runApp(ShiftIqApp(requireBiometricUnlock: requireBiometricUnlock));
 }
 
 class ShiftIqApp extends StatelessWidget {
-  const ShiftIqApp({super.key});
+  final bool requireBiometricUnlock;
+
+  const ShiftIqApp({super.key, this.requireBiometricUnlock = false});
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +67,9 @@ class ShiftIqApp extends StatelessWidget {
   Widget _resolveInitialScreen() {
     final session = getIt<SessionStorage>();
     if (session.isAuthenticated) {
+      if (requireBiometricUnlock) {
+        return const BiometricLockPage();
+      }
       return RoleRouter.resolveHomeForSession(
         session,
         preferActiveBranch: true,

@@ -18,6 +18,17 @@ class BillingApi {
     return [];
   }
 
+  /// GET /api/v1/quotes/me (Customer read-only list)
+  Future<List<QuoteDto>> getMyQuotes() async {
+    final response = await apiClient.get('/api/v1/quotes/me');
+    if (response is List) {
+      return response
+          .map((item) => QuoteDto.fromJson(item as Map<String, dynamic>))
+          .toList();
+    }
+    return [];
+  }
+
   Future<QuoteDto> getQuoteById(String id) async {
     final response = await apiClient.get('/api/v1/quotes/$id');
     return QuoteDto.fromJson(response as Map<String, dynamic>);
@@ -112,6 +123,17 @@ class BillingApi {
       body: body,
     );
     return VoucherDto.fromJson(response as Map<String, dynamic>);
+  }
+
+  // Virtual Payment Sessions (Gateway-agnostic Strategy Pattern)
+  Future<Map<String, dynamic>> createPaymentSession(
+    Map<String, dynamic> body,
+  ) async {
+    final response = await apiClient.post(
+      '/api/v1/payments/sessions',
+      body: body,
+    );
+    return response as Map<String, dynamic>;
   }
 
   // Mercado Pago Preferences

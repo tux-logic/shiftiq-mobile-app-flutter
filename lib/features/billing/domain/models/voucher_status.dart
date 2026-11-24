@@ -1,6 +1,6 @@
 enum VoucherStatus {
   pending('PENDING', 'Pendiente'),
-  emitted('EMITTED', 'Emitido a SUNAT'),
+  emitted('EMITTED', 'Comprobante emitido'),
   partiallyPaid('PARTIALLY_PAID', 'Pago Parcial'),
   paid('PAID', 'Pagado'),
   canceled('CANCELED', 'Anulado'),
