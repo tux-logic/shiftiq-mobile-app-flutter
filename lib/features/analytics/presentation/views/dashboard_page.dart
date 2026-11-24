@@ -17,6 +17,7 @@ import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widge
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/widgets/revenue_trend_chart.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/billing_dashboard_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_page.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_profile_avatar_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/controllers/appointments_view_model.dart';
@@ -59,6 +60,186 @@ class _DashboardPageState extends State<DashboardPage> {
     if (!getIt.isRegistered<SessionStorage>()) return false;
     return RoleRouter.resolveScope(getIt<SessionStorage>().roles) ==
         MobileRoleScope.ownerAdmin;
+  }
+
+  Future<void> _showBranchSwitcherSheet(DashboardViewModel vm) async {
+    if (!getIt.isRegistered<BranchSelectionViewModel>()) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const BranchSelectionPage()),
+      );
+      return;
+    }
+
+    final branchVm = getIt<BranchSelectionViewModel>();
+    branchVm.loadBranches();
+    final loc = AppLocalizations.of(context);
+
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return ListenableBuilder(
+          listenable: branchVm,
+          builder: (context, _) {
+            return SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 36,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFCBD5E1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          loc.translate('switch_branch_title'),
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                            color: ShiftIQColors.graphiteText,
+                          ),
+                        ),
+                        TextButton.icon(
+                          onPressed: () {
+                            Navigator.of(sheetContext).pop();
+                            Navigator.of(this.context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const BranchSelectionPage(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.map_outlined, size: 17),
+                          label: Text(loc.translate('view_on_map')),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    if (branchVm.isLoading && branchVm.branches.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 28),
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (branchVm.branches.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        child: Text(
+                          loc.translate('no_branches_available'),
+                          style: const TextStyle(color: Color(0xFF64748B)),
+                        ),
+                      )
+                    else
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 320),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: branchVm.branches.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final branch = branchVm.branches[index];
+                            final isCurrent = branch.id == vm.activeBranchId;
+                            return InkWell(
+                              borderRadius: BorderRadius.circular(14),
+                              onTap: () async {
+                                final ok = await branchVm.selectBranch(branch);
+                                if (sheetContext.mounted) {
+                                  Navigator.of(sheetContext).pop();
+                                }
+                                if (ok && mounted) {
+                                  await vm.init();
+                                }
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isCurrent
+                                      ? ShiftIQColors.primaryBlue
+                                          .withValues(alpha: 0.08)
+                                      : const Color(0xFFF8FAFC),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: isCurrent
+                                        ? ShiftIQColors.primaryBlue
+                                        : ShiftIQColors.borderSlate,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.storefront_outlined,
+                                      size: 20,
+                                      color: isCurrent
+                                          ? ShiftIQColors.primaryBlue
+                                          : const Color(0xFF64748B),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            branch.name,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w700,
+                                              color: isCurrent
+                                                  ? ShiftIQColors.primaryBlue
+                                                  : ShiftIQColors.graphiteText,
+                                            ),
+                                          ),
+                                          if (branch.address.isNotEmpty)
+                                            Text(
+                                              branch.address,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Color(0xFF64748B),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (isCurrent)
+                                      const Icon(
+                                        Icons.check_circle_rounded,
+                                        size: 20,
+                                        color: ShiftIQColors.primaryBlue,
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -111,8 +292,8 @@ class _DashboardPageState extends State<DashboardPage> {
                               ),
                               child: Text(
                                 isOwnerAdmin
-                                    ? 'OWNER / ADMIN'
-                                    : 'WORKSHOP STAFF',
+                                    ? loc.translate('badge_owner_admin')
+                                    : loc.translate('badge_workshop_staff'),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 10,
@@ -167,13 +348,9 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                         const SizedBox(height: 12),
                         InkWell(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => const BranchSelectionPage(),
-                              ),
-                            );
-                          },
+                          onTap: isOwnerAdmin
+                              ? () => _showBranchSwitcherSheet(vm)
+                              : null,
                           borderRadius: BorderRadius.circular(10),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -190,12 +367,14 @@ class _DashboardPageState extends State<DashboardPage> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 4),
-                              const Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                size: 22,
-                                color: Colors.white70,
-                              ),
+                              if (isOwnerAdmin) ...[
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  size: 22,
+                                  color: Colors.white70,
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -367,13 +546,13 @@ class _DashboardPageState extends State<DashboardPage> {
                                     ],
                                   ),
                                   if (vm.recentWorkOrders.isEmpty)
-                                    const Padding(
+                                    Padding(
                                       padding:
-                                          EdgeInsets.symmetric(vertical: 16),
+                                          const EdgeInsets.symmetric(vertical: 16),
                                       child: Center(
                                         child: Text(
-                                          'No hay órdenes activas en esta sede.',
-                                          style: TextStyle(
+                                          loc.translate('no_active_orders_branch'),
+                                          style: const TextStyle(
                                             fontSize: 12.5,
                                             color: Color(0xFF94A3B8),
                                           ),
@@ -393,7 +572,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                           service: order
                                                   .diagnosticSummary.isNotEmpty
                                               ? order.diagnosticSummary
-                                              : 'Revisión general',
+                                              : loc.translate('general_inspection'),
                                           status: order.status.label,
                                           statusColor: order.status.color,
                                         ),
@@ -512,7 +691,7 @@ class _ExecutiveMinimalistCard extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'Red: S/ ${NumberFormat('#,##0.00', 'en_US').format(networkSummary!.totalNetworkRevenue)}',
+                      '${AppLocalizations.of(context).translate('network_prefix')}: S/ ${NumberFormat('#,##0.00', 'en_US').format(networkSummary!.totalNetworkRevenue)}',
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -631,7 +810,11 @@ class _ExecutiveMinimalistCard extends StatelessWidget {
               Expanded(
                 child: _HealthStatusPill(
                   icon: Icons.inventory_2_outlined,
-                  label: hasStockAlert ? 'Stock por reponer' : 'Stock saludable',
+                  label: hasStockAlert
+                      ? AppLocalizations.of(context)
+                          .translate('stock_restock_needed')
+                      : AppLocalizations.of(context)
+                          .translate('stock_healthy'),
                   color: hasStockAlert
                       ? ShiftIQColors.severityAmber
                       : ShiftIQColors.preventiveGreen,
@@ -642,7 +825,11 @@ class _ExecutiveMinimalistCard extends StatelessWidget {
               Expanded(
                 child: _HealthStatusPill(
                   icon: Icons.sensors_rounded,
-                  label: hasDtcAlert ? 'Revisión OBD-II' : 'Telemetría estable',
+                  label: hasDtcAlert
+                      ? AppLocalizations.of(context)
+                          .translate('obd2_review_needed')
+                      : AppLocalizations.of(context)
+                          .translate('telemetry_stable'),
                   color: hasDtcAlert
                       ? ShiftIQColors.severityCrimson
                       : ShiftIQColors.secondaryTeal,

@@ -6,12 +6,12 @@ import 'package:shiftiq_mobile_app_flutter/core/network/api_constants.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_kanban_tab_bar.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton_dummies.dart';
-import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/controllers/billing_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/checkout_voucher_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/voucher_detail_page.dart';
@@ -33,14 +33,16 @@ class BillingDashboardPage extends StatefulWidget {
   State<BillingDashboardPage> createState() => _BillingDashboardPageState();
 }
 
-class _BillingDashboardPageState extends State<BillingDashboardPage> {
+class _BillingDashboardPageState extends State<BillingDashboardPage>
+    with SingleTickerProviderStateMixin {
   late final BillingViewModel _viewModel;
   late final String _activeBranchId;
-  int _selectedTab = 0;
+  late final TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _viewModel = widget.viewModel ?? getIt<BillingViewModel>();
     final session =
         getIt.isRegistered<SessionStorage>() ? getIt<SessionStorage>() : null;
@@ -51,6 +53,12 @@ class _BillingDashboardPageState extends State<BillingDashboardPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _viewModel.loadBillingData(_activeBranchId);
     });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   void _openCheckout(BillingViewModel viewModel) {
@@ -80,27 +88,32 @@ class _BillingDashboardPageState extends State<BillingDashboardPage> {
               ShiftIQCollapsibleHeaderBody(
                 header: ShiftIQPageHeader(
                   title: loc.translate('billing_title'),
-                  subtitle: 'Comprobantes internos y cotizaciones',
+                  subtitle: loc.translate('billing_subtitle'),
                   showBackButton: true,
                 ),
                 body: Column(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
-                      child: _SegmentedBillingTabs(
-                        selectedIndex: _selectedTab,
-                        vouchersLabel:
-                            '${loc.translate('vouchers')} (${viewModel.vouchers.length})',
-                        quotesLabel:
-                            '${loc.translate('quotes')} (${viewModel.quotes.length})',
-                        onChanged: (index) =>
-                            setState(() => _selectedTab = index),
-                      ),
+                    ShiftIQKanbanTabBar(
+                      controller: _tabController,
+                      tabs: [
+                        ShiftIQKanbanTabItem(
+                          label: loc.translate('vouchers'),
+                          count: viewModel.vouchers.length,
+                        ),
+                        ShiftIQKanbanTabItem(
+                          label: loc.translate('quotes'),
+                          count: viewModel.quotes.length,
+                        ),
+                      ],
                     ),
                     Expanded(
-                      child: _selectedTab == 0
-                          ? _buildVouchersTab(context, viewModel, loc)
-                          : _buildQuotesTab(context, viewModel),
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          _buildVouchersTab(context, viewModel, loc),
+                          _buildQuotesTab(context, viewModel),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -139,7 +152,7 @@ class _BillingDashboardPageState extends State<BillingDashboardPage> {
                 child: _BillingKpiCard(
                   icon: Icons.payments_outlined,
                   accentColor: ShiftIQColors.primaryBlue,
-                  label: 'Facturación Hoy',
+                  label: loc.translate('today_collections'),
                   value: 'S/ ${viewModel.totalBilledToday.toStringAsFixed(2)}',
                 ),
               ),
@@ -148,44 +161,12 @@ class _BillingDashboardPageState extends State<BillingDashboardPage> {
                 child: _BillingKpiCard(
                   icon: Icons.pending_actions_outlined,
                   accentColor: ShiftIQColors.severityOrange,
-                  label: 'Por Cobrar',
-                  value: '${viewModel.pendingPaymentsCount} comprobantes',
+                  label: loc.translate('pending_collections'),
+                  value:
+                      '${viewModel.pendingPaymentsCount} ${loc.translate('payments_count_suffix')}',
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 14),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _BillingFilterPill(
-                  label: loc.translate('all'),
-                  selected: viewModel.selectedTypeFilter == null,
-                  onTap: () => viewModel.filterByType(null, _activeBranchId),
-                ),
-                const SizedBox(width: 8),
-                _BillingFilterPill(
-                  label: loc.translate('boletas_filter'),
-                  selected:
-                      viewModel.selectedTypeFilter == VoucherType.boleta,
-                  onTap: () => viewModel.filterByType(
-                    VoucherType.boleta,
-                    _activeBranchId,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                _BillingFilterPill(
-                  label: loc.translate('facturas_filter'),
-                  selected:
-                      viewModel.selectedTypeFilter == VoucherType.factura,
-                  onTap: () => viewModel.filterByType(
-                    VoucherType.factura,
-                    _activeBranchId,
-                  ),
-                ),
-              ],
-            ),
           ),
           const SizedBox(height: 14),
           if (viewModel.isLoading && viewModel.vouchers.isEmpty)
@@ -316,112 +297,6 @@ class _BillingDashboardPageState extends State<BillingDashboardPage> {
   }
 }
 
-class _SegmentedBillingTabs extends StatelessWidget {
-  final int selectedIndex;
-  final String vouchersLabel;
-  final String quotesLabel;
-  final ValueChanged<int> onChanged;
-
-  const _SegmentedBillingTabs({
-    required this.selectedIndex,
-    required this.vouchersLabel,
-    required this.quotesLabel,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: ShiftIQColors.borderSlate),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _SegmentButton(
-              icon: Icons.receipt_long_outlined,
-              label: vouchersLabel,
-              selected: selectedIndex == 0,
-              onTap: () => onChanged(0),
-            ),
-          ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: _SegmentButton(
-              icon: Icons.request_quote_outlined,
-              label: quotesLabel,
-              selected: selectedIndex == 1,
-              onTap: () => onChanged(1),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SegmentButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _SegmentButton({
-    required this.icon,
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
-        decoration: BoxDecoration(
-          color: selected
-              ? ShiftIQColors.primaryBlue.withValues(alpha: 0.10)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 16,
-              color: selected
-                  ? ShiftIQColors.primaryBlue
-                  : const Color(0xFF64748B),
-            ),
-            const SizedBox(width: 6),
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
-                  color: selected
-                      ? ShiftIQColors.primaryBlue
-                      : const Color(0xFF64748B),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _BillingKpiCard extends StatelessWidget {
   final IconData icon;
   final Color accentColor;
@@ -493,46 +368,6 @@ class _BillingKpiCard extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _BillingFilterPill extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _BillingFilterPill({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected ? const Color(0xFF0F172A) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: selected
-                ? const Color(0xFF0F172A)
-                : ShiftIQColors.borderSlate,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12.5,
-            fontWeight: FontWeight.w600,
-            color: selected ? Colors.white : const Color(0xFF475569),
-          ),
-        ),
       ),
     );
   }
