@@ -36,8 +36,8 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
     with SingleTickerProviderStateMixin {
   static const List<WorkOrderStatus?> _tabStatuses = [
     null,
-    WorkOrderStatus.inProgress,
     WorkOrderStatus.pending,
+    WorkOrderStatus.inProgress,
     WorkOrderStatus.completed,
   ];
 
@@ -96,6 +96,7 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
       listenable: _viewModel,
       builder: (context, _) {
         final vm = _viewModel;
+        final loc = AppLocalizations.of(context);
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
@@ -137,17 +138,20 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
                     fontWeight: FontWeight.w600,
                   ),
                   tabs: [
-                    _buildTab('Todas', vm.ordersForStatus(null).length),
                     _buildTab(
-                      'En Progreso',
-                      vm.ordersForStatus(WorkOrderStatus.inProgress).length,
+                      loc.translate('all'),
+                      vm.ordersForStatus(null).length,
                     ),
                     _buildTab(
-                      'Pendientes',
+                      loc.translate('pending_plural'),
                       vm.ordersForStatus(WorkOrderStatus.pending).length,
                     ),
                     _buildTab(
-                      'Completadas',
+                      loc.translate('in_progress_status'),
+                      vm.ordersForStatus(WorkOrderStatus.inProgress).length,
+                    ),
+                    _buildTab(
+                      loc.translate('completed_plural'),
                       vm.ordersForStatus(WorkOrderStatus.completed).length,
                     ),
                   ],
