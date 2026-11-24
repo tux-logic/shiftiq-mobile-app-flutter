@@ -1,15 +1,16 @@
-name: Deploy to Firebase App Distribution
+name: Build & Distribute Release APK
 
 on:
-  push:
-    branches:
-      - develop
-      - main
+  release:
+    types: [published]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build-and-distribute:
-    name: Build APK and Upload to Firebase
+    name: Build Release APK & Publish Installer
     runs-on: ubuntu-latest
 
     steps:
@@ -28,18 +29,45 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Install Dependencies
-        run: flutter pub get
+      - name: Install Dependencies & Generate L10n
+        run: |
+          flutter pub get
+          flutter gen-l10n
+
+      - name: Resolve Release Version
+        id: version
+        shell: bash
+        run: |
+          RAW_TAG="${{ github.event.release.tag_name }}"
+          CLEAN_NAME="${RAW_TAG#v}"
+          if [[ "$CLEAN_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "build_name=$CLEAN_NAME" >> "$GITHUB_OUTPUT"
+            echo "apk_tag=$RAW_TAG" >> "$GITHUB_OUTPUT"
+          else
+            echo "build_name=0.1.0" >> "$GITHUB_OUTPUT"
+            echo "apk_tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Build Release APK
-        run: flutter build apk --release --android-skip-build-dependency-validation
+        run: |
+          flutter build apk --release \
+            --build-name="${{ steps.version.outputs.build_name }}" \
+            --build-number="${{ github.run_number }}" \
+            --android-skip-build-dependency-validation
+          cp build/app/outputs/flutter-apk/app-release.apk "shiftiq-${{ steps.version.outputs.apk_tag }}.apk"
+
+      - name: Attach APK to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: shiftiq-${{ steps.version.outputs.apk_tag }}.apk
 
       - name: Upload to Firebase App Distribution
+        continue-on-error: true
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
           serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           groups: testers
           file: build/app/outputs/flutter-apk/app-release.apk
-          releaseNotes: "Build automático GitHub Actions: ${{ github.sha }} (${{ github.ref_name }})"
-
+          releaseNotes: "Release ${{ steps.version.outputs.apk_tag }} (build #${{ github.run_number }})"
