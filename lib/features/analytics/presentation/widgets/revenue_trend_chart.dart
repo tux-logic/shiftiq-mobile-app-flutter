@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/models/financial_analytics_snapshot.dart';
 
@@ -99,7 +100,7 @@ class _RevenueTrendChartState extends State<RevenueTrendChart> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Ingresos',
+                      AppLocalizations.of(context).translate('revenue_title'),
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w500,
@@ -157,7 +158,7 @@ class _RevenueTrendChartState extends State<RevenueTrendChart> {
               height: 132,
               child: Center(
                 child: Text(
-                  'Sin movimientos registrados',
+                  AppLocalizations.of(context).translate('no_revenue_movements'),
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.blueGrey.shade400,

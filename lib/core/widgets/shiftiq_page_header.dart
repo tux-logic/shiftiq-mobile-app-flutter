@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
-import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 
 /// Unified dark-navy ShiftIQ gradient header shared across role-scoped screens.
 class ShiftIQPageHeader extends StatelessWidget {
@@ -42,13 +41,22 @@ class ShiftIQPageHeader extends StatelessWidget {
           child: Row(
             children: [
               if (showBackButton) ...[
-                ShiftIQLiquidIconButton(
-                  icon: Icons.arrow_back_rounded,
-                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-                  onDarkBackground: true,
+                IconButton(
                   onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
+                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                  padding: const EdgeInsets.all(6),
+                  constraints: const BoxConstraints(
+                    minWidth: 34,
+                    minHeight: 34,
+                  ),
+                  splashRadius: 20,
+                  icon: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 6),
               ],
               Expanded(
                 child: Column(
@@ -125,6 +133,117 @@ class ShiftIQPageHeader extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Global layout wrapper that subtly collapses [header] when scrolling down
+/// and reveals it smoothly when scrolling up, maximizing vertical space across
+/// all ShiftIQ screens while keeping pull-to-refresh bounce unaffected.
+class ShiftIQCollapsibleHeaderBody extends StatefulWidget {
+  final Widget header;
+  final Widget body;
+
+  const ShiftIQCollapsibleHeaderBody({
+    super.key,
+    required this.header,
+    required this.body,
+  });
+
+  @override
+  State<ShiftIQCollapsibleHeaderBody> createState() =>
+      _ShiftIQCollapsibleHeaderBodyState();
+}
+
+class _ShiftIQCollapsibleHeaderBodyState
+    extends State<ShiftIQCollapsibleHeaderBody> {
+  final ValueNotifier<bool> _headerVisibleNotifier = ValueNotifier<bool>(true);
+  double _accumulatedDelta = 0;
+
+  @override
+  void dispose() {
+    _headerVisibleNotifier.dispose();
+    super.dispose();
+  }
+
+  bool _handleScrollNotification(ScrollUpdateNotification notification) {
+    if (notification.metrics.axis != Axis.vertical) return false;
+    final metrics = notification.metrics;
+    final delta = notification.scrollDelta ?? 0;
+    if (delta == 0) return false;
+
+    // Always keep header visible near the top or during pull-to-refresh overscroll.
+    if (metrics.pixels <= 16) {
+      if (!_headerVisibleNotifier.value) {
+        _headerVisibleNotifier.value = true;
+      }
+      _accumulatedDelta = 0;
+      return false;
+    }
+
+    // Ignore bottom overscroll bounce.
+    if (metrics.pixels >= metrics.maxScrollExtent) {
+      return false;
+    }
+
+    // Reset accumulator if scroll direction reverses.
+    if ((delta > 0 && _accumulatedDelta < 0) ||
+        (delta < 0 && _accumulatedDelta > 0)) {
+      _accumulatedDelta = 0;
+    }
+    _accumulatedDelta += delta;
+
+    if (_accumulatedDelta > 18 && _headerVisibleNotifier.value) {
+      _headerVisibleNotifier.value = false;
+      _accumulatedDelta = 0;
+    } else if (_accumulatedDelta < -12 && !_headerVisibleNotifier.value) {
+      _headerVisibleNotifier.value = true;
+      _accumulatedDelta = 0;
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        ValueListenableBuilder<bool>(
+          valueListenable: _headerVisibleNotifier,
+          builder: (context, visible, child) {
+            return ClipRect(
+              child: AnimatedAlign(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                alignment: Alignment.topCenter,
+                heightFactor: visible ? 1.0 : 0.0,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOut,
+                  opacity: visible ? 1.0 : 0.0,
+                  child: child,
+                ),
+              ),
+            );
+          },
+          child: widget.header,
+        ),
+        Expanded(
+          child: ValueListenableBuilder<bool>(
+            valueListenable: _headerVisibleNotifier,
+            builder: (context, visible, child) {
+              return SafeArea(
+                top: !visible,
+                bottom: false,
+                child: child!,
+              );
+            },
+            child: NotificationListener<ScrollUpdateNotification>(
+              onNotification: _handleScrollNotification,
+              child: widget.body,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

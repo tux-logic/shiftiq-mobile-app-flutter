@@ -87,6 +87,21 @@ class MockAnalyticsRepository implements AnalyticsRepository {
           totalNetworkDtcAlerts: 3,
         );
   }
+
+  @override
+  Future<CustomerAnalyticsSummary> getCustomerSummary() async {
+    if (shouldThrow) {
+      throw Exception('Network error loading customer summary');
+    }
+    return const CustomerAnalyticsSummary(
+      customerId: 'cust-1',
+      activeVehiclesCount: 2,
+      activeDtcAlertsCount: 1,
+      upcomingAppointmentsCount: 1,
+      activeWorkOrdersCount: 1,
+      pendingQuotesCount: 1,
+    );
+  }
 }
 
 class MockSessionStorage extends SessionStorage {

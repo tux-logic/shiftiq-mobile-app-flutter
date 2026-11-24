@@ -3,6 +3,7 @@ class WorkOrderTaskProduct {
   final String id;
   final String productId;
   final String productName;
+  final String? imageUrl;
   final String branchId;
   final int quantity;
   final double unitPrice;
@@ -13,6 +14,7 @@ class WorkOrderTaskProduct {
     required this.id,
     required this.productId,
     this.productName = 'Repuesto',
+    this.imageUrl,
     required this.branchId,
     required this.quantity,
     required this.unitPrice,
@@ -27,6 +29,7 @@ class WorkOrderTaskProduct {
     String? id,
     String? productId,
     String? productName,
+    String? imageUrl,
     String? branchId,
     int? quantity,
     double? unitPrice,
@@ -37,6 +40,7 @@ class WorkOrderTaskProduct {
       id: id ?? this.id,
       productId: productId ?? this.productId,
       productName: productName ?? this.productName,
+      imageUrl: imageUrl ?? this.imageUrl,
       branchId: branchId ?? this.branchId,
       quantity: quantity ?? this.quantity,
       unitPrice: unitPrice ?? this.unitPrice,

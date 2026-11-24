@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_tactile_card.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
 
 class WorkOrderCard extends StatelessWidget {
@@ -20,8 +21,10 @@ class WorkOrderCard extends StatelessWidget {
             .clamp(0.0, 1.0)
         : 0.0;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+    return ShiftIQTactileCard(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -198,6 +201,7 @@ class WorkOrderCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
       ),
     );
   }

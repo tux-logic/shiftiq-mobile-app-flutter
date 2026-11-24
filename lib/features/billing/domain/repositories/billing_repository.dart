@@ -9,6 +9,8 @@ abstract class BillingRepository {
   // Quotes Lifecycle
   Future<List<Quote>> getQuotes({required String branchId});
 
+  Future<List<Quote>> getMyQuotes();
+
   Future<Quote> getQuoteById(String quoteId);
 
   Future<Quote> createQuote({
@@ -89,6 +91,15 @@ abstract class BillingRepository {
     required String customerName,
     required String paymentId,
     String? branchId,
+  });
+
+  Future<MercadoPagoPreference> createPaymentSession({
+    required String quoteId,
+    String provider = 'MERCADO_PAGO',
+    VoucherType? type,
+    String? customerDocumentType,
+    String? customerDocumentNumber,
+    String? customerName,
   });
 
   Future<MercadoPagoPreference> createMercadoPagoPreference({

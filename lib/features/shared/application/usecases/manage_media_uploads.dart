@@ -61,7 +61,7 @@ class ManageMediaUploads {
     );
   }
 
-  /// Uploads user avatar photo to 'avatars' folder.
+  /// Uploads user avatar photo to 'customers' folder (available to all authenticated users).
   Future<MediaUploadResult> uploadAvatarPhoto({
     required List<int> fileBytes,
     required String fileName,
@@ -69,7 +69,7 @@ class ManageMediaUploads {
     return uploadImage(
       fileBytes: fileBytes,
       fileName: fileName,
-      folder: MediaFolder.avatars,
+      folder: MediaFolder.customers,
     );
   }
 

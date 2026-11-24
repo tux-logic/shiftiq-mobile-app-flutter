@@ -303,6 +303,7 @@ class OwnerProfileDto {
   final String documentType;
   final String documentNumber;
   final String phone;
+  final String? profileImageUrl;
 
   OwnerProfileDto({
     required this.id,
@@ -312,6 +313,7 @@ class OwnerProfileDto {
     required this.documentType,
     required this.documentNumber,
     required this.phone,
+    this.profileImageUrl,
   });
 
   factory OwnerProfileDto.fromJson(Map<String, dynamic> json) {
@@ -323,6 +325,7 @@ class OwnerProfileDto {
       documentType: (json['documentType'] ?? 'DNI').toString(),
       documentNumber: (json['documentNumber'] ?? '').toString(),
       phone: (json['phone'] ?? '').toString(),
+      profileImageUrl: json['profileImageUrl'] as String?,
     );
   }
 
@@ -334,6 +337,7 @@ class OwnerProfileDto {
         documentType: documentType,
         documentNumber: documentNumber,
         phone: phone,
+        profileImageUrl: profileImageUrl,
       );
 }
 
@@ -346,6 +350,7 @@ class EmployeeProfileDto {
   final String documentType;
   final String documentNumber;
   final String phone;
+  final String? profileImageUrl;
 
   EmployeeProfileDto({
     required this.employeeId,
@@ -355,6 +360,7 @@ class EmployeeProfileDto {
     required this.documentType,
     required this.documentNumber,
     required this.phone,
+    this.profileImageUrl,
   });
 
   factory EmployeeProfileDto.fromJson(Map<String, dynamic> json) {
@@ -374,6 +380,7 @@ class EmployeeProfileDto {
       documentType: documentType,
       documentNumber: documentNumber,
       phone: phone,
+      profileImageUrl: json['profileImageUrl'] as String?,
     );
   }
 
@@ -385,6 +392,7 @@ class EmployeeProfileDto {
         documentType: documentType,
         documentNumber: documentNumber,
         phone: phone,
+        profileImageUrl: profileImageUrl,
       );
 }
 
@@ -399,6 +407,7 @@ class CustomerProfileDto {
   final String documentType;
   final String documentNumber;
   final String phone;
+  final String? profileImageUrl;
 
   CustomerProfileDto({
     required this.customerId,
@@ -410,6 +419,7 @@ class CustomerProfileDto {
     required this.documentType,
     required this.documentNumber,
     required this.phone,
+    this.profileImageUrl,
   });
 
   factory CustomerProfileDto.fromJson(Map<String, dynamic> json) {
@@ -423,6 +433,7 @@ class CustomerProfileDto {
       documentType: (json['documentType'] ?? 'DNI').toString(),
       documentNumber: (json['documentNumber'] ?? '').toString(),
       phone: (json['phone'] ?? '').toString(),
+      profileImageUrl: json['profileImageUrl'] as String?,
     );
   }
 
@@ -436,6 +447,7 @@ class CustomerProfileDto {
         documentType: documentType,
         documentNumber: documentNumber,
         phone: phone,
+        profileImageUrl: profileImageUrl,
       );
 }
 
@@ -443,6 +455,7 @@ class CustomerProfileDto {
 class UserProfileContextDto {
   final String userId;
   final List<String> roles;
+  final String? profileImageUrl;
   final OwnerProfileDto? owner;
   final EmployeeProfileDto? employee;
   final CustomerProfileDto? customer;
@@ -450,6 +463,7 @@ class UserProfileContextDto {
   UserProfileContextDto({
     required this.userId,
     required this.roles,
+    this.profileImageUrl,
     this.owner,
     this.employee,
     this.customer,
@@ -468,6 +482,7 @@ class UserProfileContextDto {
       return UserProfileContextDto(
         userId: userId,
         roles: rolesList,
+        profileImageUrl: json['profileImageUrl'] as String?,
         owner: ownerMap is Map<String, dynamic>
             ? OwnerProfileDto.fromJson(ownerMap)
             : null,
@@ -488,6 +503,7 @@ class UserProfileContextDto {
     return UserProfileContext(
       userId: userId,
       roles: roles,
+      profileImageUrl: profileImageUrl,
       owner: owner?.toDomain(),
       employee: employee?.toDomain(),
       customer: customer?.toDomain(),

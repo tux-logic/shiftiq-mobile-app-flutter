@@ -5,6 +5,7 @@ import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.d
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_floating_nav_bar.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/views/dashboard_page.dart';
+import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/views/employee_dashboard_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/views/appointments_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/inventory/presentation/views/inventory_page.dart';
@@ -44,9 +45,15 @@ class MainPage extends StatefulWidget {
   State<MainPage> createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> {
+class _MainPageState extends State<MainPage>
+    with SingleTickerProviderStateMixin {
   late int _currentIndex;
   int _transitionDirection = 1;
+  late final AnimationController _tabController;
+  late final Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+  MobileRoleScope? _cachedScope;
+  late List<_NavDestinationSpec> _cachedSpecs;
 
   MobileRoleScope get _effectiveScope {
     if (widget.roleScope != null) return widget.roleScope!;
@@ -60,14 +67,42 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    _tabController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 220),
+      value: 1.0,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.72, end: 1.0).animate(
+      CurvedAnimation(parent: _tabController, curve: Curves.easeOutCubic),
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _tabController, curve: Curves.easeOutCubic),
+    );
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   void _onDestinationSelected(int index) {
     if (index == _currentIndex) return;
+    final direction = index > _currentIndex ? 1 : -1;
     setState(() {
-      _transitionDirection = index > _currentIndex ? 1 : -1;
+      _transitionDirection = direction;
       _currentIndex = index;
+      _slideAnimation = Tween<Offset>(
+        begin: Offset(0.025 * _transitionDirection, 0),
+        end: Offset.zero,
+      ).animate(
+        CurvedAnimation(parent: _tabController, curve: Curves.easeOutCubic),
+      );
     });
+    _tabController.forward(from: 0.0);
   }
 
   List<_NavDestinationSpec> _buildDestinations(MobileRoleScope scope) {
@@ -127,25 +162,28 @@ class _MainPageState extends State<MainPage> {
       ];
     }
 
-    // Employee operational scope: Work Orders, Appointments, Telemetry.
+    // Employee operational scope: Personal Dashboard, Work Orders, and Telemetry.
     return [
+      _NavDestinationSpec(
+        key: const Key('nav_dashboard'),
+        icon: Icons.space_dashboard_outlined,
+        selectedIcon: Icons.space_dashboard_rounded,
+        labelKey: 'dashboard_tab',
+        page: override != null && override.isNotEmpty
+            ? override[0]
+            : EmployeeDashboardPage(
+                onNavigateToOrders: () => _onDestinationSelected(1),
+                onNavigateToTelemetry: () => _onDestinationSelected(2),
+              ),
+      ),
       _NavDestinationSpec(
         key: const Key('nav_orders'),
         icon: Icons.build_outlined,
         selectedIcon: Icons.build_rounded,
         labelKey: 'orders_tab',
-        page: override != null && override.isNotEmpty
-            ? override[0]
-            : const WorkOrdersPage(),
-      ),
-      _NavDestinationSpec(
-        key: const Key('nav_appointments'),
-        icon: Icons.calendar_month_outlined,
-        selectedIcon: Icons.calendar_month_rounded,
-        labelKey: 'appointments_tab',
         page: override != null && override.length > 1
             ? override[1]
-            : const AppointmentsPage(),
+            : const WorkOrdersPage(),
       ),
       _NavDestinationSpec(
         key: const Key('nav_telemetry'),
@@ -167,29 +205,23 @@ class _MainPageState extends State<MainPage> {
     }
 
     final loc = AppLocalizations.of(context);
-    final specs = _buildDestinations(scope);
+    if (_cachedScope != scope) {
+      _cachedScope = scope;
+      _cachedSpecs = _buildDestinations(scope);
+    }
+    final specs = _cachedSpecs;
     final safeIndex = _currentIndex.clamp(0, specs.length - 1);
 
     return Scaffold(
       extendBody: true,
-      body: TweenAnimationBuilder<double>(
-        key: ValueKey<int>(safeIndex),
-        tween: Tween<double>(begin: 0.0, end: 1.0),
-        duration: const Duration(milliseconds: 240),
-        curve: Curves.easeOutCubic,
-        builder: (context, progress, child) {
-          final dx = (1.0 - progress) * 0.03 * _transitionDirection;
-          return Opacity(
-            opacity: 0.55 + (0.45 * progress),
-            child: FractionalTranslation(
-              translation: Offset(dx, 0),
-              child: child,
-            ),
-          );
-        },
-        child: IndexedStack(
-          index: safeIndex,
-          children: specs.map((spec) => spec.page).toList(),
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: IndexedStack(
+            index: safeIndex,
+            children: specs.map((spec) => spec.page).toList(),
+          ),
         ),
       ),
       bottomNavigationBar: ShiftIQFloatingNavBar(

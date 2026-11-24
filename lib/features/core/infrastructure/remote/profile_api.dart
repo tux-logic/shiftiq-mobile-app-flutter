@@ -14,6 +14,17 @@ class ProfileApi {
     return response as Map<String, dynamic>;
   }
 
+  /// PUT /api/v1/profiles/me/image - Updates profileImageUrl across all caller profiles.
+  Future<Map<String, dynamic>> updateMyProfileImage(
+    String profileImageUrl,
+  ) async {
+    final response = await apiClient.put(
+      ApiConstants.profilesMeImage,
+      body: {'profileImageUrl': profileImageUrl},
+    );
+    return response as Map<String, dynamic>;
+  }
+
   /// GET /api/v1/profiles/roles?userId={userId} - Returns active core roles for user.
   Future<List<String>> getProfileRoles(String userId) async {
     final response = await apiClient.get(ApiConstants.profileRoles(userId));

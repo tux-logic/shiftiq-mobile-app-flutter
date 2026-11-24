@@ -1,20 +1,26 @@
+import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/profile_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/fleet_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/repositories/fleet_repository.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/remote/appointment_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/remote/customer_registration_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/remote/dtos/fleet_dto.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/remote/employee_registration_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/infrastructure/remote/work_order_api.dart';
 
 /// Repository coordinating remote Fleet APIs and domain mappings.
 class FleetRepositoryImpl implements FleetRepository {
   final AppointmentApi appointmentApi;
   final CustomerRegistrationApi customerRegistrationApi;
   final EmployeeRegistrationApi employeeRegistrationApi;
+  final ProfileApi? profileApi;
+  final WorkOrderApi? workOrderApi;
 
   FleetRepositoryImpl({
     required this.appointmentApi,
     required this.customerRegistrationApi,
     required this.employeeRegistrationApi,
+    this.profileApi,
+    this.workOrderApi,
   });
 
   // --- Appointments ---
@@ -144,9 +150,126 @@ class FleetRepositoryImpl implements FleetRepository {
       status: status,
       customerId: customerId,
     );
-    return list
+    final registrations = list
         .map((json) => CustomerRegistrationDto.fromJson(json).toDomain())
         .toList();
+
+    if (registrations.isEmpty) {
+      return registrations;
+    }
+
+    return _enrichCustomerRegistrations(registrations, branchId: branchId);
+  }
+
+  /// Enriches branch customer registrations with Core profile details and
+  /// vehicle metadata from branch work orders, degrading gracefully on errors.
+  Future<List<CustomerRegistration>> _enrichCustomerRegistrations(
+    List<CustomerRegistration> registrations, {
+    String? branchId,
+  }) async {
+    final uniqueCustomerIds = registrations
+        .map((r) => r.customerId)
+        .where((id) => id.isNotEmpty)
+        .toSet()
+        .toList();
+
+    final profileFuture = profileApi == null
+        ? Future.value(<String, Map<String, dynamic>>{})
+        : Future.wait(
+            uniqueCustomerIds.map((id) async {
+              try {
+                final data = await profileApi!.getCustomerById(id);
+                return MapEntry(id, data);
+              } catch (_) {
+                return null;
+              }
+            }),
+          ).then(
+            (entries) => Map<String, Map<String, dynamic>>.fromEntries(
+              entries.whereType<MapEntry<String, Map<String, dynamic>>>(),
+            ),
+          );
+
+    final workOrdersFuture = (workOrderApi == null ||
+            branchId == null ||
+            branchId.trim().isEmpty)
+        ? Future.value(const <dynamic>[])
+        : workOrderApi!
+            .getWorkOrders(branchId: branchId)
+            .catchError((_) => const <dynamic>[]);
+
+    final results = await Future.wait([profileFuture, workOrdersFuture]);
+    final profilesById = results[0] as Map<String, Map<String, dynamic>>;
+    final rawWorkOrders = results[1] as List<dynamic>;
+
+    final vehicleByCustomerId = <String, ({String plate, String model, String? name})>{};
+    for (final raw in rawWorkOrders) {
+      if (raw is! Map<String, dynamic>) continue;
+      final cid = raw['customerId']?.toString() ?? '';
+      if (cid.isEmpty) continue;
+      final plate = raw['vehiclePlateNumber']?.toString().trim() ?? '';
+      final brand = raw['vehicleBrand']?.toString().trim() ?? '';
+      final model = raw['vehicleModel']?.toString().trim() ?? '';
+      final year = raw['vehicleYear']?.toString().trim() ?? '';
+      final fullModel = [
+        if (brand.isNotEmpty) brand,
+        if (model.isNotEmpty) model,
+        if (year.isNotEmpty) '($year)',
+      ].join(' ');
+      final woCustomerName = raw['customerName']?.toString().trim();
+
+      if (plate.isNotEmpty || fullModel.isNotEmpty) {
+        vehicleByCustomerId[cid] = (
+          plate: plate,
+          model: fullModel,
+          name: (woCustomerName != null && woCustomerName.isNotEmpty)
+              ? woCustomerName
+              : null,
+        );
+      }
+    }
+
+    return registrations.map((reg) {
+      final profile = profilesById[reg.customerId];
+      final vehicle = vehicleByCustomerId[reg.customerId];
+
+      var resolvedName = reg.customerName;
+      var resolvedPhone = reg.phone;
+
+      if (profile != null) {
+        final businessName = profile['businessName']?.toString().trim() ?? '';
+        final firstName = profile['firstName']?.toString().trim() ?? '';
+        final lastName = profile['lastName']?.toString().trim() ?? '';
+        final fullName = '$firstName $lastName'.trim();
+        if (businessName.isNotEmpty) {
+          resolvedName = businessName;
+        } else if (fullName.isNotEmpty) {
+          resolvedName = fullName;
+        }
+        final phone = profile['phone']?.toString().trim() ?? '';
+        if (phone.isNotEmpty) {
+          resolvedPhone = phone;
+        }
+      } else if (vehicle?.name != null) {
+        resolvedName = vehicle!.name!;
+      }
+
+      final resolvedPlate =
+          (vehicle != null && vehicle.plate.isNotEmpty)
+              ? vehicle.plate
+              : reg.vehiclePlate;
+      final resolvedModel =
+          (vehicle != null && vehicle.model.isNotEmpty)
+              ? vehicle.model
+              : reg.vehicleModel;
+
+      return reg.copyWith(
+        customerName: resolvedName,
+        phone: resolvedPhone,
+        vehiclePlate: resolvedPlate,
+        vehicleModel: resolvedModel,
+      );
+    }).toList();
   }
 
   @override

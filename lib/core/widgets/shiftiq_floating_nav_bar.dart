@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -42,7 +40,8 @@ class ShiftIQFloatingNavBar extends StatelessWidget {
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-        child: Container(
+        child: RepaintBoundary(
+          child: Container(
           height: 64,
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
@@ -77,34 +76,28 @@ class ShiftIQFloatingNavBar extends StatelessWidget {
               final slotWidth = constraints.maxWidth / items.length;
               return Stack(
                 children: [
-                  // Gliding Liquid Glass active pill indicator
+                  // Gliding Liquid Glass active pill indicator (GPU-light, no per-frame blur)
                   AnimatedPositioned(
-                    duration: const Duration(milliseconds: 320),
+                    duration: const Duration(milliseconds: 280),
                     curve: Curves.easeOutCubic,
                     left: safeIndex * slotWidth,
                     top: 0,
                     bottom: 0,
                     width: slotWidth,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(22),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                Color(0x5260A5FA),
-                                Color(0x2E2563EB),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(22),
-                            border: Border.all(
-                              color: Colors.white.withAlpha(115),
-                              width: 1,
-                            ),
-                          ),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0x5260A5FA),
+                            Color(0x2E2563EB),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(
+                          color: Colors.white.withAlpha(115),
+                          width: 1,
                         ),
                       ),
                     ),
@@ -129,6 +122,7 @@ class ShiftIQFloatingNavBar extends StatelessWidget {
               );
             },
           ),
+        ),
         ),
       ),
     );
@@ -182,25 +176,32 @@ class _FloatingNavSlotState extends State<_FloatingNavSlot> {
                 color: color,
               ),
             ),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOutCubic,
-              child: selected
-                  ? Padding(
-                      padding: const EdgeInsets.only(top: 2, left: 4, right: 4),
-                      child: Text(
-                        widget.item.label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                          letterSpacing: -0.1,
-                        ),
+            ClipRect(
+              child: AnimatedAlign(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                alignment: Alignment.topCenter,
+                heightFactor: selected ? 1.0 : 0.0,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOut,
+                  opacity: selected ? 1.0 : 0.0,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 2, left: 4, right: 4),
+                    child: Text(
+                      widget.item.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        letterSpacing: -0.1,
                       ),
-                    )
-                  : const SizedBox.shrink(),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),

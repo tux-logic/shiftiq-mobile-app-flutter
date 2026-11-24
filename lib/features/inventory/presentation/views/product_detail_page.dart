@@ -60,15 +60,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
-          body: Column(
-            children: [
-              ShiftIQPageHeader(
-                title: product.sku,
-                subtitle: 'Kardex y Lotes · ${product.category}',
-                showBackButton: true,
-              ),
-              Expanded(
-                child: ShiftIQPullToRefresh(
+          body: ShiftIQCollapsibleHeaderBody(
+            header: ShiftIQPageHeader(
+              title: product.sku,
+              subtitle: 'Kardex y Lotes · ${product.category}',
+              showBackButton: true,
+            ),
+            body: ShiftIQPullToRefresh(
                   onRefresh: () => widget.viewModel.loadProductDetail(product.id),
                   skeleton: const ShiftIQSkeletonDetail(),
                   child: SingleChildScrollView(
@@ -256,8 +254,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             ),
           ),
                 ),
-              ),
-            ],
           ),
         );
       },

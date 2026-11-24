@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:shiftiq_mobile_app_flutter/core/domain/event/domain_event.dart';
@@ -345,6 +346,13 @@ class ApiClient {
 
     if (statusCode >= 200 && statusCode < 300) {
       return decodedJson;
+    }
+
+    if (kDebugMode) {
+      debugPrint(
+        'ApiClient error [${response.request?.method} ${response.request?.url}] '
+        'status=$statusCode body=$bodyString',
+      );
     }
 
     final message = decodedJson is Map<String, dynamic>

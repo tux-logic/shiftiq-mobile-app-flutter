@@ -649,32 +649,16 @@ class MercadoPagoPreferenceDto {
   });
 
   factory MercadoPagoPreferenceDto.fromJson(Map<String, dynamic> json) {
-    return switch (json) {
-      {
-        'preferenceId': final dynamic pId,
-        'initPoint': final dynamic init,
-        'sandboxInitPoint': final dynamic sand,
-        'amount': final dynamic amt,
-        'currency': final dynamic curr,
-        'externalReference': final dynamic ext,
-      } =>
-        MercadoPagoPreferenceDto(
-          preferenceId: pId.toString(),
-          initPoint: init.toString(),
-          sandboxInitPoint: sand.toString(),
-          amount: (amt as num).toDouble(),
-          currency: curr.toString(),
-          externalReference: ext.toString(),
-        ),
-      _ => MercadoPagoPreferenceDto(
-          preferenceId: (json['preferenceId'] ?? '').toString(),
-          initPoint: (json['initPoint'] ?? '').toString(),
-          sandboxInitPoint: (json['sandboxInitPoint'] ?? '').toString(),
-          amount: ((json['amount'] ?? 0.0) as num).toDouble(),
-          currency: (json['currency'] ?? 'PEN').toString(),
-          externalReference: (json['externalReference'] ?? '').toString(),
-        ),
-    };
+    return MercadoPagoPreferenceDto(
+      preferenceId: (json['sessionId'] ?? json['preferenceId'] ?? '').toString(),
+      initPoint: (json['checkoutUrl'] ?? json['initPoint'] ?? '').toString(),
+      sandboxInitPoint:
+          (json['sandboxCheckoutUrl'] ?? json['sandboxInitPoint'] ?? '')
+              .toString(),
+      amount: ((json['amount'] ?? 0.0) as num).toDouble(),
+      currency: (json['currency'] ?? 'PEN').toString(),
+      externalReference: (json['externalReference'] ?? '').toString(),
+    );
   }
 
   Map<String, dynamic> toJson() => {

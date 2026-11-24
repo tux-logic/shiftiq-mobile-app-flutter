@@ -72,11 +72,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('main_navigation_bar')), findsOneWidget);
-      expect(find.byKey(const Key('nav_dashboard')), findsNothing);
-      expect(find.byKey(const Key('nav_inventory')), findsNothing);
+      expect(find.byKey(const Key('nav_dashboard')), findsOneWidget);
       expect(find.byKey(const Key('nav_orders')), findsOneWidget);
-      expect(find.byKey(const Key('nav_appointments')), findsOneWidget);
       expect(find.byKey(const Key('nav_telemetry')), findsOneWidget);
+      expect(find.byKey(const Key('nav_appointments')), findsNothing);
+      expect(find.byKey(const Key('nav_inventory')), findsNothing);
     });
 
     testWidgets('renders CustomerHomePage when customer scope enters MainPage',

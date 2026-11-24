@@ -7,6 +7,42 @@ import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/profile_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/infrastructure/remote/employee_registration_api.dart';
+import 'package:shiftiq_mobile_app_flutter/features/shared/application/usecases/manage_media_uploads.dart';
+import 'package:shiftiq_mobile_app_flutter/features/shared/domain/models/identity_validation.dart';
+import 'package:shiftiq_mobile_app_flutter/features/shared/domain/models/media_upload.dart';
+import 'package:shiftiq_mobile_app_flutter/features/shared/domain/models/system_health.dart';
+import 'package:shiftiq_mobile_app_flutter/features/shared/domain/repositories/shared_repository.dart';
+
+class _FakeSharedRepository implements SharedRepository {
+  String? lastFolder;
+  String? lastFileName;
+
+  @override
+  Future<MediaUploadResult> uploadImage({
+    required List<int> fileBytes,
+    required String fileName,
+    String? folder,
+  }) async {
+    lastFolder = folder;
+    lastFileName = fileName;
+    return const MediaUploadResult(
+      url: 'https://res.cloudinary.com/demo/image/upload/v1/customers/avatar.jpg',
+    );
+  }
+
+  @override
+  Future<IdentityValidationResult> lookupIdentity({
+    required IdentityDocumentType type,
+    required String documentNumber,
+  }) =>
+      throw UnimplementedError();
+
+  @override
+  Future<SystemHealth> checkHealth() => throw UnimplementedError();
+
+  @override
+  Future<PingResponse> pingRoot() => throw UnimplementedError();
+}
 
 void main() {
   late SessionStorage sessionStorage;
@@ -186,5 +222,98 @@ void main() {
       expect(sessionStorage.userId, isNull);
       expect(sessionStorage.username, isNull);
     });
+
+    test(
+      'uploadAndSetProfileImage() uploads to customers folder and calls PUT /api/v1/profiles/me/image',
+      () async {
+        await sessionStorage.saveSession(
+          accessToken: 'token-cust',
+          refreshToken: 'refresh-cust',
+          userId: 'user-cust-1',
+          username: 'cliente@test.com',
+          roles: ['ROLE_CUSTOMER'],
+        );
+
+        var putImageCalled = false;
+        final mockClient = MockClient((request) async {
+          if (request.method == 'GET' && request.url.path == '/api/v1/profiles/me') {
+            return http.Response(
+              jsonEncode({
+                'userId': 'user-cust-1',
+                'roles': ['ROLE_CUSTOMER'],
+                'customer': {
+                  'customerId': 'cust-1',
+                  'userId': 'user-cust-1',
+                  'firstName': 'Maria',
+                  'lastName': 'Fernandez',
+                  'documentType': 'DNI',
+                  'documentNumber': '48765432',
+                  'phone': '+51922334455',
+                },
+              }),
+              200,
+            );
+          }
+          if (request.method == 'PUT' &&
+              request.url.path == '/api/v1/profiles/me/image') {
+            putImageCalled = true;
+            final body = jsonDecode(request.body) as Map<String, dynamic>;
+            expect(
+              body['profileImageUrl'],
+              equals(
+                'https://res.cloudinary.com/demo/image/upload/v1/customers/avatar.jpg',
+              ),
+            );
+            return http.Response(
+              jsonEncode({
+                'userId': 'user-cust-1',
+                'roles': ['ROLE_CUSTOMER'],
+                'profileImageUrl': body['profileImageUrl'],
+                'customer': {
+                  'customerId': 'cust-1',
+                  'userId': 'user-cust-1',
+                  'firstName': 'Maria',
+                  'lastName': 'Fernandez',
+                  'documentType': 'DNI',
+                  'documentNumber': '48765432',
+                  'phone': '+51922334455',
+                  'profileImageUrl': body['profileImageUrl'],
+                },
+              }),
+              200,
+            );
+          }
+          return http.Response('Not Found', 404);
+        });
+
+        final fakeSharedRepo = _FakeSharedRepository();
+        final apiClient = ApiClient(sessionStorage: sessionStorage, client: mockClient);
+        final viewModel = ProfileViewModel(
+          profileApi: ProfileApi(apiClient: apiClient),
+          employeeRegistrationApi: EmployeeRegistrationApi(apiClient: apiClient),
+          sessionStorage: sessionStorage,
+          manageMediaUploads: ManageMediaUploads(repository: fakeSharedRepo),
+        );
+
+        await viewModel.init();
+        expect(viewModel.displayName, equals('Maria Fernandez'));
+        expect(viewModel.profileImageUrl, isNull);
+
+        final ok = await viewModel.uploadAndSetProfileImage(
+          fileBytes: const [1, 2, 3, 4],
+          fileName: 'avatar.jpg',
+        );
+
+        expect(ok, isTrue);
+        expect(putImageCalled, isTrue);
+        expect(fakeSharedRepo.lastFolder, equals('customers'));
+        expect(
+          viewModel.profileImageUrl,
+          equals(
+            'https://res.cloudinary.com/demo/image/upload/v1/customers/avatar.jpg',
+          ),
+        );
+      },
+    );
   });
 }

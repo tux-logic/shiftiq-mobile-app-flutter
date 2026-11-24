@@ -4,6 +4,7 @@ import 'package:shiftiq_mobile_app_flutter/core/theme/app_colors.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/create_appointment.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/model/entities/customer_registration.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/presentation/controllers/appointments_view_model.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/services_catalog_page.dart';
 
 class CreateAppointmentModal extends StatefulWidget {
   final String branchId;
@@ -31,23 +32,16 @@ class _CreateAppointmentModalState extends State<CreateAppointmentModal> {
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = const TimeOfDay(hour: 9, minute: 0);
   int _selectedBay = 1;
-  String _selectedService = 'Mantenimiento Preventivo 30,000 km';
+  String? _selectedService;
   CustomerRegistration? _selectedCustomer;
-
-  final List<String> _serviceOptions = [
-    'Mantenimiento Preventivo 30,000 km',
-    'Diagnóstico Computarizado OBD-II',
-    'Mantenimiento de Frenos y Cambio DOT4',
-    'Suspensión y Dirección Hidráulica',
-    'Cambio de Aceite 5W-30 y Filtros',
-    'Alineamiento 3D y Balanceo',
-    'Reparación de Motor / Afinamiento',
-  ];
 
   @override
   void initState() {
     super.initState();
     _selectedDate = widget.viewModel.selectedDate;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.viewModel.loadBranchServices(widget.branchId);
+    });
   }
 
   @override
@@ -114,7 +108,7 @@ class _CreateAppointmentModalState extends State<CreateAppointmentModal> {
       vehiclePlate: _vehiclePlateCtrl.text,
       vehicleModel: _vehicleModelCtrl.text.isNotEmpty ? _vehicleModelCtrl.text : 'Vehículo General',
       scheduledStart: scheduledDateTime,
-      serviceType: _selectedService,
+      serviceType: _selectedService ?? '',
       notes: _notesCtrl.text.isNotEmpty ? _notesCtrl.text : null,
       bayNumber: _selectedBay,
     );
@@ -357,19 +351,113 @@ class _CreateAppointmentModalState extends State<CreateAppointmentModal> {
               ),
               const SizedBox(height: 12),
 
-              // Service selection dropdown
-              DropdownButtonFormField<String>(
-                initialValue: _selectedService,
-                isExpanded: true,
-                decoration: InputDecoration(
-                  labelText: loc.translate('service_type_job'),
-                  prefixIcon: const Icon(Icons.build_circle_outlined),
-                ),
-                items: _serviceOptions
-                    .map((s) => DropdownMenuItem(value: s, child: Text(s, style: const TextStyle(fontSize: 13))))
-                    .toList(),
-                onChanged: (val) {
-                  if (val != null) setState(() => _selectedService = val);
+              // Service selection dropdown (sourced dynamically from branch catalog)
+              ListenableBuilder(
+                listenable: widget.viewModel,
+                builder: (context, _) {
+                  final services = widget.viewModel.branchServices;
+                  final isLoadingServices = widget.viewModel.isLoadingServices;
+                  final serviceNames = services.map((s) => s.name).toList();
+                  final effectiveValue =
+                      (_selectedService != null &&
+                              serviceNames.contains(_selectedService))
+                          ? _selectedService
+                          : (serviceNames.isNotEmpty
+                              ? serviceNames.first
+                              : null);
+                  if (effectiveValue != null && _selectedService != effectiveValue) {
+                    _selectedService = effectiveValue;
+                  }
+
+                  if (isLoadingServices && services.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          SizedBox(width: 10),
+                          Text(
+                            'Cargando servicios de la sede...',
+                            style: TextStyle(fontSize: 13, color: Colors.blueGrey),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  if (services.isEmpty) {
+                    return Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.neutralBorder),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.design_services_outlined,
+                            size: 18,
+                            color: Colors.blueGrey,
+                          ),
+                          const SizedBox(width: 10),
+                          const Expanded(
+                            child: Text(
+                              'No hay servicios creados en esta sede.',
+                              style: TextStyle(fontSize: 12.5),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              await Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => ServicesCatalogPage(
+                                    branchId: widget.branchId,
+                                  ),
+                                ),
+                              );
+                              if (context.mounted) {
+                                await widget.viewModel
+                                    .loadBranchServices(widget.branchId);
+                              }
+                            },
+                            child: const Text('Crear'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return DropdownButtonFormField<String>(
+                    initialValue: effectiveValue,
+                    isExpanded: true,
+                    decoration: InputDecoration(
+                      labelText: loc.translate('service_type_job'),
+                      prefixIcon: const Icon(Icons.build_circle_outlined),
+                    ),
+                    items: services
+                        .map(
+                          (s) => DropdownMenuItem(
+                            value: s.name,
+                            child: Text(
+                              '${s.name} (S/ ${s.price.toStringAsFixed(2)})',
+                              style: const TextStyle(fontSize: 13),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    validator: (val) => val == null || val.trim().isEmpty
+                        ? 'Seleccione un servicio'
+                        : null,
+                    onChanged: (val) {
+                      if (val != null) setState(() => _selectedService = val);
+                    },
+                  );
                 },
               ),
               const SizedBox(height: 12),

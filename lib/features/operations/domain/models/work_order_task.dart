@@ -45,7 +45,14 @@ class WorkOrderTask {
 
   double get productsTotalAmount => productsTotal;
 
-  double get grandTotal => price + productsTotal;
+  /// Base labor/service fee excluding attached spare parts.
+  /// The backend recalculates `price` as `labor + productsTotal`.
+  double get laborPrice {
+    final diff = price - productsTotal;
+    return diff < 0 ? 0.0 : diff;
+  }
+
+  double get grandTotal => price;
   double get combinedTaskTotal => grandTotal;
 
   WorkOrderTask copyWith({

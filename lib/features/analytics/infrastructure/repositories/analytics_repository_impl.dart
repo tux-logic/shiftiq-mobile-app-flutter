@@ -60,4 +60,10 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
     final json = await analyticsApi.getNetworkSummary();
     return AnalyticsDto.networkSummaryFromJson(json);
   }
+
+  @override
+  Future<CustomerAnalyticsSummary> getCustomerSummary() async {
+    final json = await analyticsApi.getCustomerSummary();
+    return AnalyticsDto.customerSummaryFromJson(json);
+  }
 }

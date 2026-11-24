@@ -221,6 +221,9 @@ class MockBillingRepository implements BillingRepository {
   }
 
   @override
+  Future<List<Quote>> getMyQuotes() async => List<Quote>.from(_quotes);
+
+  @override
   Future<List<Quote>> getQuotes({required String branchId}) async {
     return _quotes.where((q) => q.branchId == branchId || branchId.isEmpty).toList();
   }
@@ -422,6 +425,23 @@ class MockBillingRepository implements BillingRepository {
       branchId: branchId,
     );
   }
+
+  @override
+  Future<MercadoPagoPreference> createPaymentSession({
+    required String quoteId,
+    String provider = 'MERCADO_PAGO',
+    VoucherType? type,
+    String? customerDocumentType,
+    String? customerDocumentNumber,
+    String? customerName,
+  }) =>
+      createMercadoPagoPreference(
+        quoteId: quoteId,
+        type: type,
+        customerDocumentType: customerDocumentType,
+        customerDocumentNumber: customerDocumentNumber,
+        customerName: customerName,
+      );
 
   @override
   Future<MercadoPagoPreference> createMercadoPagoPreference({

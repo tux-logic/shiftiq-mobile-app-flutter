@@ -6,7 +6,7 @@ enum WorkOrderStatus {
   pending('PENDING', 'Pendiente', ShiftIQColors.severityAmber),
   inProgress('IN_PROGRESS', 'En Progreso', ShiftIQColors.secondaryTeal),
   completed('COMPLETED', 'Completada', ShiftIQColors.preventiveGreen),
-  paid('PAID', 'Pagada / Facturada', ShiftIQColors.primaryBlue),
+  paid('PAID', 'Pagada', ShiftIQColors.primaryBlue),
   deleted('DELETED', 'Cancelada', ShiftIQColors.severityCrimson),
   cancelled('CANCELLED', 'Cancelada', ShiftIQColors.severityCrimson);
 

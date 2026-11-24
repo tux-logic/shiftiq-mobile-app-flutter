@@ -35,6 +35,8 @@ abstract class OperationsRepository {
     String? vehicleId,
   });
 
+  Future<List<WorkOrder>> getMyWorkOrders();
+
   Future<WorkOrder> getWorkOrderById(String id);
 
   Future<WorkOrder> updateWorkOrderIntake({

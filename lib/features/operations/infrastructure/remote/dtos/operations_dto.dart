@@ -47,6 +47,8 @@ class OperationsDto {
         WorkOrderTaskProduct(
           id: id,
           productId: productId,
+          productName: _resolveProductName(json),
+          imageUrl: _resolveProductImageUrl(json),
           branchId: branchId,
           quantity: qty.toInt(),
           unitPrice: unitPrice.toDouble(),
@@ -83,6 +85,7 @@ class OperationsDto {
           serviceId: serviceId,
           branchId: branchId,
           assignedMechanicId: mechanicId,
+          assignedMechanicName: _resolveMechanicName(json),
           status: TaskStatus.fromString(json['status']?.toString()),
           description: description,
           price: price.toDouble(),
@@ -130,8 +133,8 @@ class OperationsDto {
           appointmentId: appointmentId,
           branchId: branchId,
           vehicleId: vehicleId,
-          vehiclePlate: json['vehiclePlate']?.toString() ?? 'S/P',
-          vehicleModel: json['vehicleModel']?.toString() ?? 'Vehículo General',
+          vehiclePlate: _resolveVehiclePlate(json),
+          vehicleModel: _resolveVehicleDisplay(json),
           customerId: customerId,
           customerName: json['customerName']?.toString() ?? 'Cliente General',
           customerPhone: json['customerPhone']?.toString() ?? '',
@@ -155,6 +158,48 @@ class OperationsDto {
           'Invalid WorkOrder JSON payload: missing required fields',
         ),
     };
+  }
+
+  static String _resolveMechanicName(Map<String, dynamic> json) {
+    final raw =
+        (json['assignedMechanicName'] ?? json['mechanicName'])?.toString().trim();
+    if (raw != null && raw.isNotEmpty) return raw;
+    return 'Sin asignar';
+  }
+
+  static String _resolveProductName(Map<String, dynamic> json) {
+    final raw = (json['productName'] ?? json['name'])?.toString().trim();
+    if (raw != null && raw.isNotEmpty) return raw;
+    return 'Repuesto';
+  }
+
+  static String? _resolveProductImageUrl(Map<String, dynamic> json) {
+    final raw = (json['imageUrl'] ?? json['productImageUrl'] ?? json['image_url'])
+        ?.toString()
+        .trim();
+    if (raw != null && raw.isNotEmpty) return raw;
+    return null;
+  }
+
+  static String _resolveVehiclePlate(Map<String, dynamic> json) {
+    final raw = (json['vehiclePlateNumber'] ?? json['vehiclePlate'])
+        ?.toString()
+        .trim();
+    if (raw != null && raw.isNotEmpty) return raw;
+    return 'S/P';
+  }
+
+  static String _resolveVehicleDisplay(Map<String, dynamic> json) {
+    final brand = json['vehicleBrand']?.toString().trim() ?? '';
+    final model = json['vehicleModel']?.toString().trim() ?? '';
+    final year = json['vehicleYear']?.toString().trim() ?? '';
+
+    final base = [brand, model].where((part) => part.isNotEmpty).join(' ');
+    if (base.isEmpty) return 'Vehículo General';
+    if (year.isNotEmpty && !base.contains(year)) {
+      return '$base $year';
+    }
+    return base;
   }
 
   /// Deserializes a list of [WorkOrder] entities.

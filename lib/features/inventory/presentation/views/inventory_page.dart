@@ -195,14 +195,12 @@ class _InventoryPageState extends State<InventoryPage>
     final loc = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ShiftIQColors.warmNeutral,
-      body: Column(
-        children: [
-          ShiftIQPageHeader(
-            title: 'Inventario & Lotes B2B',
-            subtitle: 'Catálogo de Repuestos · $_branchName',
-          ),
-          Expanded(
-            child: ListenableBuilder(
+      body: ShiftIQCollapsibleHeaderBody(
+        header: ShiftIQPageHeader(
+          title: 'Inventario & Lotes B2B',
+          subtitle: 'Catálogo de Repuestos · $_branchName',
+        ),
+        body: ListenableBuilder(
         listenable: _viewModel,
         builder: (context, _) {
           final isLoading = _viewModel.isLoading;
@@ -399,8 +397,6 @@ class _InventoryPageState extends State<InventoryPage>
           );
         },
       ),
-          ),
-        ],
       ),
       floatingActionButton: ListenableBuilder(
         listenable: _viewModel,

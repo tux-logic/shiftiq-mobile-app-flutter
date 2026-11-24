@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/core/auth/mobile_role_scope.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
@@ -6,8 +8,12 @@ import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.d
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
-import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_photo_gallery_viewer.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_toast.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/widgets/spare_part_picker_sheet.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/widgets/task_detail_sheet.dart';
+import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/widgets/work_order_task_card.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/work_order_detail_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/checkout_voucher_page.dart';
@@ -15,11 +21,13 @@ import 'package:shiftiq_mobile_app_flutter/features/billing/presentation/views/c
 class WorkOrderDetailPage extends StatefulWidget {
   final String workOrderId;
   final WorkOrderDetailViewModel? viewModel;
+  final bool readOnly;
 
   const WorkOrderDetailPage({
     super.key,
     required this.workOrderId,
     this.viewModel,
+    this.readOnly = false,
   });
 
   @override
@@ -29,7 +37,15 @@ class WorkOrderDetailPage extends StatefulWidget {
 class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
   late final WorkOrderDetailViewModel _viewModel;
 
+  bool get _isCustomer {
+    if (widget.readOnly) return true;
+    if (!getIt.isRegistered<SessionStorage>()) return false;
+    return RoleRouter.resolveScope(getIt<SessionStorage>().roles) ==
+        MobileRoleScope.customer;
+  }
+
   bool get _isOwnerAdmin {
+    if (_isCustomer) return false;
     if (!getIt.isRegistered<SessionStorage>()) return false;
     return RoleRouter.resolveScope(getIt<SessionStorage>().roles) ==
         MobileRoleScope.ownerAdmin;
@@ -112,71 +128,41 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
     );
   }
 
-  void _showAddProductDialog(BuildContext context, String taskId) {
-    final loc = AppLocalizations.of(context);
-    final nameController = TextEditingController(text: 'Filtro de Aceite Mann');
-    final qtyController = TextEditingController(text: '1');
-    final priceController = TextEditingController(text: '35.00');
-
-    showDialog(
+  Future<void> _showAddProductSheet(
+    BuildContext context,
+    WorkOrderTask task,
+  ) async {
+    final attachedIds = task.products.map((p) => p.productId).toSet();
+    final dispatched = await showModalBottomSheet<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(loc.translate('dispatch_part_stock')),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(
-                labelText: loc.translate('part_name_input'),
-                hintText: loc.translate('part_name_dispatch_hint'),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: qtyController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: loc.translate('quantity_required')),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: priceController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: loc.translate('unit_price_required'),
-                prefixText: 'S/ ',
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(loc.translate('cancel')),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (nameController.text.trim().isEmpty) return;
-              final qty = int.tryParse(qtyController.text) ?? 1;
-              final price = double.tryParse(priceController.text) ?? 20.0;
-              Navigator.of(ctx).pop();
-              await _viewModel.addProduct(
-                taskId: taskId,
-                productId: 'prod-${DateTime.now().millisecondsSinceEpoch}',
-                productName: nameController.text.trim(),
-                quantity: qty,
-                unitPrice: price,
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ShiftIQColors.primaryBlue,
-              foregroundColor: Colors.white,
-            ),
-            child: Text(loc.translate('dispatch')),
-          ),
-        ],
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => SparePartPickerSheet(
+        loadProducts: _viewModel.loadBranchProducts,
+        attachedProductIds: attachedIds,
+        onDispatch: (product, quantity) async {
+          final ok = await _viewModel.addProduct(
+            taskId: task.id,
+            productId: product.id,
+            productName: product.name,
+            quantity: quantity,
+            unitPrice: product.salePrice,
+          );
+          if (ok) return null;
+          return _viewModel.error ?? 'No se pudo agregar el repuesto.';
+        },
       ),
     );
+    if (dispatched == true && context.mounted) {
+      ShiftIQToast.show(
+        context,
+        message: 'Repuesto agregado a la tarea correctamente.',
+        type: ShiftIQToastType.success,
+      );
+    }
   }
 
   @override
@@ -205,32 +191,54 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
 
         if (order == null) {
           return Scaffold(
-            appBar: AppBar(title: Text(loc.translate('work_order_detail'))),
-            body: Center(child: Text(loc.translate('work_order_not_found'))),
+            backgroundColor: ShiftIQColors.warmNeutral,
+            body: Column(
+              children: [
+                ShiftIQPageHeader(
+                  title: loc.translate('work_order_detail'),
+                  showBackButton: true,
+                ),
+                Expanded(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const ShiftIQEmptyStateIcon(),
+                          const SizedBox(height: 16),
+                          Text(
+                            loc.translate('work_order_not_found'),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: ShiftIQColors.graphiteText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           );
         }
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
-          body: Column(
-            children: [
-              ShiftIQPageHeader(
-                title: order.formattedNumber,
-                subtitle: '${order.vehicleModel} · ${order.vehiclePlate}',
-                showBackButton: true,
-                actions: [
-                  ShiftIQLiquidIconButton(
-                    tooltip: AppLocalizations.of(context)
-                        .translate('tooltip_refresh'),
-                    icon: Icons.refresh_rounded,
-                    onDarkBackground: true,
-                    onPressed: () => vm.loadOrder(order.id),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
+          body: ShiftIQCollapsibleHeaderBody(
+            header: ShiftIQPageHeader(
+              title: order.formattedNumber,
+              subtitle: '${order.vehicleModel} · ${order.vehiclePlate}',
+              showBackButton: true,
+            ),
+            body: ShiftIQPullToRefresh(
+                  onRefresh: () => vm.loadOrder(order.id),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -359,6 +367,56 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                         order.diagnosticSummary,
                         style: const TextStyle(fontSize: 13),
                       ),
+                      if (order.entryInspectionImages.isNotEmpty) ...[
+                        const Divider(height: 16),
+                        Text(
+                          'Fotos de recepción (${order.entryInspectionImages.length}):',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 82,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: order.entryInspectionImages.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(width: 8),
+                            itemBuilder: (_, index) {
+                              final url = order.entryInspectionImages[index];
+                              return GestureDetector(
+                                onTap: () => ShiftIQPhotoGalleryViewer.open(
+                                  context,
+                                  imageUrls: order.entryInspectionImages,
+                                  initialIndex: index,
+                                  title: 'Recepción',
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Image.network(
+                                    url,
+                                    width: 82,
+                                    height: 82,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, _, _) => Container(
+                                      width: 82,
+                                      height: 82,
+                                      color: ShiftIQColors.warmNeutral,
+                                      child: const Icon(
+                                        Icons.broken_image_outlined,
+                                        color: Color(0xFF94A3B8),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -378,14 +436,15 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                         color: Color(0xFF64748B),
                       ),
                     ),
-                    TextButton.icon(
-                      onPressed: () => _showAddTaskDialog(context),
-                      icon: const Icon(Icons.add, size: 16),
-                      label: const Text(
-                        'Agregar Tarea',
-                        style: TextStyle(fontSize: 12),
+                    if (_isOwnerAdmin && !order.isCompleted)
+                      TextButton.icon(
+                        onPressed: () => _showAddTaskDialog(context),
+                        icon: const Icon(Icons.add, size: 16),
+                        label: const Text(
+                          'Agregar Tarea',
+                          style: TextStyle(fontSize: 12),
+                        ),
                       ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -413,7 +472,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                             style: TextStyle(fontSize: 13, color: Colors.grey),
                           ),
                           Text(
-                            'S/ ${order.tasks.fold(0.0, (sum, t) => sum + t.price).toStringAsFixed(2)}',
+                            'S/ ${order.tasks.fold(0.0, (sum, t) => sum + t.laborPrice).toStringAsFixed(2)}',
                             style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
@@ -466,8 +525,8 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
 
                 const SizedBox(height: 20),
 
-                // Finalize Order Button
-                if (!order.isCompleted)
+                // Finalize Order Button (owner/admin settlement only)
+                if (!order.isCompleted && !order.isPaid && _isOwnerAdmin)
                   ElevatedButton(
                     onPressed: () async {
                       final confirmed = await showDialog<bool>(
@@ -485,7 +544,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                             ElevatedButton(
                               onPressed: () => Navigator.of(ctx).pop(true),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: ShiftIQColors.preventiveGreen,
+                                backgroundColor: const Color(0xFF0F172A),
                                 foregroundColor: Colors.white,
                               ),
                               child: Text(loc.translate('confirm_and_settle')),
@@ -499,11 +558,12 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: ShiftIQColors.preventiveGreen,
+                      backgroundColor: const Color(0xFF0F172A),
                       foregroundColor: Colors.white,
+                      elevation: 0,
                       minimumSize: const Size.fromHeight(50),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
                     child: Row(
@@ -521,35 +581,49 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                       ],
                     ),
                   )
-                else ...[
+                else if (order.isCompleted || order.isPaid) ...[
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: ShiftIQColors.preventiveGreen.withAlpha(20),
-                      borderRadius: BorderRadius.circular(8),
+                      color: (order.isPaid
+                              ? ShiftIQColors.primaryBlue
+                              : ShiftIQColors.preventiveGreen)
+                          .withAlpha(20),
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: ShiftIQColors.preventiveGreen.withAlpha(80),
+                        color: (order.isPaid
+                                ? ShiftIQColors.primaryBlue
+                                : ShiftIQColors.preventiveGreen)
+                            .withAlpha(80),
                       ),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
                           Icons.check_circle,
-                          color: ShiftIQColors.preventiveGreen,
+                          color: order.isPaid
+                              ? ShiftIQColors.primaryBlue
+                              : ShiftIQColors.preventiveGreen,
                         ),
-                        SizedBox(width: 8),
-                        Text(
-                          'ORDEN FINALIZADA Y LIQUIDADA',
-                          style: TextStyle(
-                            color: ShiftIQColors.preventiveGreen,
-                            fontWeight: FontWeight.bold,
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            order.isPaid
+                                ? 'ORDEN PAGADA'
+                                : 'ORDEN COMPLETADA · PENDIENTE DE PAGO',
+                            style: TextStyle(
+                              color: order.isPaid
+                                  ? ShiftIQColors.primaryBlue
+                                  : ShiftIQColors.preventiveGreen,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  if (_isOwnerAdmin) ...[
+                  if (_isOwnerAdmin && !order.isPaid) ...[
                     const SizedBox(height: 12),
                     ElevatedButton.icon(
                       onPressed: () {
@@ -561,7 +635,7 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                               description: task.description,
                               itemType: VoucherItemType.service,
                               quantity: 1,
-                              unitPrice: task.price,
+                              unitPrice: task.laborPrice,
                             ),
                           );
                           for (final p in task.products) {
@@ -594,9 +668,10 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: ShiftIQColors.primaryBlue,
                         foregroundColor: Colors.white,
-                        minimumSize: const Size.fromHeight(48),
+                        elevation: 0,
+                        minimumSize: const Size.fromHeight(50),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                     ),
@@ -606,12 +681,114 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
                 const SizedBox(height: 20),
               ],
             ),
-          ),
-              ),
-            ],
+                  ),
+                ),
           ),
         );
       },
+    );
+  }
+
+  WorkOrderTask _displayTask(WorkOrderTask task) {
+    if (_isCustomer &&
+        task.assignedMechanicName == 'Sin asignar' &&
+        task.assignedMechanicId.isNotEmpty &&
+        task.assignedMechanicId != 'ereg-unassigned') {
+      return task.copyWith(assignedMechanicName: 'Mecánico asignado');
+    }
+    return task;
+  }
+
+  void _showTaskDetailSheet(
+    BuildContext context,
+    WorkOrderTask task,
+    WorkOrderDetailViewModel vm,
+  ) {
+    final displayTask = _displayTask(task);
+    final orderCompleted = vm.order?.isCompleted ?? false;
+    final canExecute = !_isCustomer && (_isOwnerAdmin || vm.canExecuteTask(task));
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => TaskDetailSheet(
+        task: displayTask,
+        onAddProduct: canExecute && !task.isCompleted && !orderCompleted
+            ? () => _showAddProductSheet(context, task)
+            : null,
+        onStartTask:
+            canExecute && task.isPending ? () => vm.startTask(task.id) : null,
+        onCompleteTask: canExecute && task.isInProgress
+            ? () => vm.completeTask(task.id)
+            : null,
+        onUpdateProductQuantity: canExecute && !task.isCompleted && !orderCompleted
+            ? (productId, newQuantity) async {
+                final ok = await vm.updateProductQuantity(
+                  taskId: task.id,
+                  productId: productId,
+                  quantity: newQuantity,
+                );
+                if (!ok) {
+                  throw Exception(
+                    vm.error ?? 'No se pudo actualizar la cantidad.',
+                  );
+                }
+                return vm.order?.tasks.firstWhere(
+                  (t) => t.id == task.id,
+                  orElse: () => task,
+                );
+              }
+            : null,
+        onRemoveProduct: canExecute && !task.isCompleted && !orderCompleted
+            ? (productId) async {
+                final ok = await vm.removeProductFromTask(
+                  taskId: task.id,
+                  productId: productId,
+                );
+                if (!ok) {
+                  throw Exception(
+                    vm.error ?? 'No se pudo quitar el repuesto.',
+                  );
+                }
+                return vm.order?.tasks.firstWhere(
+                  (t) => t.id == task.id,
+                  orElse: () => task,
+                );
+              }
+            : null,
+        onAddEvidenceImage: canExecute && !task.isCompleted && !orderCompleted
+            ? (bytes, fileName) async {
+                final updated = await vm.uploadAndAttachEvidence(
+                  task: task,
+                  fileBytes: bytes,
+                  fileName: fileName,
+                );
+                if (updated == null) {
+                  throw Exception(
+                    vm.error ?? 'No se pudo subir la foto de evidencia.',
+                  );
+                }
+                return updated;
+              }
+            : null,
+        onRemoveEvidenceImage: canExecute && !task.isCompleted && !orderCompleted
+            ? (imageUrl) async {
+                final updated = await vm.removeEvidenceImage(
+                  task: task,
+                  imageUrl: imageUrl,
+                );
+                if (updated == null) {
+                  throw Exception(
+                    vm.error ?? 'No se pudo quitar la foto de evidencia.',
+                  );
+                }
+                return updated;
+              }
+            : null,
+      ),
     );
   }
 
@@ -620,156 +797,14 @@ class _WorkOrderDetailPageState extends State<WorkOrderDetailPage> {
     WorkOrderTask task,
     WorkOrderDetailViewModel vm,
   ) {
-    final loc = AppLocalizations.of(context);
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: task.isCompleted
-              ? ShiftIQColors.preventiveGreen.withAlpha(80)
-              : ShiftIQColors.borderSlate,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Status Icon / Toggle
-              if (task.isCompleted)
-                const Icon(
-                  Icons.check_circle,
-                  color: ShiftIQColors.preventiveGreen,
-                  size: 22,
-                )
-              else if (task.isInProgress)
-                IconButton(
-                  tooltip: AppLocalizations.of(context).translate('tooltip_complete_task'),
-                  icon: const Icon(
-                    Icons.radio_button_unchecked,
-                    color: ShiftIQColors.secondaryTeal,
-                  ),
-                  onPressed: () => vm.completeTask(task.id),
-                )
-              else
-                IconButton(
-                  tooltip: AppLocalizations.of(context).translate('tooltip_start_task'),
-                  icon: const Icon(Icons.play_circle_outline, color: Colors.grey),
-                  onPressed: () => vm.startTask(task.id),
-                ),
-              const SizedBox(width: 8),
-
-              // Description & Mechanic
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      task.description,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        decoration: task.isCompleted
-                            ? TextDecoration.lineThrough
-                            : null,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.engineering_outlined,
-                          size: 14,
-                          color: Color(0xFF64748B),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Mecánico: ${task.assignedMechanicName}',
-                          style: TextStyle(fontSize: 12, color: Colors.grey[700]),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // Price
-              Text(
-                task.formattedPrice,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: ShiftIQColors.primaryBlue,
-                ),
-              ),
-            ],
-          ),
-
-          // Action Buttons for this task
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              if (!task.isCompleted && task.isPending)
-                TextButton.icon(
-                  onPressed: () => vm.startTask(task.id),
-                  icon: const Icon(Icons.play_arrow, size: 14),
-                  label: Text(loc.translate('start'), style: const TextStyle(fontSize: 11)),
-                ),
-              if (!task.isCompleted && task.isInProgress)
-                TextButton.icon(
-                  onPressed: () => vm.completeTask(task.id),
-                  icon: const Icon(Icons.check, size: 14),
-                  label: Text(loc.translate('complete'), style: const TextStyle(fontSize: 11)),
-                ),
-              TextButton.icon(
-                onPressed: () => _showAddProductDialog(context, task.id),
-                icon: const Icon(Icons.inventory_2_outlined, size: 14),
-                label: Text(loc.translate('add_part_btn'), style: const TextStyle(fontSize: 11)),
-              ),
-            ],
-          ),
-
-          // Attached Products (Repuestos)
-          if (task.products.isNotEmpty) ...[
-            const Divider(height: 12),
-            Text(
-              'Repuestos Consumidos:',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 4),
-            ...task.products.map(
-              (p) => Padding(
-                padding: const EdgeInsets.only(left: 8.0, bottom: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '• ${p.productName} (${p.quantity} unid)',
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    Text(
-                      p.formattedTotal,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey[800],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
+    final displayTask = _displayTask(task);
+    final canExecute = !_isCustomer && (_isOwnerAdmin || vm.canExecuteTask(task));
+    return WorkOrderTaskCard(
+      task: displayTask,
+      canExecute: canExecute,
+      onTap: () => _showTaskDetailSheet(context, displayTask, vm),
+      onStart: () => vm.startTask(task.id),
+      onComplete: () => vm.completeTask(task.id),
     );
   }
 }
