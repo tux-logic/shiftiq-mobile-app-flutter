@@ -93,16 +93,16 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
         : '';
 
     final headerSubtitle = switch (_selectedTab) {
-      1 => 'Tus vehículos y diagnóstico OBD-II',
-      2 => 'Seguimiento de órdenes en taller',
-      3 => 'Aprobación de presupuestos y pagos',
+      1 => loc.translate('customer_vehicles_header_sub'),
+      2 => loc.translate('customer_orders_header_sub'),
+      3 => loc.translate('customer_payments_header_sub'),
       _ => email.isNotEmpty ? email : null,
     };
 
     final headerTitle = switch (_selectedTab) {
-      1 => 'Mis Vehículos',
-      2 => 'Mis Órdenes',
-      3 => 'Cotizaciones & Pagos',
+      1 => loc.translate('customer_vehicles_title'),
+      2 => loc.translate('customer_orders_title'),
+      3 => '${loc.translate('quotes')} & ${loc.translate('customer_tab_payments')}',
       _ => loc.translate('customer_portal_title'),
     };
 
@@ -138,30 +138,30 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
             _selectedTab = index;
           });
         },
-        items: const [
+        items: [
           ShiftIQNavItem(
-            key: Key('customer_nav_summary'),
+            key: const Key('customer_nav_summary'),
             icon: Icons.dashboard_outlined,
             selectedIcon: Icons.dashboard_rounded,
-            label: 'Resumen',
+            label: loc.translate('customer_tab_summary'),
           ),
           ShiftIQNavItem(
-            key: Key('customer_nav_vehicles'),
+            key: const Key('customer_nav_vehicles'),
             icon: Icons.directions_car_outlined,
             selectedIcon: Icons.directions_car_rounded,
-            label: 'Vehículos',
+            label: loc.translate('customer_tab_vehicles'),
           ),
           ShiftIQNavItem(
-            key: Key('customer_nav_orders'),
+            key: const Key('customer_nav_orders'),
             icon: Icons.build_circle_outlined,
             selectedIcon: Icons.build_circle_rounded,
-            label: 'Órdenes',
+            label: loc.translate('customer_tab_orders'),
           ),
           ShiftIQNavItem(
-            key: Key('customer_nav_quotes'),
+            key: const Key('customer_nav_quotes'),
             icon: Icons.receipt_long_outlined,
             selectedIcon: Icons.receipt_long_rounded,
-            label: 'Pagos',
+            label: loc.translate('customer_tab_payments'),
           ),
         ],
       ),

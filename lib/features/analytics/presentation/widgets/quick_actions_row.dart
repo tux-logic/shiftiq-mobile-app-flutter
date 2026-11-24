@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 
 /// Minimalist horizontal quick-action pills matching the ShiftIQ branch palette.
@@ -16,26 +17,27 @@ class QuickActionsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
           _ActionPill(
-            label: 'Nueva OT',
+            label: loc.translate('new_work_order_short'),
             icon: Icons.add_rounded,
             color: ShiftIQColors.primaryBlue,
             onTap: onNewOrder,
           ),
           const SizedBox(width: 10),
           _ActionPill(
-            label: 'Agendar cita',
+            label: loc.translate('schedule_appointment_short'),
             icon: Icons.calendar_today_outlined,
             color: ShiftIQColors.secondaryTeal,
             onTap: onNewAppointment,
           ),
           const SizedBox(width: 10),
           _ActionPill(
-            label: 'Ingreso lote',
+            label: loc.translate('batch_entry_short'),
             icon: Icons.inventory_2_outlined,
             color: ShiftIQColors.preventiveGreen,
             onTap: onNewBatch,
