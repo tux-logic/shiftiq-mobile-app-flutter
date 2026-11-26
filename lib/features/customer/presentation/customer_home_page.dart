@@ -8,6 +8,7 @@ import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_floating_nav_bar.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_tactile_card.dart';
@@ -128,6 +129,17 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     _buildBodyForTab(context, loc, email, _viewModel),
               ),
       ),
+      floatingActionButton: (_selectedTab == 1 && _viewModel != null)
+          ? Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: ShiftIQPrimaryPillButton(
+                key: const Key('btn_customer_add_vehicle'),
+                label: loc.translate('add_vehicle'),
+                icon: Icons.add_rounded,
+                onPressed: () => _showAddVehicleSheet(context, _viewModel!),
+              ),
+            )
+          : null,
       bottomNavigationBar: ShiftIQFloatingNavBar(
         key: const Key('customer_navigation_bar'),
         selectedIndex: _selectedTab,
@@ -343,38 +355,14 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
       children: [
-        Row(
-          children: [
-            const Expanded(
-              child: Text(
-                'MIS VEHÍCULOS Y TELEMETRÍA OBD-II',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF64748B),
-                  letterSpacing: 0.6,
-                ),
-              ),
-            ),
-            if (vm != null)
-              TextButton.icon(
-                key: const Key('btn_customer_add_vehicle'),
-                onPressed: () => _showAddVehicleSheet(context, vm),
-                icon: const Icon(Icons.add_rounded, size: 18),
-                label: Text(loc.translate('add_vehicle')),
-                style: TextButton.styleFrom(
-                  foregroundColor: ShiftIQColors.primaryBlue,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  textStyle: const TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-          ],
+        const Text(
+          'MIS VEHÍCULOS Y TELEMETRÍA OBD-II',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF64748B),
+            letterSpacing: 0.6,
+          ),
         ),
         const SizedBox(height: 12),
         if (vm != null && vm.isLoading && vehicles.isEmpty)
