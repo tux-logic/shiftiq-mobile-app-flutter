@@ -353,18 +353,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     final vehicles = vm?.vehicles ?? const <Vehicle>[];
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 110),
       children: [
-        const Text(
-          'MIS VEHÍCULOS Y TELEMETRÍA OBD-II',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF64748B),
-            letterSpacing: 0.6,
-          ),
-        ),
-        const SizedBox(height: 12),
         if (vm != null && vm.isLoading && vehicles.isEmpty)
           const ShiftIQSkeletonCardList(itemCount: 2)
         else if (vehicles.isEmpty)
@@ -417,18 +407,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   Widget _buildOrdersTab(CustomerHomeViewModel? vm) {
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 110),
       children: [
-        const Text(
-          'MIS ÓRDENES DE TRABAJO',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF64748B),
-            letterSpacing: 0.6,
-          ),
-        ),
-        const SizedBox(height: 12),
         if (vm != null && vm.isLoading && vm.workOrders.isEmpty)
           const ShiftIQSkeletonCardList(itemCount: 2)
         else if (vm != null && vm.error != null && vm.workOrders.isEmpty)
@@ -465,18 +445,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     final quotes = vm?.quotes ?? const <Quote>[];
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 110),
       children: [
-        const Text(
-          'MIS COTIZACIONES Y PAGOS',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF64748B),
-            letterSpacing: 0.6,
-          ),
-        ),
-        const SizedBox(height: 12),
         if (vm != null && vm.isLoading && quotes.isEmpty)
           const ShiftIQSkeletonCardList(itemCount: 2)
         else if (quotes.isEmpty)
