@@ -4,6 +4,7 @@ import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_floating_nav_bar.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/views/dashboard_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/views/employee_dashboard_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_page.dart';
@@ -218,9 +219,12 @@ class _MainPageState extends State<MainPage>
         opacity: _fadeAnimation,
         child: SlideTransition(
           position: _slideAnimation,
-          child: IndexedStack(
-            index: safeIndex,
-            children: specs.map((spec) => spec.page).toList(),
+          child: ShiftIQActiveTabScope(
+            activeIndex: safeIndex,
+            child: IndexedStack(
+              index: safeIndex,
+              children: specs.map((spec) => spec.page).toList(),
+            ),
           ),
         ),
       ),

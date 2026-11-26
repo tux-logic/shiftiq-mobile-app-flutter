@@ -173,17 +173,14 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
           floatingActionButton: ListenableBuilder(
             listenable: _viewModel,
             builder: (context, _) {
-              if (!_canCreateWorkOrder ||
-                  _viewModel.ordersForStatus(_viewModel.statusFilter).isEmpty) {
-                return const SizedBox.shrink();
-              }
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 84),
-                child: ShiftIQPrimaryPillButton(
-                  label: 'Nueva OT',
-                  icon: Icons.add_rounded,
-                  onPressed: () => _openCreateWorkOrder(vm),
-                ),
+              final visible = ShiftIQActiveTabScope.isTabActive(context, 1) &&
+                  _canCreateWorkOrder &&
+                  _viewModel.ordersForStatus(_viewModel.statusFilter).isNotEmpty;
+              return ShiftIQAnimatedFloatingPill(
+                visible: visible,
+                label: 'Nueva OT',
+                icon: Icons.add_rounded,
+                onPressed: () => _openCreateWorkOrder(vm),
               );
             },
           ),
