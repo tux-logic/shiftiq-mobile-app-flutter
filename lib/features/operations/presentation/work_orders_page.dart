@@ -29,10 +29,10 @@ class WorkOrdersPage extends StatefulWidget {
   });
 
   @override
-  State<WorkOrdersPage> createState() => _WorkOrdersPageState();
+  State<WorkOrdersPage> createState() => WorkOrdersPageState();
 }
 
-class _WorkOrdersPageState extends State<WorkOrdersPage>
+class WorkOrdersPageState extends State<WorkOrdersPage>
     with SingleTickerProviderStateMixin {
   static const List<WorkOrderStatus?> _tabStatuses = [
     null,
@@ -76,6 +76,8 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
     _tabController.dispose();
     super.dispose();
   }
+
+  void openCreateModal() => _openCreateWorkOrder(_viewModel);
 
   Future<void> _openCreateWorkOrder(WorkOrdersViewModel vm) async {
     final created = await Navigator.of(context).push<bool>(
@@ -170,18 +172,21 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
             ],
           ),
           ),
-          floatingActionButton: (ShiftIQActiveTabScope.isTabActive(context, 1) &&
-                  _canCreateWorkOrder &&
-                  _viewModel.ordersForStatus(_viewModel.statusFilter).isNotEmpty)
-              ? Padding(
-                  padding: const EdgeInsets.only(bottom: 84),
-                  child: ShiftIQPrimaryPillButton(
-                    label: 'Nueva OT',
-                    icon: Icons.add_rounded,
-                    onPressed: () => _openCreateWorkOrder(vm),
-                  ),
-                )
-              : null,
+          floatingActionButton:
+              (!ShiftIQActiveTabScope.isManagedByOuterScaffold(context) &&
+                      _canCreateWorkOrder &&
+                      _viewModel
+                          .ordersForStatus(_viewModel.statusFilter)
+                          .isNotEmpty)
+                  ? Padding(
+                      padding: const EdgeInsets.only(bottom: 84),
+                      child: ShiftIQPrimaryPillButton(
+                        label: 'Nueva OT',
+                        icon: Icons.add_rounded,
+                        onPressed: () => _openCreateWorkOrder(vm),
+                      ),
+                    )
+                  : null,
         );
       },
     );

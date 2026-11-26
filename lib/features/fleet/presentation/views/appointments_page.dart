@@ -33,10 +33,10 @@ class AppointmentsPage extends StatefulWidget {
   });
 
   @override
-  State<AppointmentsPage> createState() => _AppointmentsPageState();
+  State<AppointmentsPage> createState() => AppointmentsPageState();
 }
 
-class _AppointmentsPageState extends State<AppointmentsPage>
+class AppointmentsPageState extends State<AppointmentsPage>
     with SingleTickerProviderStateMixin {
   static const List<AppointmentStatus?> _tabStatuses = [
     null,
@@ -80,6 +80,8 @@ class _AppointmentsPageState extends State<AppointmentsPage>
     _tabController.dispose();
     super.dispose();
   }
+
+  void openCreateModal() => _openCreateAppointment();
 
   void _openCreateAppointment() {
     showModalBottomSheet(
@@ -233,17 +235,18 @@ class _AppointmentsPageState extends State<AppointmentsPage>
         },
       ),
       ),
-      floatingActionButton: (ShiftIQActiveTabScope.isTabActive(context, 2) &&
-              _viewModel.appointments.isNotEmpty)
-          ? Padding(
-              padding: const EdgeInsets.only(bottom: 84),
-              child: ShiftIQPrimaryPillButton(
-                label: loc.translate('new_appointment'),
-                icon: Icons.add_rounded,
-                onPressed: _openCreateAppointment,
-              ),
-            )
-          : null,
+      floatingActionButton:
+          (!ShiftIQActiveTabScope.isManagedByOuterScaffold(context) &&
+                  _viewModel.appointments.isNotEmpty)
+              ? Padding(
+                  padding: const EdgeInsets.only(bottom: 84),
+                  child: ShiftIQPrimaryPillButton(
+                    label: loc.translate('new_appointment'),
+                    icon: Icons.add_rounded,
+                    onPressed: _openCreateAppointment,
+                  ),
+                )
+              : null,
     );
   }
 

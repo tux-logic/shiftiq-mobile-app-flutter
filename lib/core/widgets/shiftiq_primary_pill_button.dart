@@ -73,6 +73,10 @@ class ShiftIQActiveTabScope extends InheritedWidget {
     required super.child,
   });
 
+  static bool isManagedByOuterScaffold(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<ShiftIQActiveTabScope>() !=
+      null;
+
   static bool isTabActive(BuildContext context, int tabIndex) {
     final scope =
         context.dependOnInheritedWidgetOfExactType<ShiftIQActiveTabScope>();
