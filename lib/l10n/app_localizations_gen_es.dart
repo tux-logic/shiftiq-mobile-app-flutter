@@ -1068,4 +1068,44 @@ class AppLocalizationsGenEs extends AppLocalizationsGen {
 
   @override
   String get pending_short => 'Pend.';
+
+  @override
+  String get add_vehicle => 'Agregar vehículo';
+
+  @override
+  String get add_vehicle_title => 'Registrar Nuevo Vehículo';
+
+  @override
+  String get vehicle_plate_label => 'Placa *';
+
+  @override
+  String get vehicle_brand_label => 'Marca *';
+
+  @override
+  String get vehicle_model_label => 'Modelo *';
+
+  @override
+  String get vehicle_year_label => 'Año *';
+
+  @override
+  String get vehicle_vin_label => 'VIN (17 caracteres) *';
+
+  @override
+  String get vehicle_vin_error => 'El VIN debe tener exactamente 17 caracteres';
+
+  @override
+  String get vehicle_year_error => 'Ingrese un año válido';
+
+  @override
+  String get vehicle_save_btn => 'Guardar Vehículo';
+
+  @override
+  String get vehicle_registered_success => 'Vehículo registrado correctamente';
+
+  @override
+  String get no_vehicles_title => 'Sin vehículos registrados';
+
+  @override
+  String get no_vehicles_subtitle =>
+      'Registra tu vehículo para ver aquí su telemetría OBD-II, alertas DTC e historial en taller.';
 }

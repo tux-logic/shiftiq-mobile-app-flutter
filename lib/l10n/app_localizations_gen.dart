@@ -2161,6 +2161,84 @@ abstract class AppLocalizationsGen {
   /// In es, this message translates to:
   /// **'Pend.'**
   String get pending_short;
+
+  /// No description provided for @add_vehicle.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar vehículo'**
+  String get add_vehicle;
+
+  /// No description provided for @add_vehicle_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrar Nuevo Vehículo'**
+  String get add_vehicle_title;
+
+  /// No description provided for @vehicle_plate_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Placa *'**
+  String get vehicle_plate_label;
+
+  /// No description provided for @vehicle_brand_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Marca *'**
+  String get vehicle_brand_label;
+
+  /// No description provided for @vehicle_model_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Modelo *'**
+  String get vehicle_model_label;
+
+  /// No description provided for @vehicle_year_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Año *'**
+  String get vehicle_year_label;
+
+  /// No description provided for @vehicle_vin_label.
+  ///
+  /// In es, this message translates to:
+  /// **'VIN (17 caracteres) *'**
+  String get vehicle_vin_label;
+
+  /// No description provided for @vehicle_vin_error.
+  ///
+  /// In es, this message translates to:
+  /// **'El VIN debe tener exactamente 17 caracteres'**
+  String get vehicle_vin_error;
+
+  /// No description provided for @vehicle_year_error.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingrese un año válido'**
+  String get vehicle_year_error;
+
+  /// No description provided for @vehicle_save_btn.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar Vehículo'**
+  String get vehicle_save_btn;
+
+  /// No description provided for @vehicle_registered_success.
+  ///
+  /// In es, this message translates to:
+  /// **'Vehículo registrado correctamente'**
+  String get vehicle_registered_success;
+
+  /// No description provided for @no_vehicles_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin vehículos registrados'**
+  String get no_vehicles_title;
+
+  /// No description provided for @no_vehicles_subtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Registra tu vehículo para ver aquí su telemetría OBD-II, alertas DTC e historial en taller.'**
+  String get no_vehicles_subtitle;
 }
 
 class _AppLocalizationsGenDelegate

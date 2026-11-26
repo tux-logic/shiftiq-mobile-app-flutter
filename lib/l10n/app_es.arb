@@ -343,5 +343,18 @@
   "pending_plural": "Pendientes",
   "progress_by_order": "Avance por Orden",
   "ready_short": "Listas",
-  "pending_short": "Pend."
+  "pending_short": "Pend.",
+  "add_vehicle": "Agregar vehículo",
+  "add_vehicle_title": "Registrar Nuevo Vehículo",
+  "vehicle_plate_label": "Placa *",
+  "vehicle_brand_label": "Marca *",
+  "vehicle_model_label": "Modelo *",
+  "vehicle_year_label": "Año *",
+  "vehicle_vin_label": "VIN (17 caracteres) *",
+  "vehicle_vin_error": "El VIN debe tener exactamente 17 caracteres",
+  "vehicle_year_error": "Ingrese un año válido",
+  "vehicle_save_btn": "Guardar Vehículo",
+  "vehicle_registered_success": "Vehículo registrado correctamente",
+  "no_vehicles_title": "Sin vehículos registrados",
+  "no_vehicles_subtitle": "Registra tu vehículo para ver aquí su telemetría OBD-II, alertas DTC e historial en taller."
 }
