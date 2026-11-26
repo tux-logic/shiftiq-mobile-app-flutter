@@ -633,6 +633,7 @@ void setupDependencies() {
       manageCheckouts: getIt<ManageCheckouts>(),
       getCustomerSummary: getIt<GetCustomerSummaryUseCase>(),
       getCustomerVehicles: getIt<GetCustomerVehicles>(),
+      registerVehicle: getIt<RegisterVehicle>(),
       getUserProfileContext: getIt<GetUserProfileContextUseCase>(),
       getDtcAlerts: getIt<GetDtcAlerts>(),
     ),

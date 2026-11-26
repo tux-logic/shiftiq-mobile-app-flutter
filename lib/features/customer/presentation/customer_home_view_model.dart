@@ -7,6 +7,7 @@ import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domai
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_user_profile_context.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/application/usecases/get_customer_vehicles.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/application/usecases/get_dtc_alerts.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/application/usecases/register_vehicle.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/domain/iot_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/application/usecases/manage_work_orders.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
@@ -20,6 +21,7 @@ class CustomerHomeViewModel extends ChangeNotifier {
   final ManageCheckouts? manageCheckouts;
   final GetCustomerSummaryUseCase? getCustomerSummary;
   final GetCustomerVehicles? getCustomerVehicles;
+  final RegisterVehicle? registerVehicle;
   final GetUserProfileContextUseCase? getUserProfileContext;
   final GetDtcAlerts? getDtcAlerts;
 
@@ -29,6 +31,7 @@ class CustomerHomeViewModel extends ChangeNotifier {
     this.manageCheckouts,
     this.getCustomerSummary,
     this.getCustomerVehicles,
+    this.registerVehicle,
     this.getUserProfileContext,
     this.getDtcAlerts,
   });
@@ -44,6 +47,9 @@ class CustomerHomeViewModel extends ChangeNotifier {
 
   String? _payingQuoteId;
   String? get payingQuoteId => _payingQuoteId;
+
+  bool _isRegisteringVehicle = false;
+  bool get isRegisteringVehicle => _isRegisteringVehicle;
 
   String? _error;
   String? get error => _error;
@@ -73,6 +79,43 @@ class CustomerHomeViewModel extends ChangeNotifier {
         .expand((alerts) => alerts)
         .where((a) => a.status != DtcStatus.resolved)
         .length;
+  }
+
+  /// Registers a new vehicle for the authenticated customer via `POST /api/v1/vehicles`.
+  Future<Vehicle?> addVehicle({
+    required String plateNumber,
+    required String brand,
+    required String model,
+    required int year,
+    required String vin,
+  }) async {
+    if (registerVehicle == null) {
+      _error = 'Vehicle registration is unavailable in this session.';
+      notifyListeners();
+      return null;
+    }
+
+    _isRegisteringVehicle = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final created = await registerVehicle!.execute(
+        plateNumber: plateNumber,
+        brand: brand,
+        model: model,
+        year: year,
+        vin: vin,
+      );
+      _vehicles = [..._vehicles, created];
+      return created;
+    } catch (e) {
+      _error = e.toString().replaceFirst('Exception: ', '');
+      return null;
+    } finally {
+      _isRegisteringVehicle = false;
+      notifyListeners();
+    }
   }
 
   Future<void> load() async {
