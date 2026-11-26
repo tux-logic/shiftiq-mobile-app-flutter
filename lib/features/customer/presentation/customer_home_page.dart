@@ -407,13 +407,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     CustomerHomeViewModel vm,
   ) async {
     final loc = AppLocalizations.of(context);
-    final formKey = GlobalKey<FormState>();
-    final plateCtrl = TextEditingController();
-    final brandCtrl = TextEditingController();
-    final modelCtrl = TextEditingController();
-    final yearCtrl = TextEditingController(text: '${DateTime.now().year}');
-    final vinCtrl = TextEditingController();
-
     final created = await showModalBottomSheet<Vehicle?>(
       context: context,
       isScrollControlled: true,
@@ -421,209 +414,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (sheetContext) {
-        return ListenableBuilder(
-          listenable: vm,
-          builder: (context, _) {
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 20,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-              ),
-              child: Form(
-                key: formKey,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            loc.translate('add_vehicle_title'),
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: ShiftIQColors.graphiteText,
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.close),
-                            onPressed: () =>
-                                Navigator.of(sheetContext).pop(null),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: TextFormField(
-                              key: const Key('field_vehicle_plate'),
-                              controller: plateCtrl,
-                              textCapitalization: TextCapitalization.characters,
-                              decoration: InputDecoration(
-                                labelText: loc.translate('vehicle_plate_label'),
-                                hintText: 'ABC-123',
-                                prefixIcon: const Icon(Icons.badge_outlined),
-                              ),
-                              validator: (val) =>
-                                  val == null || val.trim().isEmpty
-                                      ? loc.translate('plate_required')
-                                      : null,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            flex: 1,
-                            child: TextFormField(
-                              key: const Key('field_vehicle_year'),
-                              controller: yearCtrl,
-                              keyboardType: TextInputType.number,
-                              decoration: InputDecoration(
-                                labelText: loc.translate('vehicle_year_label'),
-                              ),
-                              validator: (val) {
-                                final y = int.tryParse((val ?? '').trim());
-                                if (y == null ||
-                                    y < 1900 ||
-                                    y > DateTime.now().year + 1) {
-                                  return loc.translate('vehicle_year_error');
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              key: const Key('field_vehicle_brand'),
-                              controller: brandCtrl,
-                              textCapitalization: TextCapitalization.words,
-                              decoration: InputDecoration(
-                                labelText: loc.translate('vehicle_brand_label'),
-                                hintText: 'Toyota',
-                                prefixIcon:
-                                    const Icon(Icons.directions_car_outlined),
-                              ),
-                              validator: (val) =>
-                                  val == null || val.trim().isEmpty
-                                      ? loc.translate('vehicle_brand_label')
-                                      : null,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: TextFormField(
-                              key: const Key('field_vehicle_model'),
-                              controller: modelCtrl,
-                              textCapitalization: TextCapitalization.words,
-                              decoration: InputDecoration(
-                                labelText: loc.translate('vehicle_model_label'),
-                                hintText: 'Corolla',
-                              ),
-                              validator: (val) =>
-                                  val == null || val.trim().isEmpty
-                                      ? loc.translate('vehicle_model_label')
-                                      : null,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        key: const Key('field_vehicle_vin'),
-                        controller: vinCtrl,
-                        textCapitalization: TextCapitalization.characters,
-                        maxLength: 17,
-                        decoration: InputDecoration(
-                          labelText: loc.translate('vehicle_vin_label'),
-                          hintText: '9BRBL3HE2P0123456',
-                          prefixIcon: const Icon(Icons.qr_code_2_rounded),
-                        ),
-                        validator: (val) {
-                          if (val == null || val.trim().length != 17) {
-                            return loc.translate('vehicle_vin_error');
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton.icon(
-                          key: const Key('btn_submit_add_vehicle'),
-                          onPressed: vm.isRegisteringVehicle
-                              ? null
-                              : () async {
-                                  if (!formKey.currentState!.validate()) return;
-                                  final vehicle = await vm.addVehicle(
-                                    plateNumber: plateCtrl.text,
-                                    brand: brandCtrl.text,
-                                    model: modelCtrl.text,
-                                    year: int.parse(yearCtrl.text.trim()),
-                                    vin: vinCtrl.text,
-                                  );
-                                  if (!sheetContext.mounted) return;
-                                  if (vehicle != null) {
-                                    Navigator.of(sheetContext).pop(vehicle);
-                                  } else if (vm.error != null) {
-                                    ShiftIQToast.show(
-                                      sheetContext,
-                                      message: vm.error!,
-                                      type: ShiftIQToastType.error,
-                                    );
-                                  }
-                                },
-                          icon: vm.isRegisteringVehicle
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Icon(Icons.check_circle_outline),
-                          label: Text(
-                            loc.translate('vehicle_save_btn'),
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: ShiftIQColors.primaryBlue,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
+      builder: (sheetContext) => _AddVehicleSheet(vm: vm),
     );
-
-    plateCtrl.dispose();
-    brandCtrl.dispose();
-    modelCtrl.dispose();
-    yearCtrl.dispose();
-    vinCtrl.dispose();
 
     if (created != null && context.mounted) {
       ShiftIQToast.show(
@@ -1637,6 +1429,237 @@ class _CustomerWorkOrderCard extends StatelessWidget {
             ],
           ),
         ),
+    );
+  }
+}
+
+class _AddVehicleSheet extends StatefulWidget {
+  final CustomerHomeViewModel vm;
+
+  const _AddVehicleSheet({required this.vm});
+
+  @override
+  State<_AddVehicleSheet> createState() => _AddVehicleSheetState();
+}
+
+class _AddVehicleSheetState extends State<_AddVehicleSheet> {
+  final _formKey = GlobalKey<FormState>();
+  final _plateCtrl = TextEditingController();
+  final _brandCtrl = TextEditingController();
+  final _modelCtrl = TextEditingController();
+  late final TextEditingController _yearCtrl;
+  final _vinCtrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _yearCtrl = TextEditingController(text: '${DateTime.now().year}');
+  }
+
+  @override
+  void dispose() {
+    _plateCtrl.dispose();
+    _brandCtrl.dispose();
+    _modelCtrl.dispose();
+    _yearCtrl.dispose();
+    _vinCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+    final vm = widget.vm;
+
+    return ListenableBuilder(
+      listenable: vm,
+      builder: (context, _) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        loc.translate('add_vehicle_title'),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: ShiftIQColors.graphiteText,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.of(context).pop(null),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: TextFormField(
+                          key: const Key('field_vehicle_plate'),
+                          controller: _plateCtrl,
+                          textCapitalization: TextCapitalization.characters,
+                          decoration: InputDecoration(
+                            labelText: loc.translate('vehicle_plate_label'),
+                            hintText: 'ABC-123',
+                            prefixIcon: const Icon(Icons.badge_outlined),
+                          ),
+                          validator: (val) => val == null || val.trim().isEmpty
+                              ? loc.translate('plate_required')
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 1,
+                        child: TextFormField(
+                          key: const Key('field_vehicle_year'),
+                          controller: _yearCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: loc.translate('vehicle_year_label'),
+                          ),
+                          validator: (val) {
+                            final y = int.tryParse((val ?? '').trim());
+                            if (y == null ||
+                                y < 1900 ||
+                                y > DateTime.now().year + 1) {
+                              return loc.translate('vehicle_year_error');
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          key: const Key('field_vehicle_brand'),
+                          controller: _brandCtrl,
+                          textCapitalization: TextCapitalization.words,
+                          decoration: InputDecoration(
+                            labelText: loc.translate('vehicle_brand_label'),
+                            hintText: 'Toyota',
+                            prefixIcon:
+                                const Icon(Icons.directions_car_outlined),
+                          ),
+                          validator: (val) => val == null || val.trim().isEmpty
+                              ? loc.translate('vehicle_brand_label')
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextFormField(
+                          key: const Key('field_vehicle_model'),
+                          controller: _modelCtrl,
+                          textCapitalization: TextCapitalization.words,
+                          decoration: InputDecoration(
+                            labelText: loc.translate('vehicle_model_label'),
+                            hintText: 'Corolla',
+                          ),
+                          validator: (val) => val == null || val.trim().isEmpty
+                              ? loc.translate('vehicle_model_label')
+                              : null,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    key: const Key('field_vehicle_vin'),
+                    controller: _vinCtrl,
+                    textCapitalization: TextCapitalization.characters,
+                    maxLength: 17,
+                    decoration: InputDecoration(
+                      labelText: loc.translate('vehicle_vin_label'),
+                      hintText: '9BRBL3HE2P0123456',
+                      prefixIcon: const Icon(Icons.qr_code_2_rounded),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.trim().length != 17) {
+                        return loc.translate('vehicle_vin_error');
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      key: const Key('btn_submit_add_vehicle'),
+                      onPressed: vm.isRegisteringVehicle
+                          ? null
+                          : () async {
+                              if (!_formKey.currentState!.validate()) return;
+                              final vehicle = await vm.addVehicle(
+                                plateNumber: _plateCtrl.text,
+                                brand: _brandCtrl.text,
+                                model: _modelCtrl.text,
+                                year: int.parse(_yearCtrl.text.trim()),
+                                vin: _vinCtrl.text,
+                              );
+                              if (!context.mounted) return;
+                              if (vehicle != null) {
+                                Navigator.of(context).pop(vehicle);
+                              } else if (vm.error != null) {
+                                ShiftIQToast.show(
+                                  context,
+                                  message: vm.error!,
+                                  type: ShiftIQToastType.error,
+                                );
+                              }
+                            },
+                      icon: vm.isRegisteringVehicle
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.check_circle_outline),
+                      label: Text(
+                        loc.translate('vehicle_save_btn'),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: ShiftIQColors.primaryBlue,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
