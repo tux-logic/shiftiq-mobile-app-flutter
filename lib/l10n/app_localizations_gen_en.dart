@@ -381,7 +381,7 @@ class AppLocalizationsGenEn extends AppLocalizationsGen {
   String get valuation => 'VALUATION';
 
   @override
-  String get add_batch_btn => '+ Batch';
+  String get add_batch_btn => 'Batch';
 
   @override
   String get batch_entry => 'Enter Batch';

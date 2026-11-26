@@ -122,7 +122,7 @@
   "sale_price": "SELLING PRICE",
   "cost_price": "COST PRICE",
   "valuation": "VALUATION",
-  "add_batch_btn": "+ Batch",
+  "add_batch_btn": "Batch",
   "batch_entry": "Enter Batch",
   "new_product": "New Spare Part",
   "register_new_product": "Register New Spare Part",

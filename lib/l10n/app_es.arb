@@ -122,7 +122,7 @@
   "sale_price": "PRECIO VENTA",
   "cost_price": "COSTO COMPRA",
   "valuation": "VALUACIÓN",
-  "add_batch_btn": "+ Lote",
+  "add_batch_btn": "Lote",
   "batch_entry": "Ingresar Lote",
   "new_product": "Nuevo Repuesto",
   "register_new_product": "Registrar Nuevo Repuesto",

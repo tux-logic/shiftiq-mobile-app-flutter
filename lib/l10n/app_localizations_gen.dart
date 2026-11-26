@@ -833,7 +833,7 @@ abstract class AppLocalizationsGen {
   /// No description provided for @add_batch_btn.
   ///
   /// In es, this message translates to:
-  /// **'+ Lote'**
+  /// **'Lote'**
   String get add_batch_btn;
 
   /// No description provided for @batch_entry.
