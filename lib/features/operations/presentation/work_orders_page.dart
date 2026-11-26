@@ -170,20 +170,18 @@ class _WorkOrdersPageState extends State<WorkOrdersPage>
             ],
           ),
           ),
-          floatingActionButton: ListenableBuilder(
-            listenable: _viewModel,
-            builder: (context, _) {
-              final visible = ShiftIQActiveTabScope.isTabActive(context, 1) &&
+          floatingActionButton: (ShiftIQActiveTabScope.isTabActive(context, 1) &&
                   _canCreateWorkOrder &&
-                  _viewModel.ordersForStatus(_viewModel.statusFilter).isNotEmpty;
-              return ShiftIQAnimatedFloatingPill(
-                visible: visible,
-                label: 'Nueva OT',
-                icon: Icons.add_rounded,
-                onPressed: () => _openCreateWorkOrder(vm),
-              );
-            },
-          ),
+                  _viewModel.ordersForStatus(_viewModel.statusFilter).isNotEmpty)
+              ? Padding(
+                  padding: const EdgeInsets.only(bottom: 84),
+                  child: ShiftIQPrimaryPillButton(
+                    label: 'Nueva OT',
+                    icon: Icons.add_rounded,
+                    onPressed: () => _openCreateWorkOrder(vm),
+                  ),
+                )
+              : null,
         );
       },
     );

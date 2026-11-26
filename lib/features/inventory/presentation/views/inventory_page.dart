@@ -398,19 +398,17 @@ class _InventoryPageState extends State<InventoryPage>
         },
       ),
       ),
-      floatingActionButton: ListenableBuilder(
-        listenable: _viewModel,
-        builder: (context, _) {
-          final visible = ShiftIQActiveTabScope.isTabActive(context, 3) &&
-              _viewModel.products.isNotEmpty;
-          return ShiftIQAnimatedFloatingPill(
-            visible: visible,
-            label: loc.translate('new_product'),
-            icon: Icons.add_rounded,
-            onPressed: _openCreateProduct,
-          );
-        },
-      ),
+      floatingActionButton: (ShiftIQActiveTabScope.isTabActive(context, 3) &&
+              _viewModel.products.isNotEmpty)
+          ? Padding(
+              padding: const EdgeInsets.only(bottom: 84),
+              child: ShiftIQPrimaryPillButton(
+                label: loc.translate('new_product'),
+                icon: Icons.add_rounded,
+                onPressed: _openCreateProduct,
+              ),
+            )
+          : null,
     );
   }
 

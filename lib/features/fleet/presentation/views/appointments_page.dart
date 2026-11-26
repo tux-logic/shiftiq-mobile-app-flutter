@@ -233,19 +233,17 @@ class _AppointmentsPageState extends State<AppointmentsPage>
         },
       ),
       ),
-      floatingActionButton: ListenableBuilder(
-        listenable: _viewModel,
-        builder: (context, _) {
-          final visible = ShiftIQActiveTabScope.isTabActive(context, 2) &&
-              _viewModel.appointments.isNotEmpty;
-          return ShiftIQAnimatedFloatingPill(
-            visible: visible,
-            label: loc.translate('new_appointment'),
-            icon: Icons.add_rounded,
-            onPressed: _openCreateAppointment,
-          );
-        },
-      ),
+      floatingActionButton: (ShiftIQActiveTabScope.isTabActive(context, 2) &&
+              _viewModel.appointments.isNotEmpty)
+          ? Padding(
+              padding: const EdgeInsets.only(bottom: 84),
+              child: ShiftIQPrimaryPillButton(
+                label: loc.translate('new_appointment'),
+                icon: Icons.add_rounded,
+                onPressed: _openCreateAppointment,
+              ),
+            )
+          : null,
     );
   }
 
