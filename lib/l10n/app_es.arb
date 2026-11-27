@@ -373,5 +373,11 @@
   "customer_add_vehicle_first": "Registra primero un vehículo en la pestaña Vehículos para agendar una cita.",
   "vehicle_pick_photo_gallery": "Galería",
   "vehicle_pick_photo_camera": "Cámara",
-  "customer_appointments_header_sub": "Agenda y consulta tus próximas visitas"
+  "customer_appointments_header_sub": "Agenda y consulta tus próximas visitas",
+  "customer_tomorrow": "Mañana",
+  "customer_other_date": "Otra fecha",
+  "customer_other_time": "Otra hora",
+  "customer_reason_maintenance": "Mantenimiento preventivo",
+  "customer_reason_brakes": "Revisión de frenos",
+  "customer_reason_obd2": "Diagnóstico OBD-II"
 }

@@ -150,63 +150,69 @@ class CustomerWorkshopCard extends StatelessWidget {
                     text: branch.phone,
                   ),
                 ],
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: (branch.freeBaysToday > 0
-                                  ? ShiftIQColors.preventiveGreen
-                                  : const Color(0xFF64748B))
-                              .withAlpha(22),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          '${branch.freeBaysToday}/${branch.activeBaysCount} ${loc.translate('customer_free_bays_today')}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                            color: branch.freeBaysToday > 0
-                                ? ShiftIQColors.preventiveGreen
-                                : const Color(0xFF475569),
+                if (branch.activeBaysCount > 0 || onScheduleTap != null) ...[
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (branch.activeBaysCount > 0)
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: (branch.freeBaysToday > 0
+                                      ? ShiftIQColors.preventiveGreen
+                                      : const Color(0xFF64748B))
+                                  .withAlpha(22),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              '${branch.freeBaysToday}/${branch.activeBaysCount} ${loc.translate('customer_free_bays_today')}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                color: branch.freeBaysToday > 0
+                                    ? ShiftIQColors.preventiveGreen
+                                    : const Color(0xFF475569),
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        const SizedBox.shrink(),
+                      if (branch.activeBaysCount > 0 && onScheduleTap != null)
+                        const SizedBox(width: 8),
+                      if (onScheduleTap != null)
+                        FilledButton.icon(
+                          key: Key('btn_schedule_branch_${branch.branchId}'),
+                          onPressed: onScheduleTap,
+                          icon: const Icon(Icons.calendar_today_rounded, size: 14),
+                          label: Text(loc.translate('customer_schedule_appointment')),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFF0F172A),
+                            foregroundColor: Colors.white,
+                            minimumSize: Size.zero,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            textStyle: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    if (onScheduleTap != null)
-                      FilledButton.icon(
-                        key: Key('btn_schedule_branch_${branch.branchId}'),
-                        onPressed: onScheduleTap,
-                        icon: const Icon(Icons.calendar_today_rounded, size: 14),
-                        label: Text(loc.translate('customer_schedule_appointment')),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF0F172A),
-                          foregroundColor: Colors.white,
-                          minimumSize: Size.zero,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          textStyle: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
@@ -464,100 +470,225 @@ class _ScheduleAppointmentSheetContentState
                 ),
               ),
               const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                key: const Key('dropdown_appointment_branch'),
-                initialValue: _selectedBranchId,
-                isExpanded: true,
-                decoration: InputDecoration(
-                  labelText: loc.translate('customer_select_branch'),
-                  prefixIcon: const Icon(Icons.storefront_outlined),
-                ),
-                items: vm.branches
-                    .map(
-                      (b) => DropdownMenuItem<String>(
-                        value: b.branchId,
-                        child: Text(
-                          '${b.displayTitle} · ${b.branchName}',
-                          overflow: TextOverflow.ellipsis,
+              _SheetSectionLabel(text: loc.translate('customer_select_branch')),
+              const SizedBox(height: 8),
+              if (vm.branches.length == 1)
+                _SelectableBranchTile(
+                  branch: vm.branches.first,
+                  selected: true,
+                  onTap: () {},
+                )
+              else
+                SizedBox(
+                  height: 88,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: vm.branches.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 10),
+                    itemBuilder: (context, index) {
+                      final branch = vm.branches[index];
+                      return SizedBox(
+                        width: 248,
+                        child: _SelectableBranchTile(
+                          branch: branch,
+                          selected: branch.branchId == _selectedBranchId,
+                          onTap: () => setState(
+                            () => _selectedBranchId = branch.branchId,
+                          ),
                         ),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (val) {
-                  if (val != null) {
-                    setState(() => _selectedBranchId = val);
-                  }
-                },
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                key: const Key('dropdown_appointment_vehicle'),
-                initialValue: _selectedVehicleId,
-                isExpanded: true,
-                decoration: InputDecoration(
-                  labelText: loc.translate('customer_select_vehicle'),
-                  prefixIcon: const Icon(Icons.directions_car_outlined),
-                ),
-                items: vm.vehicles
-                    .map(
-                      (v) => DropdownMenuItem<String>(
-                        value: v.id,
-                        child: Text(
-                          '${v.displayName} (${v.plateNumber})',
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (val) {
-                  if (val != null) {
-                    setState(() => _selectedVehicleId = val);
-                  }
-                },
-              ),
-              const SizedBox(height: 12),
-              InkWell(
-                key: const Key('btn_pick_appointment_datetime'),
-                borderRadius: BorderRadius.circular(12),
-                onTap: () async {
-                  final pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: _selectedDateTime,
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime.now().add(const Duration(days: 90)),
-                  );
-                  if (pickedDate == null || !context.mounted) return;
-                  final pickedTime = await showTimePicker(
-                    context: context,
-                    initialTime: TimeOfDay.fromDateTime(_selectedDateTime),
-                  );
-                  if (pickedTime == null || !context.mounted) return;
-                  setState(() {
-                    _selectedDateTime = DateTime(
-                      pickedDate.year,
-                      pickedDate.month,
-                      pickedDate.day,
-                      pickedTime.hour,
-                      pickedTime.minute,
-                    );
-                  });
-                },
-                child: InputDecorator(
-                  decoration: InputDecoration(
-                    labelText: loc.translate('customer_appointment_date_time'),
-                    prefixIcon: const Icon(Icons.schedule_rounded),
+                      );
+                    },
                   ),
-                  child: Text(
-                    dateLabel,
-                    style: const TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w600,
-                      color: ShiftIQColors.graphiteText,
+                ),
+              const SizedBox(height: 16),
+              _SheetSectionLabel(text: loc.translate('customer_select_vehicle')),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 80,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: vm.vehicles.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 10),
+                  itemBuilder: (context, index) {
+                    final vehicle = vm.vehicles[index];
+                    return SizedBox(
+                      width: vm.vehicles.length == 1 ? 290 : 228,
+                      child: _SelectableVehicleTile(
+                        vehicle: vehicle,
+                        selected: vehicle.id == _selectedVehicleId,
+                        onTap: () =>
+                            setState(() => _selectedVehicleId = vehicle.id),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: _SheetSectionLabel(
+                      text: loc.translate('customer_appointment_date_time'),
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 9,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ShiftIQColors.primaryBlue.withAlpha(18),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      dateLabel,
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: ShiftIQColors.primaryBlue,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (var offset = 1; offset <= 4; offset++) ...[
+                      Builder(
+                        builder: (context) {
+                          final now = DateTime.now();
+                          final day = DateTime(now.year, now.month, now.day + offset);
+                          final isSelected =
+                              _selectedDateTime.year == day.year &&
+                                  _selectedDateTime.month == day.month &&
+                                  _selectedDateTime.day == day.day;
+                          final label = offset == 1
+                              ? loc.translate('customer_tomorrow')
+                              : '${day.day.toString().padLeft(2, '0')}/${day.month.toString().padLeft(2, '0')}';
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ChoiceChip(
+                              label: Text(label),
+                              selected: isSelected,
+                              onSelected: (_) {
+                                setState(() {
+                                  _selectedDateTime = DateTime(
+                                    day.year,
+                                    day.month,
+                                    day.day,
+                                    _selectedDateTime.hour,
+                                    _selectedDateTime.minute,
+                                  );
+                                });
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                    ActionChip(
+                      key: const Key('btn_pick_appointment_datetime'),
+                      avatar: const Icon(Icons.calendar_month_rounded, size: 16),
+                      label: Text(loc.translate('customer_other_date')),
+                      onPressed: () async {
+                        final pickedDate = await showDatePicker(
+                          context: context,
+                          initialDate: _selectedDateTime,
+                          firstDate: DateTime.now(),
+                          lastDate:
+                              DateTime.now().add(const Duration(days: 90)),
+                        );
+                        if (pickedDate == null || !context.mounted) return;
+                        setState(() {
+                          _selectedDateTime = DateTime(
+                            pickedDate.year,
+                            pickedDate.month,
+                            pickedDate.day,
+                            _selectedDateTime.hour,
+                            _selectedDateTime.minute,
+                          );
+                        });
+                      },
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (final slot in const [(9, 0), (10, 30), (12, 0), (14, 30), (16, 0)])
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text(
+                            '${slot.$1.toString().padLeft(2, '0')}:${slot.$2.toString().padLeft(2, '0')}',
+                          ),
+                          selected: _selectedDateTime.hour == slot.$1 &&
+                              _selectedDateTime.minute == slot.$2,
+                          onSelected: (_) {
+                            setState(() {
+                              _selectedDateTime = DateTime(
+                                _selectedDateTime.year,
+                                _selectedDateTime.month,
+                                _selectedDateTime.day,
+                                slot.$1,
+                                slot.$2,
+                              );
+                            });
+                          },
+                        ),
+                      ),
+                    ActionChip(
+                      key: const Key('btn_pick_appointment_time'),
+                      avatar: const Icon(Icons.schedule_rounded, size: 16),
+                      label: Text(loc.translate('customer_other_time')),
+                      onPressed: () async {
+                        final pickedTime = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.fromDateTime(_selectedDateTime),
+                        );
+                        if (pickedTime == null || !context.mounted) return;
+                        setState(() {
+                          _selectedDateTime = DateTime(
+                            _selectedDateTime.year,
+                            _selectedDateTime.month,
+                            _selectedDateTime.day,
+                            pickedTime.hour,
+                            pickedTime.minute,
+                          );
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                children: [
+                  for (final preset in [
+                    loc.translate('customer_reason_maintenance'),
+                    loc.translate('customer_reason_brakes'),
+                    loc.translate('customer_reason_obd2'),
+                  ])
+                    ActionChip(
+                      label: Text(
+                        preset,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      onPressed: () => setState(() => _notesCtrl.text = preset),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 10),
               TextField(
                 key: const Key('field_appointment_notes'),
                 controller: _notesCtrl,
@@ -640,6 +771,234 @@ class _ScheduleAppointmentSheetContentState
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+
+class _SheetSectionLabel extends StatelessWidget {
+  final String text;
+
+  const _SheetSectionLabel({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(
+        fontSize: 12.5,
+        fontWeight: FontWeight.w800,
+        color: Color(0xFF475569),
+      ),
+    );
+  }
+}
+
+class _SelectableBranchTile extends StatelessWidget {
+  final CustomerBranchCatalogItem branch;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _SelectableBranchTile({
+    required this.branch,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      key: Key('branch_option_${branch.branchId}'),
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: selected
+              ? ShiftIQColors.primaryBlue.withAlpha(14)
+              : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: selected
+                ? ShiftIQColors.primaryBlue
+                : ShiftIQColors.borderSlate,
+            width: selected ? 1.6 : 1.0,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: selected
+                    ? ShiftIQColors.primaryBlue.withAlpha(24)
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                Icons.store_mall_directory_rounded,
+                size: 20,
+                color: selected
+                    ? ShiftIQColors.primaryBlue
+                    : const Color(0xFF64748B),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    branch.displayTitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w800,
+                      color: ShiftIQColors.graphiteText,
+                    ),
+                  ),
+                  Text(
+                    branch.branchName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF475569),
+                    ),
+                  ),
+                  if (branch.address.isNotEmpty)
+                    Text(
+                      branch.address,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (selected)
+              const Icon(
+                Icons.check_circle_rounded,
+                size: 20,
+                color: ShiftIQColors.primaryBlue,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SelectableVehicleTile extends StatelessWidget {
+  final Vehicle vehicle;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _SelectableVehicleTile({
+    required this.vehicle,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasPhoto =
+        vehicle.photoUrl != null && vehicle.photoUrl!.isNotEmpty;
+
+    return InkWell(
+      key: Key('vehicle_option_${vehicle.id}'),
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: selected
+              ? ShiftIQColors.primaryBlue.withAlpha(14)
+              : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: selected
+                ? ShiftIQColors.primaryBlue
+                : ShiftIQColors.borderSlate,
+            width: selected ? 1.6 : 1.0,
+          ),
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: SizedBox(
+                width: 48,
+                height: 48,
+                child: hasPhoto
+                    ? Image.network(
+                        vehicle.photoUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) =>
+                            const ShiftIQNavyBannerFallback(
+                          watermarkIcon: Icons.directions_car_filled_rounded,
+                        ),
+                      )
+                    : const ShiftIQNavyBannerFallback(
+                        watermarkIcon: Icons.directions_car_filled_rounded,
+                      ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    vehicle.displayName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: ShiftIQColors.graphiteText,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A).withAlpha(16),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      vehicle.plateNumber,
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        color: ShiftIQColors.graphiteText,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (selected)
+              const Icon(
+                Icons.check_circle_rounded,
+                size: 18,
+                color: ShiftIQColors.primaryBlue,
+              ),
+          ],
         ),
       ),
     );

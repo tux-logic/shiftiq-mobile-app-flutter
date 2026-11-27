@@ -2341,6 +2341,42 @@ abstract class AppLocalizationsGen {
   /// In es, this message translates to:
   /// **'Agenda y consulta tus próximas visitas'**
   String get customer_appointments_header_sub;
+
+  /// No description provided for @customer_tomorrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Mañana'**
+  String get customer_tomorrow;
+
+  /// No description provided for @customer_other_date.
+  ///
+  /// In es, this message translates to:
+  /// **'Otra fecha'**
+  String get customer_other_date;
+
+  /// No description provided for @customer_other_time.
+  ///
+  /// In es, this message translates to:
+  /// **'Otra hora'**
+  String get customer_other_time;
+
+  /// No description provided for @customer_reason_maintenance.
+  ///
+  /// In es, this message translates to:
+  /// **'Mantenimiento preventivo'**
+  String get customer_reason_maintenance;
+
+  /// No description provided for @customer_reason_brakes.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisión de frenos'**
+  String get customer_reason_brakes;
+
+  /// No description provided for @customer_reason_obd2.
+  ///
+  /// In es, this message translates to:
+  /// **'Diagnóstico OBD-II'**
+  String get customer_reason_obd2;
 }
 
 class _AppLocalizationsGenDelegate

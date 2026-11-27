@@ -1165,4 +1165,22 @@ class AppLocalizationsGenEs extends AppLocalizationsGen {
   @override
   String get customer_appointments_header_sub =>
       'Agenda y consulta tus próximas visitas';
+
+  @override
+  String get customer_tomorrow => 'Mañana';
+
+  @override
+  String get customer_other_date => 'Otra fecha';
+
+  @override
+  String get customer_other_time => 'Otra hora';
+
+  @override
+  String get customer_reason_maintenance => 'Mantenimiento preventivo';
+
+  @override
+  String get customer_reason_brakes => 'Revisión de frenos';
+
+  @override
+  String get customer_reason_obd2 => 'Diagnóstico OBD-II';
 }

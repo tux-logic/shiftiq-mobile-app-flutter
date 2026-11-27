@@ -440,6 +440,12 @@ class AppLocalizations {
       'vehicle_pick_photo_gallery': 'Galería',
       'vehicle_pick_photo_camera': 'Cámara',
       'customer_appointments_header_sub': 'Agenda y consulta tus próximas visitas',
+      'customer_tomorrow': 'Mañana',
+      'customer_other_date': 'Otra fecha',
+      'customer_other_time': 'Otra hora',
+      'customer_reason_maintenance': 'Mantenimiento preventivo',
+      'customer_reason_brakes': 'Revisión de frenos',
+      'customer_reason_obd2': 'Diagnóstico OBD-II',
     },
     'en': {
       // General
@@ -841,6 +847,12 @@ class AppLocalizations {
       'vehicle_pick_photo_gallery': 'Gallery',
       'vehicle_pick_photo_camera': 'Camera',
       'customer_appointments_header_sub': 'Book and track your upcoming visits',
+      'customer_tomorrow': 'Tomorrow',
+      'customer_other_date': 'Other date',
+      'customer_other_time': 'Other time',
+      'customer_reason_maintenance': 'Preventive maintenance',
+      'customer_reason_brakes': 'Brake inspection',
+      'customer_reason_obd2': 'OBD-II diagnostic',
     },
   };
 
