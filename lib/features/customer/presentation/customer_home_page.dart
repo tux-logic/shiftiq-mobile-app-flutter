@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
@@ -7,6 +8,7 @@ import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_floating_nav_bar.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_navy_banner_fallback.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
@@ -972,9 +974,9 @@ class _CustomerVehicleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final activeAlerts =
         alerts.where((a) => a.status != DtcStatus.resolved).toList();
+    final hasPhoto = vehicle.photoUrl != null && vehicle.photoUrl!.isNotEmpty;
 
     return Container(
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
@@ -983,68 +985,150 @@ class _CustomerVehicleCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: ShiftIQColors.primaryBlue.withAlpha(18),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.directions_car_filled_rounded,
-                  color: ShiftIQColors.primaryBlue,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      vehicle.displayName,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: ShiftIQColors.graphiteText,
+          ClipRRect(
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(17)),
+            child: SizedBox(
+              height: 116,
+              width: double.infinity,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (hasPhoto)
+                    Image.network(
+                      vehicle.photoUrl!,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, progress) {
+                        if (progress == null) return child;
+                        return const ShiftIQNavyBannerFallback(
+                          watermarkIcon: Icons.directions_car_filled_rounded,
+                        );
+                      },
+                      errorBuilder: (_, _, _) =>
+                          const ShiftIQNavyBannerFallback(
+                        watermarkIcon: Icons.directions_car_filled_rounded,
+                      ),
+                    )
+                  else
+                    const ShiftIQNavyBannerFallback(
+                      watermarkIcon: Icons.directions_car_filled_rounded,
+                    ),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          const Color(0xFF0F172A).withValues(alpha: 0.22),
+                          const Color(0xFF0F172A).withValues(alpha: 0.58),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Placa ${vehicle.plateNumber} · VIN ${vehicle.vin.isNotEmpty ? vehicle.vin : "-"}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF64748B),
+                  ),
+                  Positioned(
+                    top: 10,
+                    left: 12,
+                    right: 12,
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFF0F172A).withValues(alpha: 0.72),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.25),
+                            ),
+                          ),
+                          child: Text(
+                            vehicle.plateNumber,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: 0.4,
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.92),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            activeAlerts.isEmpty
+                                ? 'Sin alertas'
+                                : '${activeAlerts.length} DTC',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: activeAlerts.isEmpty
+                                  ? ShiftIQColors.preventiveGreen
+                                  : ShiftIQColors.severityCrimson,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: ShiftIQColors.primaryBlue.withAlpha(18),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.directions_car_filled_rounded,
+                        color: ShiftIQColors.primaryBlue,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            vehicle.displayName,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              color: ShiftIQColors.graphiteText,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Placa ${vehicle.plateNumber} · VIN ${vehicle.vin.isNotEmpty ? vehicle.vin : "-"}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: (activeAlerts.isEmpty
-                          ? ShiftIQColors.preventiveGreen
-                          : ShiftIQColors.severityCrimson)
-                      .withAlpha(22),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  activeAlerts.isEmpty
-                      ? 'Sin alertas'
-                      : '${activeAlerts.length} DTC',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: activeAlerts.isEmpty
-                        ? ShiftIQColors.preventiveGreen
-                        : ShiftIQColors.severityCrimson,
-                  ),
-                ),
-              ),
-            ],
-          ),
           if (activeAlerts.isNotEmpty) ...[
             const SizedBox(height: 12),
             Wrap(
@@ -1084,6 +1168,9 @@ class _CustomerVehicleCard extends StatelessWidget {
             icon: Icons.sensors_rounded,
             label: 'Ver sensores OBD-II',
             onPressed: onOpenObd2,
+          ),
+              ],
+            ),
           ),
         ],
       ),
@@ -1557,6 +1644,33 @@ class _AddVehicleSheetState extends State<_AddVehicleSheet> {
   final _modelCtrl = TextEditingController();
   late final TextEditingController _yearCtrl;
   final _vinCtrl = TextEditingController();
+  final _picker = ImagePicker();
+  Uint8List? _selectedPhotoBytes;
+  String? _selectedPhotoName;
+
+  Future<void> _pickPhoto(ImageSource source) async {
+    try {
+      final file = await _picker.pickImage(
+        source: source,
+        imageQuality: 80,
+        maxWidth: 1280,
+      );
+      if (file == null || !mounted) return;
+      final bytes = await file.readAsBytes();
+      if (!mounted) return;
+      setState(() {
+        _selectedPhotoBytes = bytes;
+        _selectedPhotoName = file.name.isNotEmpty ? file.name : 'vehicle.jpg';
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ShiftIQToast.show(
+        context,
+        message: 'No se pudo seleccionar la imagen: $e',
+        type: ShiftIQToastType.error,
+      );
+    }
+  }
 
   @override
   void initState() {
@@ -1612,6 +1726,86 @@ class _AddVehicleSheetState extends State<_AddVehicleSheet> {
                         onPressed: () => Navigator.of(context).pop(null),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: SizedBox(
+                      height: 120,
+                      width: double.infinity,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          if (_selectedPhotoBytes != null)
+                            Image.memory(
+                              _selectedPhotoBytes!,
+                              fit: BoxFit.cover,
+                            )
+                          else
+                            const ShiftIQNavyBannerFallback(
+                              watermarkIcon:
+                                  Icons.directions_car_filled_rounded,
+                            ),
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A)
+                                  .withValues(alpha: 0.35),
+                            ),
+                          ),
+                          Center(
+                            child: Wrap(
+                              spacing: 8,
+                              children: [
+                                OutlinedButton.icon(
+                                  key: const Key('btn_vehicle_photo_gallery'),
+                                  onPressed: vm.isUploadingVehiclePhoto
+                                      ? null
+                                      : () => _pickPhoto(ImageSource.gallery),
+                                  icon: const Icon(
+                                    Icons.photo_library_outlined,
+                                    size: 16,
+                                  ),
+                                  label: Text(
+                                    loc.translate('vehicle_pick_photo_gallery'),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    backgroundColor: const Color(0xFF0F172A)
+                                        .withValues(alpha: 0.55),
+                                    side: BorderSide(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.4),
+                                    ),
+                                  ),
+                                ),
+                                OutlinedButton.icon(
+                                  key: const Key('btn_vehicle_photo_camera'),
+                                  onPressed: vm.isUploadingVehiclePhoto
+                                      ? null
+                                      : () => _pickPhoto(ImageSource.camera),
+                                  icon: const Icon(
+                                    Icons.photo_camera_outlined,
+                                    size: 16,
+                                  ),
+                                  label: Text(
+                                    loc.translate('vehicle_pick_photo_camera'),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    backgroundColor: const Color(0xFF0F172A)
+                                        .withValues(alpha: 0.55),
+                                    side: BorderSide(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.4),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -1714,16 +1908,36 @@ class _AddVehicleSheetState extends State<_AddVehicleSheet> {
                     width: double.infinity,
                     child: FilledButton.icon(
                       key: const Key('btn_submit_add_vehicle'),
-                      onPressed: vm.isRegisteringVehicle
+                      onPressed: (vm.isRegisteringVehicle ||
+                              vm.isUploadingVehiclePhoto)
                           ? null
                           : () async {
                               if (!_formKey.currentState!.validate()) return;
+                              String? uploadedPhotoUrl;
+                              if (_selectedPhotoBytes != null &&
+                                  _selectedPhotoName != null) {
+                                uploadedPhotoUrl = await vm.uploadVehiclePhoto(
+                                  fileBytes: _selectedPhotoBytes!,
+                                  fileName: _selectedPhotoName!,
+                                );
+                                if (!context.mounted) return;
+                                if (uploadedPhotoUrl == null) {
+                                  ShiftIQToast.show(
+                                    context,
+                                    message: vm.error ??
+                                        'No se pudo subir la foto del vehículo',
+                                    type: ShiftIQToastType.error,
+                                  );
+                                  return;
+                                }
+                              }
                               final vehicle = await vm.addVehicle(
                                 plateNumber: _plateCtrl.text,
                                 brand: _brandCtrl.text,
                                 model: _modelCtrl.text,
                                 year: int.parse(_yearCtrl.text.trim()),
                                 vin: _vinCtrl.text,
+                                photoUrl: uploadedPhotoUrl,
                               );
                               if (!context.mounted) return;
                               if (vehicle != null) {
@@ -1736,7 +1950,8 @@ class _AddVehicleSheetState extends State<_AddVehicleSheet> {
                                 );
                               }
                             },
-                      icon: vm.isRegisteringVehicle
+                      icon: (vm.isRegisteringVehicle ||
+                              vm.isUploadingVehiclePhoto)
                           ? const SizedBox(
                               width: 16,
                               height: 16,

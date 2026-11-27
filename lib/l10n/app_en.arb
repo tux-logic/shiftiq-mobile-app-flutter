@@ -370,5 +370,7 @@
   "customer_appointment_notes_hint": "Notes or reason (optional)",
   "customer_appointment_created_success": "Appointment booked successfully",
   "customer_appointment_future_required": "Please select a future date and time",
-  "customer_add_vehicle_first": "Register a vehicle in the Vehicles tab first to book an appointment."
+  "customer_add_vehicle_first": "Register a vehicle in the Vehicles tab first to book an appointment.",
+  "vehicle_pick_photo_gallery": "Gallery",
+  "vehicle_pick_photo_camera": "Camera"
 }

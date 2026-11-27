@@ -437,6 +437,8 @@ class AppLocalizations {
       'customer_appointment_created_success': 'Cita agendada correctamente',
       'customer_appointment_future_required': 'Elige una fecha y hora futura',
       'customer_add_vehicle_first': 'Registra primero un vehículo en la pestaña Vehículos para agendar una cita.',
+      'vehicle_pick_photo_gallery': 'Galería',
+      'vehicle_pick_photo_camera': 'Cámara',
     },
     'en': {
       // General
@@ -835,6 +837,8 @@ class AppLocalizations {
       'customer_appointment_created_success': 'Appointment booked successfully',
       'customer_appointment_future_required': 'Please select a future date and time',
       'customer_add_vehicle_first': 'Register a vehicle in the Vehicles tab first to book an appointment.',
+      'vehicle_pick_photo_gallery': 'Gallery',
+      'vehicle_pick_photo_camera': 'Camera',
     },
   };
 

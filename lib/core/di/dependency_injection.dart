@@ -645,6 +645,7 @@ void setupDependencies() {
       getDtcAlerts: getIt<GetDtcAlerts>(),
       getBranchCatalog: getIt<GetCustomerBranchCatalogUseCase>(),
       createAppointment: getIt<CreateAppointmentUseCase>(),
+      manageMediaUploads: getIt<ManageMediaUploads>(),
     ),
   );
 }

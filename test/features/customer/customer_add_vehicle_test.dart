@@ -8,6 +8,7 @@ import 'package:http/testing.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/network/api_client.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_navy_banner_fallback.dart';
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/application/usecases/register_vehicle.dart';
@@ -83,6 +84,7 @@ void main() {
       model: 'Corolla Cross',
       year: 2023,
       vin: '9brbl3he2p0123456',
+      photoUrl: 'https://res.cloudinary.com/demo/vehicle.jpg',
     );
 
     expect(created, isNotNull);
@@ -90,6 +92,10 @@ void main() {
     expect(vm.vehicles.length, 1);
     expect(capturedBody?['plateNumber'], 'ABC-123');
     expect(capturedBody?['vin'], '9BRBL3HE2P0123456');
+    expect(
+      capturedBody?['photoUrl'],
+      'https://res.cloudinary.com/demo/vehicle.jpg',
+    );
   });
 
   testWidgets('CustomerHomePage allows customer to add a vehicle from My Vehicles tab', (tester) async {
@@ -150,7 +156,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(postedVehicle, isTrue);
-    expect(find.textContaining('XYZ-789'), findsOneWidget);
+    expect(find.textContaining('XYZ-789'), findsAtLeastNWidgets(1));
     expect(find.textContaining('Mazda CX-5'), findsOneWidget);
+    expect(find.byType(ShiftIQNavyBannerFallback), findsAtLeastNWidgets(1));
   });
 }

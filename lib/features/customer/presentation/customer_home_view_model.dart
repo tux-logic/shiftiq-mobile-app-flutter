@@ -15,6 +15,7 @@ import 'package:shiftiq_mobile_app_flutter/features/iot/application/usecases/reg
 import 'package:shiftiq_mobile_app_flutter/features/iot/domain/iot_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/application/usecases/manage_work_orders.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
+import 'package:shiftiq_mobile_app_flutter/features/shared/application/usecases/manage_media_uploads.dart';
 
 /// ViewModel managing the customer portal: executive summary (`GET /api/v1/analytics/me/customer-summary`),
 /// customer vehicles & OBD-II/DTC alerts, read-only work orders (`GET /api/v1/work-orders/me`),
@@ -30,6 +31,7 @@ class CustomerHomeViewModel extends ChangeNotifier {
   final GetDtcAlerts? getDtcAlerts;
   final GetCustomerBranchCatalogUseCase? getBranchCatalog;
   final CreateAppointmentUseCase? createAppointment;
+  final ManageMediaUploads? manageMediaUploads;
 
   CustomerHomeViewModel({
     required this.manageWorkOrders,
@@ -42,6 +44,7 @@ class CustomerHomeViewModel extends ChangeNotifier {
     this.getDtcAlerts,
     this.getBranchCatalog,
     this.createAppointment,
+    this.manageMediaUploads,
   });
 
   bool _isLoading = false;
@@ -58,6 +61,9 @@ class CustomerHomeViewModel extends ChangeNotifier {
 
   bool _isRegisteringVehicle = false;
   bool get isRegisteringVehicle => _isRegisteringVehicle;
+
+  bool _isUploadingVehiclePhoto = false;
+  bool get isUploadingVehiclePhoto => _isUploadingVehiclePhoto;
 
   bool _isSchedulingAppointment = false;
   bool get isSchedulingAppointment => _isSchedulingAppointment;
@@ -97,6 +103,37 @@ class CustomerHomeViewModel extends ChangeNotifier {
         .length;
   }
 
+  /// Uploads a customer vehicle photo via `POST /api/v1/media/upload`
+  /// using `folder=uploads` (permitted for `ROLE_CUSTOMER`).
+  Future<String?> uploadVehiclePhoto({
+    required List<int> fileBytes,
+    required String fileName,
+  }) async {
+    if (manageMediaUploads == null) {
+      _error = 'Media upload is unavailable in this session.';
+      notifyListeners();
+      return null;
+    }
+
+    _isUploadingVehiclePhoto = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final result = await manageMediaUploads!.uploadImage(
+        fileBytes: fileBytes,
+        fileName: fileName,
+      );
+      return result.url;
+    } catch (e) {
+      _error = e.toString().replaceFirst('Exception: ', '');
+      return null;
+    } finally {
+      _isUploadingVehiclePhoto = false;
+      notifyListeners();
+    }
+  }
+
   /// Registers a new vehicle for the authenticated customer via `POST /api/v1/vehicles`.
   Future<Vehicle?> addVehicle({
     required String plateNumber,
@@ -104,6 +141,7 @@ class CustomerHomeViewModel extends ChangeNotifier {
     required String model,
     required int year,
     required String vin,
+    String? photoUrl,
   }) async {
     if (registerVehicle == null) {
       _error = 'Vehicle registration is unavailable in this session.';
@@ -122,6 +160,7 @@ class CustomerHomeViewModel extends ChangeNotifier {
         model: model,
         year: year,
         vin: vin,
+        photoUrl: photoUrl,
       );
       _vehicles = [..._vehicles, created];
       return created;

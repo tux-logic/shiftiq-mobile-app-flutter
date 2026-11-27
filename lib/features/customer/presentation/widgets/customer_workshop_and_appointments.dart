@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_navy_banner_fallback.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_tactile_card.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_toast.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/analytics_domain.dart';
@@ -36,18 +37,26 @@ class CustomerWorkshopCard extends StatelessWidget {
         child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (hasCover)
-            ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(18)),
-              child: Image.network(
-                branch.coverImageUrl!,
-                height: 112,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => const SizedBox.shrink(),
-              ),
+          ClipRRect(
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(17)),
+            child: SizedBox(
+              height: 112,
+              width: double.infinity,
+              child: hasCover
+                  ? Image.network(
+                      branch.coverImageUrl!,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, progress) {
+                        if (progress == null) return child;
+                        return const ShiftIQNavyBannerFallback();
+                      },
+                      errorBuilder: (_, _, _) =>
+                          const ShiftIQNavyBannerFallback(),
+                    )
+                  : const ShiftIQNavyBannerFallback(),
             ),
+          ),
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(

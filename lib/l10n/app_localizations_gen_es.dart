@@ -1155,4 +1155,10 @@ class AppLocalizationsGenEs extends AppLocalizationsGen {
   @override
   String get customer_add_vehicle_first =>
       'Registra primero un vehículo en la pestaña Vehículos para agendar una cita.';
+
+  @override
+  String get vehicle_pick_photo_gallery => 'Galería';
+
+  @override
+  String get vehicle_pick_photo_camera => 'Cámara';
 }

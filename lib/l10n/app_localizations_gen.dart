@@ -2323,6 +2323,18 @@ abstract class AppLocalizationsGen {
   /// In es, this message translates to:
   /// **'Registra primero un vehículo en la pestaña Vehículos para agendar una cita.'**
   String get customer_add_vehicle_first;
+
+  /// No description provided for @vehicle_pick_photo_gallery.
+  ///
+  /// In es, this message translates to:
+  /// **'Galería'**
+  String get vehicle_pick_photo_gallery;
+
+  /// No description provided for @vehicle_pick_photo_camera.
+  ///
+  /// In es, this message translates to:
+  /// **'Cámara'**
+  String get vehicle_pick_photo_camera;
 }
 
 class _AppLocalizationsGenDelegate
