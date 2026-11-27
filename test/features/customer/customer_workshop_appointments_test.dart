@@ -9,6 +9,7 @@ import 'package:shiftiq_mobile_app_flutter/core/infrastructure/event/stream_doma
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/network/api_client.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
+import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_customer_summary.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/infrastructure/remote/analytics_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/infrastructure/repositories/analytics_repository_impl.dart';
@@ -448,6 +449,45 @@ void main() {
       expect(find.text('MI TALLER ASOCIADO'), findsOneWidget);
       expect(find.text('AT Motors Miraflores'), findsOneWidget);
       expect(find.text('3/4 bahías libres hoy'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'showTimePicker in manual keyboard input mode renders without BoxConstraints error under ShiftIQTheme',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: const MaterialTheme(TextTheme()).light(),
+          locale: const Locale('es'),
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('es'), Locale('en')],
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => Center(
+                child: ElevatedButton(
+                  key: const Key('btn_open_time_picker'),
+                  onPressed: () => showTimePicker(
+                    context: context,
+                    initialTime: const TimeOfDay(hour: 9, minute: 0),
+                    initialEntryMode: TimePickerEntryMode.input,
+                  ),
+                  child: const Text('Pick time'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.byKey(const Key('btn_open_time_picker')));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
     },
   );
 }

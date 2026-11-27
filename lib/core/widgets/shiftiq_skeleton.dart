@@ -132,6 +132,7 @@ class ShiftIQSkeletonCardList extends StatelessWidget {
     return ShiftIQSkeletonizer(
       enabled: true,
       child: ListView.separated(
+        shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         padding: padding,
         itemCount: itemCount,
