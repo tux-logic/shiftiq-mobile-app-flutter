@@ -438,8 +438,6 @@ class _ScheduleAppointmentSheetContentState
     final loc = AppLocalizations.of(context);
     final vm = widget.vm;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    final dateLabel =
-        '${_selectedDateTime.day.toString().padLeft(2, '0')}/${_selectedDateTime.month.toString().padLeft(2, '0')}/${_selectedDateTime.year} · ${_selectedDateTime.hour.toString().padLeft(2, '0')}:${_selectedDateTime.minute.toString().padLeft(2, '0')}';
 
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 20, 20, 24 + bottomInset),
@@ -524,78 +522,20 @@ class _ScheduleAppointmentSheetContentState
                 ),
               ),
               const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: _SheetSectionLabel(
-                      text: loc.translate('customer_appointment_date_time'),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 9,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: ShiftIQColors.primaryBlue.withAlpha(18),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      dateLabel,
-                      style: const TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                        color: ShiftIQColors.primaryBlue,
-                      ),
-                    ),
-                  ),
-                ],
+              _SheetSectionLabel(
+                text: loc.translate('customer_appointment_date_time'),
               ),
               const SizedBox(height: 8),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    for (var offset = 1; offset <= 4; offset++) ...[
-                      Builder(
-                        builder: (context) {
-                          final now = DateTime.now();
-                          final day = DateTime(now.year, now.month, now.day + offset);
-                          final isSelected =
-                              _selectedDateTime.year == day.year &&
-                                  _selectedDateTime.month == day.month &&
-                                  _selectedDateTime.day == day.day;
-                          final label = offset == 1
-                              ? loc.translate('customer_tomorrow')
-                              : '${day.day.toString().padLeft(2, '0')}/${day.month.toString().padLeft(2, '0')}';
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: ChoiceChip(
-                              label: Text(label),
-                              selected: isSelected,
-                              onSelected: (_) {
-                                setState(() {
-                                  _selectedDateTime = DateTime(
-                                    day.year,
-                                    day.month,
-                                    day.day,
-                                    _selectedDateTime.hour,
-                                    _selectedDateTime.minute,
-                                  );
-                                });
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                    ActionChip(
+              Row(
+                children: [
+                  Expanded(
+                    child: _DateTimeSelectorTile(
                       key: const Key('btn_pick_appointment_datetime'),
-                      avatar: const Icon(Icons.calendar_month_rounded, size: 16),
-                      label: Text(loc.translate('customer_other_date')),
-                      onPressed: () async {
+                      icon: Icons.calendar_today_rounded,
+                      label: 'Fecha',
+                      value:
+                          '${_selectedDateTime.day.toString().padLeft(2, '0')}/${_selectedDateTime.month.toString().padLeft(2, '0')}/${_selectedDateTime.year}',
+                      onTap: () async {
                         final pickedDate = await showDatePicker(
                           context: context,
                           initialDate: _selectedDateTime,
@@ -615,41 +555,16 @@ class _ScheduleAppointmentSheetContentState
                         });
                       },
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 8),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    for (final slot in const [(9, 0), (10, 30), (12, 0), (14, 30), (16, 0)])
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: ChoiceChip(
-                          label: Text(
-                            '${slot.$1.toString().padLeft(2, '0')}:${slot.$2.toString().padLeft(2, '0')}',
-                          ),
-                          selected: _selectedDateTime.hour == slot.$1 &&
-                              _selectedDateTime.minute == slot.$2,
-                          onSelected: (_) {
-                            setState(() {
-                              _selectedDateTime = DateTime(
-                                _selectedDateTime.year,
-                                _selectedDateTime.month,
-                                _selectedDateTime.day,
-                                slot.$1,
-                                slot.$2,
-                              );
-                            });
-                          },
-                        ),
-                      ),
-                    ActionChip(
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _DateTimeSelectorTile(
                       key: const Key('btn_pick_appointment_time'),
-                      avatar: const Icon(Icons.schedule_rounded, size: 16),
-                      label: Text(loc.translate('customer_other_time')),
-                      onPressed: () async {
+                      icon: Icons.schedule_rounded,
+                      label: 'Hora',
+                      value:
+                          '${_selectedDateTime.hour.toString().padLeft(2, '0')}:${_selectedDateTime.minute.toString().padLeft(2, '0')}',
+                      onTap: () async {
                         final pickedTime = await showTimePicker(
                           context: context,
                           initialTime: TimeOfDay.fromDateTime(_selectedDateTime),
@@ -666,29 +581,10 @@ class _ScheduleAppointmentSheetContentState
                         });
                       },
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 14),
-              Wrap(
-                spacing: 8,
-                runSpacing: 6,
-                children: [
-                  for (final preset in [
-                    loc.translate('customer_reason_maintenance'),
-                    loc.translate('customer_reason_brakes'),
-                    loc.translate('customer_reason_obd2'),
-                  ])
-                    ActionChip(
-                      label: Text(
-                        preset,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      onPressed: () => setState(() => _notesCtrl.text = preset),
-                    ),
+                  ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 14),
               TextField(
                 key: const Key('field_appointment_notes'),
                 controller: _notesCtrl,
@@ -998,6 +894,81 @@ class _SelectableVehicleTile extends StatelessWidget {
                 size: 18,
                 color: ShiftIQColors.primaryBlue,
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DateTimeSelectorTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final VoidCallback onTap;
+
+  const _DateTimeSelectorTile({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: ShiftIQColors.borderSlate),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: ShiftIQColors.primaryBlue.withAlpha(18),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, size: 17, color: ShiftIQColors.primaryBlue),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
+                  Text(
+                    value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w800,
+                      color: ShiftIQColors.graphiteText,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 18,
+              color: Color(0xFF64748B),
+            ),
           ],
         ),
       ),
