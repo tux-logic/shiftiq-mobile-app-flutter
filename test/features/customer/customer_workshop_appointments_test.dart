@@ -10,6 +10,7 @@ import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.d
 import 'package:shiftiq_mobile_app_flutter/core/network/api_client.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_time_picker_sheet.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_customer_summary.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/infrastructure/remote/analytics_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/infrastructure/repositories/analytics_repository_impl.dart';
@@ -488,6 +489,42 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'showShiftIQTimePickerSheet selects time cleanly without keyboard BoxConstraints crash',
+    (tester) async {
+      TimeOfDay? picked;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: const MaterialTheme(TextTheme()).light(),
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => Center(
+                child: ElevatedButton(
+                  key: const Key('btn_open_wheel_time_picker'),
+                  onPressed: () async {
+                    picked = await showShiftIQTimePickerSheet(
+                      context,
+                      initialTime: const TimeOfDay(hour: 10, minute: 30),
+                    );
+                  },
+                  child: const Text('Pick wheel time'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.byKey(const Key('btn_open_wheel_time_picker')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('btn_confirm_time_picker')));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(picked, const TimeOfDay(hour: 10, minute: 30));
     },
   );
 }

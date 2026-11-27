@@ -3,6 +3,7 @@ import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.d
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_navy_banner_fallback.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_tactile_card.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_time_picker_sheet.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_toast.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/analytics_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart';
@@ -565,8 +566,8 @@ class _ScheduleAppointmentSheetContentState
                       value:
                           '${_selectedDateTime.hour.toString().padLeft(2, '0')}:${_selectedDateTime.minute.toString().padLeft(2, '0')}',
                       onTap: () async {
-                        final pickedTime = await showTimePicker(
-                          context: context,
+                        final pickedTime = await showShiftIQTimePickerSheet(
+                          context,
                           initialTime: TimeOfDay.fromDateTime(_selectedDateTime),
                         );
                         if (pickedTime == null || !context.mounted) return;
