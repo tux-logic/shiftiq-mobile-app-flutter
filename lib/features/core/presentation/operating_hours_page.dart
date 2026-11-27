@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
@@ -35,14 +36,14 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
   List<OperatingHoursDay> _days = const [];
   List<OperatingHoursException> _exceptions = const [];
 
-  static const Map<String, String> _dayLabels = {
-    'MONDAY': 'Lunes',
-    'TUESDAY': 'Martes',
-    'WEDNESDAY': 'Miércoles',
-    'THURSDAY': 'Jueves',
-    'FRIDAY': 'Viernes',
-    'SATURDAY': 'Sábado',
-    'SUNDAY': 'Domingo',
+  static const Map<String, String> _dayKeys = {
+    'MONDAY': 'weekday_monday',
+    'TUESDAY': 'weekday_tuesday',
+    'WEDNESDAY': 'weekday_wednesday',
+    'THURSDAY': 'weekday_thursday',
+    'FRIDAY': 'weekday_friday',
+    'SATURDAY': 'weekday_saturday',
+    'SUNDAY': 'weekday_sunday',
   };
 
   bool get _hasWorkshop =>
@@ -91,9 +92,10 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
       });
     } catch (e) {
       if (mounted) {
+        final loc = AppLocalizations.of(context);
         ShiftIQToast.show(
           context,
-          message: 'No se pudo cargar los horarios: $e',
+          message: '${loc.translate('operating_hours_load_error')}: $e',
           type: ShiftIQToastType.error,
         );
       }
@@ -116,17 +118,19 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
               _days,
             );
       if (!mounted) return;
+      final loc = AppLocalizations.of(context);
       setState(() => _days = updated);
       ShiftIQToast.show(
         context,
-        message: 'Horarios guardados correctamente',
+        message: loc.translate('operating_hours_saved_success'),
         type: ShiftIQToastType.success,
       );
     } catch (e) {
       if (mounted) {
+        final loc = AppLocalizations.of(context);
         ShiftIQToast.show(
           context,
-          message: 'Error al guardar horarios: $e',
+          message: '${loc.translate('operating_hours_save_error')}: $e',
           type: ShiftIQToastType.error,
         );
       }
@@ -142,16 +146,18 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
       await _useCase.deleteBranchOperatingHours(widget.branchId);
       await _load();
       if (!mounted) return;
+      final loc = AppLocalizations.of(context);
       ShiftIQToast.show(
         context,
-        message: 'Se restauró la herencia del horario global del taller',
+        message: loc.translate('operating_hours_inherited_success'),
         type: ShiftIQToastType.success,
       );
     } catch (e) {
       if (mounted) {
+        final loc = AppLocalizations.of(context);
         ShiftIQToast.show(
           context,
-          message: 'No se pudo restaurar: $e',
+          message: '${loc.translate('operating_hours_inherit_error')}: $e',
           type: ShiftIQToastType.error,
         );
       }
@@ -167,10 +173,13 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
         ) ??
         TimeOfDay(hour: isOpenTime ? 8 : 18, minute: isOpenTime ? 30 : 0);
 
+    final loc = AppLocalizations.of(context);
     final picked = await showShiftIQTimePickerSheet(
       context,
       initialTime: current,
-      title: isOpenTime ? 'Hora de apertura' : 'Hora de cierre',
+      title: isOpenTime
+          ? loc.translate('operating_hours_open_time_title')
+          : loc.translate('operating_hours_close_time_title'),
     );
     if (picked == null || !mounted) return;
     final formatted =
@@ -193,6 +202,7 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
     var closeTime = const TimeOfDay(hour: 13, minute: 0);
     final reasonCtrl = TextEditingController();
 
+    final loc = AppLocalizations.of(context);
     final created = await showDialog<bool>(
       context: context,
       builder: (dlgCtx) => StatefulBuilder(
@@ -200,7 +210,7 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
           final isoDate =
               '${selectedDate.year.toString().padLeft(4, '0')}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}';
           return AlertDialog(
-            title: const Text('Nueva excepción / feriado'),
+            title: Text(loc.translate('operating_hours_new_exception_title')),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -208,7 +218,7 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.calendar_today_rounded),
-                    title: const Text('Fecha'),
+                    title: Text(loc.translate('date_label')),
                     subtitle: Text(isoDate),
                     onTap: () async {
                       final d = await showDatePicker(
@@ -222,7 +232,9 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
                   ),
                   SwitchListTile.adaptive(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Atiende en horario especial'),
+                    title: Text(
+                      loc.translate('operating_hours_special_hours_toggle'),
+                    ),
                     value: isOpen,
                     onChanged: (v) => setDlgState(() => isOpen = v),
                   ),
@@ -235,7 +247,9 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
                               final t = await showShiftIQTimePickerSheet(
                                 dlgCtx,
                                 initialTime: openTime,
-                                title: 'Apertura',
+                                title: loc.translate(
+                                  'operating_hours_opening_short',
+                                ),
                               );
                               if (t != null) setDlgState(() => openTime = t);
                             },
@@ -251,7 +265,9 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
                               final t = await showShiftIQTimePickerSheet(
                                 dlgCtx,
                                 initialTime: closeTime,
-                                title: 'Cierre',
+                                title: loc.translate(
+                                  'operating_hours_closing_short',
+                                ),
                               );
                               if (t != null) setDlgState(() => closeTime = t);
                             },
@@ -266,8 +282,8 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
                   const SizedBox(height: 8),
                   TextField(
                     controller: reasonCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Motivo (ej. Fiestas Patrias)',
+                    decoration: InputDecoration(
+                      labelText: loc.translate('operating_hours_reason_label'),
                     ),
                   ),
                 ],
@@ -276,11 +292,11 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dlgCtx).pop(false),
-                child: const Text('Cancelar'),
+                child: Text(loc.translate('cancel')),
               ),
               FilledButton(
                 onPressed: () => Navigator.of(dlgCtx).pop(true),
-                child: const Text('Guardar'),
+                child: Text(loc.translate('save')),
               ),
             ],
           );
@@ -325,7 +341,7 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
       if (mounted) {
         ShiftIQToast.show(
           context,
-          message: 'No se pudo registrar la excepción: $e',
+          message: '${loc.translate('operating_hours_exception_error')}: $e',
           type: ShiftIQToastType.error,
         );
       }
@@ -336,12 +352,13 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ShiftIQColors.warmNeutral,
       body: ShiftIQCollapsibleHeaderBody(
-        header: const ShiftIQPageHeader(
-          title: 'Horarios y Feriados',
-          subtitle: 'Configura la atención semanal y días especiales',
+        header: ShiftIQPageHeader(
+          title: loc.translate('operating_hours_title'),
+          subtitle: loc.translate('operating_hours_header_sub'),
           showBackButton: true,
         ),
         body: _isLoading
@@ -351,11 +368,18 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
                 children: [
                   if (_hasWorkshop) ...[
                     SegmentedButton<bool>(
-                      segments: const [
-                        ButtonSegment(value: false, label: Text('Esta sede')),
+                      segments: [
+                        ButtonSegment(
+                          value: false,
+                          label: Text(
+                            loc.translate('operating_hours_this_branch'),
+                          ),
+                        ),
                         ButtonSegment(
                           value: true,
-                          label: Text('Global taller'),
+                          label: Text(
+                            loc.translate('operating_hours_workshop_global'),
+                          ),
                         ),
                       ],
                       selected: {_workshopScope},
@@ -376,9 +400,9 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'HORARIO SEMANAL',
-                          style: TextStyle(
+                        Text(
+                          loc.translate('operating_hours_weekly_section'),
+                          style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w800,
                             color: Color(0xFF64748B),
@@ -388,8 +412,10 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
                         const SizedBox(height: 10),
                         for (var i = 0; i < _days.length; i++) ...[
                           _DayHoursRow(
-                            label: _dayLabels[_days[i].dayOfWeek] ??
-                                _days[i].dayOfWeek,
+                            label: _dayKeys[_days[i].dayOfWeek] != null
+                                ? loc.translate(_dayKeys[_days[i].dayOfWeek]!)
+                                : _days[i].dayOfWeek,
+                            closedLabel: loc.translate('closed_label'),
                             day: _days[i],
                             onToggle: (open) {
                               setState(() {
@@ -428,7 +454,11 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
                                   ),
                                 ),
                                 child: Text(
-                                  _isSaving ? 'Guardando...' : 'Guardar horario',
+                                  _isSaving
+                                      ? loc.translate('operating_hours_saving')
+                                      : loc.translate(
+                                          'operating_hours_save_btn',
+                                        ),
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -440,7 +470,9 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
                               OutlinedButton(
                                 onPressed:
                                     _isSaving ? null : _resetBranchToWorkshop,
-                                child: const Text('Heredar'),
+                                child: Text(
+                                  loc.translate('operating_hours_inherit_btn'),
+                                ),
                               ),
                             ],
                           ],
@@ -462,9 +494,9 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              'FERIADOS Y EXCEPCIONES',
-                              style: TextStyle(
+                            Text(
+                              loc.translate('operating_hours_holidays_section'),
+                              style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w800,
                                 color: Color(0xFF64748B),
@@ -474,16 +506,16 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
                             TextButton.icon(
                               onPressed: _openAddExceptionDialog,
                               icon: const Icon(Icons.add_rounded, size: 18),
-                              label: const Text('Agregar'),
+                              label: Text(loc.translate('add_action')),
                             ),
                           ],
                         ),
                         if (_exceptions.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
                             child: Text(
-                              'Sin feriados o excepciones registradas.',
-                              style: TextStyle(
+                              loc.translate('operating_hours_no_exceptions'),
+                              style: const TextStyle(
                                 fontSize: 12.5,
                                 color: Color(0xFF64748B),
                               ),
@@ -513,7 +545,7 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
                               subtitle: Text(
                                 ex.open
                                     ? '${ex.openTime ?? ''} - ${ex.closeTime ?? ''}'
-                                    : 'Cerrado',
+                                    : loc.translate('closed_label'),
                               ),
                               trailing: IconButton(
                                 icon: const Icon(Icons.delete_outline_rounded),
@@ -547,6 +579,7 @@ class _OperatingHoursPageState extends State<OperatingHoursPage> {
 
 class _DayHoursRow extends StatelessWidget {
   final String label;
+  final String closedLabel;
   final OperatingHoursDay day;
   final ValueChanged<bool> onToggle;
   final VoidCallback onPickOpen;
@@ -554,6 +587,7 @@ class _DayHoursRow extends StatelessWidget {
 
   const _DayHoursRow({
     required this.label,
+    required this.closedLabel,
     required this.day,
     required this.onToggle,
     required this.onPickOpen,
@@ -599,9 +633,9 @@ class _DayHoursRow extends StatelessWidget {
             child: Text(day.closeTime ?? '18:00'),
           ),
         ] else
-          const Text(
-            'Cerrado',
-            style: TextStyle(
+          Text(
+            closedLabel,
+            style: const TextStyle(
               fontSize: 12.5,
               fontWeight: FontWeight.w600,
               color: Color(0xFF94A3B8),

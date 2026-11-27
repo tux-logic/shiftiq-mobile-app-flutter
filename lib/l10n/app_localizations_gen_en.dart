@@ -1160,20 +1160,141 @@ class AppLocalizationsGenEn extends AppLocalizationsGen {
       'Book and track your upcoming visits';
 
   @override
-  String get customer_tomorrow => 'Tomorrow';
+  String get closed_label => 'Closed';
 
   @override
-  String get customer_other_date => 'Other date';
+  String get today_label => 'Today';
 
   @override
-  String get customer_other_time => 'Other time';
+  String get select_time_title => 'Select time';
 
   @override
-  String get customer_reason_maintenance => 'Preventive maintenance';
+  String get add_action => 'Add';
 
   @override
-  String get customer_reason_brakes => 'Brake inspection';
+  String get date_label => 'Date';
 
   @override
-  String get customer_reason_obd2 => 'OBD-II diagnostic';
+  String get time_label => 'Time';
+
+  @override
+  String get operating_hours_title => 'Operating Hours & Holidays';
+
+  @override
+  String get operating_hours_subtitle => 'Weekly schedule & special days';
+
+  @override
+  String get operating_hours_header_sub =>
+      'Configure weekly service hours and special days';
+
+  @override
+  String get operating_hours_this_branch => 'This branch';
+
+  @override
+  String get operating_hours_workshop_global => 'Workshop global';
+
+  @override
+  String get operating_hours_weekly_section => 'WEEKLY SCHEDULE';
+
+  @override
+  String get operating_hours_save_btn => 'Save schedule';
+
+  @override
+  String get operating_hours_saving => 'Saving...';
+
+  @override
+  String get operating_hours_inherit_btn => 'Inherit';
+
+  @override
+  String get operating_hours_saved_success =>
+      'Operating hours saved successfully';
+
+  @override
+  String get operating_hours_inherited_success =>
+      'Restored inheritance from workshop global schedule';
+
+  @override
+  String get operating_hours_open_time_title => 'Opening time';
+
+  @override
+  String get operating_hours_close_time_title => 'Closing time';
+
+  @override
+  String get operating_hours_holidays_section => 'HOLIDAYS & EXCEPTIONS';
+
+  @override
+  String get operating_hours_no_exceptions =>
+      'No holidays or exceptions registered.';
+
+  @override
+  String get operating_hours_new_exception_title => 'New exception / holiday';
+
+  @override
+  String get operating_hours_special_hours_toggle => 'Open with special hours';
+
+  @override
+  String get operating_hours_opening_short => 'Opening';
+
+  @override
+  String get operating_hours_closing_short => 'Closing';
+
+  @override
+  String get operating_hours_reason_label => 'Reason (e.g. National Holiday)';
+
+  @override
+  String get operating_hours_load_error => 'Could not load operating hours';
+
+  @override
+  String get operating_hours_save_error => 'Error saving operating hours';
+
+  @override
+  String get operating_hours_inherit_error => 'Could not restore schedule';
+
+  @override
+  String get operating_hours_exception_error => 'Could not create exception';
+
+  @override
+  String get weekday_monday => 'Monday';
+
+  @override
+  String get weekday_tuesday => 'Tuesday';
+
+  @override
+  String get weekday_wednesday => 'Wednesday';
+
+  @override
+  String get weekday_thursday => 'Thursday';
+
+  @override
+  String get weekday_friday => 'Friday';
+
+  @override
+  String get weekday_saturday => 'Saturday';
+
+  @override
+  String get weekday_sunday => 'Sunday';
+
+  @override
+  String get customer_assigned_branch_fallback => 'Assigned branch';
+
+  @override
+  String get customer_registered_vehicle_fallback => 'Registered vehicle';
+
+  @override
+  String get customer_branch_closed_on_date =>
+      'The branch is closed on the selected date.';
+
+  @override
+  String get customer_service_hours_label => 'Service hours';
+
+  @override
+  String get customer_closed_this_day => 'Closed on this day';
+
+  @override
+  String get customer_branch_closed_submit_error =>
+      'The branch is closed on the selected date.';
+
+  @override
+  String get customer_time_outside_hours_error =>
+      'Choose a time within operating hours';
 }

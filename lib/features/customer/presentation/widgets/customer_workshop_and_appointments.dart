@@ -161,8 +161,8 @@ class CustomerWorkshopCard extends StatelessWidget {
                       return _InfoRow(
                         icon: Icons.schedule_outlined,
                         text: today.open
-                            ? 'Hoy: ${today.formattedRange}'
-                            : 'Hoy: Cerrado${today.reason != null ? ' (${today.reason})' : ''}',
+                            ? '${loc.translate('today_label')}: ${today.formattedRange}'
+                            : '${loc.translate('today_label')}: ${loc.translate('closed_label')}${today.reason != null ? ' (${today.reason})' : ''}',
                       );
                     },
                   ),
@@ -283,16 +283,17 @@ class CustomerUpcomingAppointmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final start = appointment.scheduledStart?.toLocal();
     final formattedDate = start != null
         ? '${start.day.toString().padLeft(2, '0')}/${start.month.toString().padLeft(2, '0')}/${start.year} · ${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')}'
         : '-';
     final branchLabel = branch != null
         ? '${branch!.displayTitle} · ${branch!.branchName}'
-        : 'Sede asignada';
+        : loc.translate('customer_assigned_branch_fallback');
     final vehicleLabel = vehicle != null
         ? '${vehicle!.displayName} (${vehicle!.plateNumber})'
-        : 'Vehículo registrado';
+        : loc.translate('customer_registered_vehicle_fallback');
 
     return ShiftIQTactileCard(
       child: Container(
@@ -568,7 +569,7 @@ class _ScheduleAppointmentSheetContentState
                             child: _DateTimeSelectorTile(
                               key: const Key('btn_pick_appointment_datetime'),
                               icon: Icons.calendar_today_rounded,
-                              label: 'Fecha',
+                              label: loc.translate('date_label'),
                               value:
                                   '${_selectedDateTime.day.toString().padLeft(2, '0')}/${_selectedDateTime.month.toString().padLeft(2, '0')}/${_selectedDateTime.year}',
                               onTap: () async {
@@ -604,15 +605,16 @@ class _ScheduleAppointmentSheetContentState
                             child: _DateTimeSelectorTile(
                               key: const Key('btn_pick_appointment_time'),
                               icon: Icons.schedule_rounded,
-                              label: 'Hora',
+                              label: loc.translate('time_label'),
                               value:
                                   '${_selectedDateTime.hour.toString().padLeft(2, '0')}:${_selectedDateTime.minute.toString().padLeft(2, '0')}',
                               onTap: () async {
                                 if (!effective.open) {
                                   ShiftIQToast.show(
                                     context,
-                                    message:
-                                        'La sede está cerrada en la fecha elegida.',
+                                    message: loc.translate(
+                                      'customer_branch_closed_on_date',
+                                    ),
                                     type: ShiftIQToastType.info,
                                   );
                                   return;
@@ -673,8 +675,8 @@ class _ScheduleAppointmentSheetContentState
                             Expanded(
                               child: Text(
                                 effective.open
-                                    ? 'Horario de atención: ${effective.formattedRange}${effective.reason != null ? ' (${effective.reason})' : ''}'
-                                    : 'Cerrado este día${effective.reason != null ? ' · ${effective.reason}' : ''}',
+                                    ? '${loc.translate('customer_service_hours_label')}: ${effective.formattedRange}${effective.reason != null ? ' (${effective.reason})' : ''}'
+                                    : '${loc.translate('customer_closed_this_day')}${effective.reason != null ? ' · ${effective.reason}' : ''}',
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
@@ -716,8 +718,9 @@ class _ScheduleAppointmentSheetContentState
                           if (!effective.open) {
                             ShiftIQToast.show(
                               context,
-                              message:
-                                  'La sede no atiende en la fecha seleccionada.',
+                              message: loc.translate(
+                                'customer_branch_closed_submit_error',
+                              ),
                               type: ShiftIQToastType.error,
                             );
                             return;
@@ -726,7 +729,7 @@ class _ScheduleAppointmentSheetContentState
                             ShiftIQToast.show(
                               context,
                               message:
-                                  'Elige una hora dentro del horario (${effective.formattedRange}).',
+                                  '${loc.translate('customer_time_outside_hours_error')} (${effective.formattedRange}).',
                               type: ShiftIQToastType.error,
                             );
                             return;

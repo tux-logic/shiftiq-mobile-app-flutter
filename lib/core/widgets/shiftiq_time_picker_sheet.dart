@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 
 /// Shows a wheel-based 24h time picker in a modal bottom sheet, avoiding
@@ -9,8 +10,8 @@ Future<TimeOfDay?> showShiftIQTimePickerSheet(
   required TimeOfDay initialTime,
   TimeOfDay? minimumTime,
   TimeOfDay? maximumTime,
-  String title = 'Seleccionar hora',
-  String confirmLabel = 'Confirmar',
+  String? title,
+  String? confirmLabel,
 }) {
   final minDate = minimumTime != null
       ? DateTime(2026, 1, 1, minimumTime.hour, minimumTime.minute)
@@ -34,6 +35,7 @@ Future<TimeOfDay?> showShiftIQTimePickerSheet(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
     builder: (sheetCtx) {
+      final loc = AppLocalizations.of(sheetCtx);
       return SafeArea(
         top: false,
         child: SingleChildScrollView(
@@ -55,7 +57,7 @@ Future<TimeOfDay?> showShiftIQTimePickerSheet(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      title,
+                      title ?? loc.translate('select_time_title'),
                       style: const TextStyle(
                         fontSize: 16.5,
                         fontWeight: FontWeight.w800,
@@ -64,7 +66,7 @@ Future<TimeOfDay?> showShiftIQTimePickerSheet(
                     ),
                     TextButton(
                       onPressed: () => Navigator.of(sheetCtx).pop(null),
-                      child: const Text('Cancelar'),
+                      child: Text(loc.translate('cancel')),
                     ),
                   ],
                 ),
@@ -97,7 +99,7 @@ Future<TimeOfDay?> showShiftIQTimePickerSheet(
                       ),
                     ),
                     child: Text(
-                      confirmLabel,
+                      confirmLabel ?? loc.translate('confirm'),
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,

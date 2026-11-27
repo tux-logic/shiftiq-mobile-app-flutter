@@ -2342,41 +2342,269 @@ abstract class AppLocalizationsGen {
   /// **'Agenda y consulta tus próximas visitas'**
   String get customer_appointments_header_sub;
 
-  /// No description provided for @customer_tomorrow.
+  /// No description provided for @closed_label.
   ///
   /// In es, this message translates to:
-  /// **'Mañana'**
-  String get customer_tomorrow;
+  /// **'Cerrado'**
+  String get closed_label;
 
-  /// No description provided for @customer_other_date.
+  /// No description provided for @today_label.
   ///
   /// In es, this message translates to:
-  /// **'Otra fecha'**
-  String get customer_other_date;
+  /// **'Hoy'**
+  String get today_label;
 
-  /// No description provided for @customer_other_time.
+  /// No description provided for @select_time_title.
   ///
   /// In es, this message translates to:
-  /// **'Otra hora'**
-  String get customer_other_time;
+  /// **'Seleccionar hora'**
+  String get select_time_title;
 
-  /// No description provided for @customer_reason_maintenance.
+  /// No description provided for @add_action.
   ///
   /// In es, this message translates to:
-  /// **'Mantenimiento preventivo'**
-  String get customer_reason_maintenance;
+  /// **'Agregar'**
+  String get add_action;
 
-  /// No description provided for @customer_reason_brakes.
+  /// No description provided for @date_label.
   ///
   /// In es, this message translates to:
-  /// **'Revisión de frenos'**
-  String get customer_reason_brakes;
+  /// **'Fecha'**
+  String get date_label;
 
-  /// No description provided for @customer_reason_obd2.
+  /// No description provided for @time_label.
   ///
   /// In es, this message translates to:
-  /// **'Diagnóstico OBD-II'**
-  String get customer_reason_obd2;
+  /// **'Hora'**
+  String get time_label;
+
+  /// No description provided for @operating_hours_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Horarios y Feriados'**
+  String get operating_hours_title;
+
+  /// No description provided for @operating_hours_subtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Horario semanal y días especiales'**
+  String get operating_hours_subtitle;
+
+  /// No description provided for @operating_hours_header_sub.
+  ///
+  /// In es, this message translates to:
+  /// **'Configura la atención semanal y días especiales'**
+  String get operating_hours_header_sub;
+
+  /// No description provided for @operating_hours_this_branch.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta sede'**
+  String get operating_hours_this_branch;
+
+  /// No description provided for @operating_hours_workshop_global.
+  ///
+  /// In es, this message translates to:
+  /// **'Global taller'**
+  String get operating_hours_workshop_global;
+
+  /// No description provided for @operating_hours_weekly_section.
+  ///
+  /// In es, this message translates to:
+  /// **'HORARIO SEMANAL'**
+  String get operating_hours_weekly_section;
+
+  /// No description provided for @operating_hours_save_btn.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar horario'**
+  String get operating_hours_save_btn;
+
+  /// No description provided for @operating_hours_saving.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardando...'**
+  String get operating_hours_saving;
+
+  /// No description provided for @operating_hours_inherit_btn.
+  ///
+  /// In es, this message translates to:
+  /// **'Heredar'**
+  String get operating_hours_inherit_btn;
+
+  /// No description provided for @operating_hours_saved_success.
+  ///
+  /// In es, this message translates to:
+  /// **'Horarios guardados correctamente'**
+  String get operating_hours_saved_success;
+
+  /// No description provided for @operating_hours_inherited_success.
+  ///
+  /// In es, this message translates to:
+  /// **'Se restauró la herencia del horario global del taller'**
+  String get operating_hours_inherited_success;
+
+  /// No description provided for @operating_hours_open_time_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Hora de apertura'**
+  String get operating_hours_open_time_title;
+
+  /// No description provided for @operating_hours_close_time_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Hora de cierre'**
+  String get operating_hours_close_time_title;
+
+  /// No description provided for @operating_hours_holidays_section.
+  ///
+  /// In es, this message translates to:
+  /// **'FERIADOS Y EXCEPCIONES'**
+  String get operating_hours_holidays_section;
+
+  /// No description provided for @operating_hours_no_exceptions.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin feriados o excepciones registradas.'**
+  String get operating_hours_no_exceptions;
+
+  /// No description provided for @operating_hours_new_exception_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva excepción / feriado'**
+  String get operating_hours_new_exception_title;
+
+  /// No description provided for @operating_hours_special_hours_toggle.
+  ///
+  /// In es, this message translates to:
+  /// **'Atiende en horario especial'**
+  String get operating_hours_special_hours_toggle;
+
+  /// No description provided for @operating_hours_opening_short.
+  ///
+  /// In es, this message translates to:
+  /// **'Apertura'**
+  String get operating_hours_opening_short;
+
+  /// No description provided for @operating_hours_closing_short.
+  ///
+  /// In es, this message translates to:
+  /// **'Cierre'**
+  String get operating_hours_closing_short;
+
+  /// No description provided for @operating_hours_reason_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Motivo (ej. Fiestas Patrias)'**
+  String get operating_hours_reason_label;
+
+  /// No description provided for @operating_hours_load_error.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo cargar los horarios'**
+  String get operating_hours_load_error;
+
+  /// No description provided for @operating_hours_save_error.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al guardar horarios'**
+  String get operating_hours_save_error;
+
+  /// No description provided for @operating_hours_inherit_error.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo restaurar'**
+  String get operating_hours_inherit_error;
+
+  /// No description provided for @operating_hours_exception_error.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo registrar la excepción'**
+  String get operating_hours_exception_error;
+
+  /// No description provided for @weekday_monday.
+  ///
+  /// In es, this message translates to:
+  /// **'Lunes'**
+  String get weekday_monday;
+
+  /// No description provided for @weekday_tuesday.
+  ///
+  /// In es, this message translates to:
+  /// **'Martes'**
+  String get weekday_tuesday;
+
+  /// No description provided for @weekday_wednesday.
+  ///
+  /// In es, this message translates to:
+  /// **'Miércoles'**
+  String get weekday_wednesday;
+
+  /// No description provided for @weekday_thursday.
+  ///
+  /// In es, this message translates to:
+  /// **'Jueves'**
+  String get weekday_thursday;
+
+  /// No description provided for @weekday_friday.
+  ///
+  /// In es, this message translates to:
+  /// **'Viernes'**
+  String get weekday_friday;
+
+  /// No description provided for @weekday_saturday.
+  ///
+  /// In es, this message translates to:
+  /// **'Sábado'**
+  String get weekday_saturday;
+
+  /// No description provided for @weekday_sunday.
+  ///
+  /// In es, this message translates to:
+  /// **'Domingo'**
+  String get weekday_sunday;
+
+  /// No description provided for @customer_assigned_branch_fallback.
+  ///
+  /// In es, this message translates to:
+  /// **'Sede asignada'**
+  String get customer_assigned_branch_fallback;
+
+  /// No description provided for @customer_registered_vehicle_fallback.
+  ///
+  /// In es, this message translates to:
+  /// **'Vehículo registrado'**
+  String get customer_registered_vehicle_fallback;
+
+  /// No description provided for @customer_branch_closed_on_date.
+  ///
+  /// In es, this message translates to:
+  /// **'La sede está cerrada en la fecha elegida.'**
+  String get customer_branch_closed_on_date;
+
+  /// No description provided for @customer_service_hours_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Horario de atención'**
+  String get customer_service_hours_label;
+
+  /// No description provided for @customer_closed_this_day.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrado este día'**
+  String get customer_closed_this_day;
+
+  /// No description provided for @customer_branch_closed_submit_error.
+  ///
+  /// In es, this message translates to:
+  /// **'La sede no atiende en la fecha seleccionada.'**
+  String get customer_branch_closed_submit_error;
+
+  /// No description provided for @customer_time_outside_hours_error.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una hora dentro del horario'**
+  String get customer_time_outside_hours_error;
 }
 
 class _AppLocalizationsGenDelegate

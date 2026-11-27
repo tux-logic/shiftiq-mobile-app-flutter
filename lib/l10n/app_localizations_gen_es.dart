@@ -1167,20 +1167,143 @@ class AppLocalizationsGenEs extends AppLocalizationsGen {
       'Agenda y consulta tus próximas visitas';
 
   @override
-  String get customer_tomorrow => 'Mañana';
+  String get closed_label => 'Cerrado';
 
   @override
-  String get customer_other_date => 'Otra fecha';
+  String get today_label => 'Hoy';
 
   @override
-  String get customer_other_time => 'Otra hora';
+  String get select_time_title => 'Seleccionar hora';
 
   @override
-  String get customer_reason_maintenance => 'Mantenimiento preventivo';
+  String get add_action => 'Agregar';
 
   @override
-  String get customer_reason_brakes => 'Revisión de frenos';
+  String get date_label => 'Fecha';
 
   @override
-  String get customer_reason_obd2 => 'Diagnóstico OBD-II';
+  String get time_label => 'Hora';
+
+  @override
+  String get operating_hours_title => 'Horarios y Feriados';
+
+  @override
+  String get operating_hours_subtitle => 'Horario semanal y días especiales';
+
+  @override
+  String get operating_hours_header_sub =>
+      'Configura la atención semanal y días especiales';
+
+  @override
+  String get operating_hours_this_branch => 'Esta sede';
+
+  @override
+  String get operating_hours_workshop_global => 'Global taller';
+
+  @override
+  String get operating_hours_weekly_section => 'HORARIO SEMANAL';
+
+  @override
+  String get operating_hours_save_btn => 'Guardar horario';
+
+  @override
+  String get operating_hours_saving => 'Guardando...';
+
+  @override
+  String get operating_hours_inherit_btn => 'Heredar';
+
+  @override
+  String get operating_hours_saved_success =>
+      'Horarios guardados correctamente';
+
+  @override
+  String get operating_hours_inherited_success =>
+      'Se restauró la herencia del horario global del taller';
+
+  @override
+  String get operating_hours_open_time_title => 'Hora de apertura';
+
+  @override
+  String get operating_hours_close_time_title => 'Hora de cierre';
+
+  @override
+  String get operating_hours_holidays_section => 'FERIADOS Y EXCEPCIONES';
+
+  @override
+  String get operating_hours_no_exceptions =>
+      'Sin feriados o excepciones registradas.';
+
+  @override
+  String get operating_hours_new_exception_title => 'Nueva excepción / feriado';
+
+  @override
+  String get operating_hours_special_hours_toggle =>
+      'Atiende en horario especial';
+
+  @override
+  String get operating_hours_opening_short => 'Apertura';
+
+  @override
+  String get operating_hours_closing_short => 'Cierre';
+
+  @override
+  String get operating_hours_reason_label => 'Motivo (ej. Fiestas Patrias)';
+
+  @override
+  String get operating_hours_load_error => 'No se pudo cargar los horarios';
+
+  @override
+  String get operating_hours_save_error => 'Error al guardar horarios';
+
+  @override
+  String get operating_hours_inherit_error => 'No se pudo restaurar';
+
+  @override
+  String get operating_hours_exception_error =>
+      'No se pudo registrar la excepción';
+
+  @override
+  String get weekday_monday => 'Lunes';
+
+  @override
+  String get weekday_tuesday => 'Martes';
+
+  @override
+  String get weekday_wednesday => 'Miércoles';
+
+  @override
+  String get weekday_thursday => 'Jueves';
+
+  @override
+  String get weekday_friday => 'Viernes';
+
+  @override
+  String get weekday_saturday => 'Sábado';
+
+  @override
+  String get weekday_sunday => 'Domingo';
+
+  @override
+  String get customer_assigned_branch_fallback => 'Sede asignada';
+
+  @override
+  String get customer_registered_vehicle_fallback => 'Vehículo registrado';
+
+  @override
+  String get customer_branch_closed_on_date =>
+      'La sede está cerrada en la fecha elegida.';
+
+  @override
+  String get customer_service_hours_label => 'Horario de atención';
+
+  @override
+  String get customer_closed_this_day => 'Cerrado este día';
+
+  @override
+  String get customer_branch_closed_submit_error =>
+      'La sede no atiende en la fecha seleccionada.';
+
+  @override
+  String get customer_time_outside_hours_error =>
+      'Elige una hora dentro del horario';
 }
