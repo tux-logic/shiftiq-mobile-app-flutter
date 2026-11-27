@@ -105,7 +105,7 @@ class EffectiveOperatingHours {
 
   /// Human-readable range such as `08:30 - 18:00`.
   String get formattedRange {
-    if (!open || openTime == null || closeTime == null) return 'Cerrado';
+    if (!open || openTime == null || closeTime == null) return 'Closed';
     return '${_fmt(openTime!)} - ${_fmt(closeTime!)}';
   }
 

@@ -1,3 +1,4 @@
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/domain/model/valueobjects/dtc_severity.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/domain/model/valueobjects/dtc_status.dart';
 
@@ -26,8 +27,8 @@ class DtcAlert {
     required this.branchId,
     required this.vehicleId,
     required this.vehiclePlate,
-    this.vehicleModel = 'Vehículo General',
-    this.customerName = 'Cliente del Taller',
+    this.vehicleModel = 'General Vehicle',
+    this.customerName = 'Workshop Customer',
     required this.code,
     required this.description,
     required this.systemCategory,
@@ -44,11 +45,28 @@ class DtcAlert {
   String get formattedTimeAgo {
     final diff = DateTime.now().difference(detectedAt);
     if (diff.inMinutes < 60) {
-      return 'Hace ${diff.inMinutes} min';
+      return '${diff.inMinutes}m ago';
     } else if (diff.inHours < 24) {
-      return 'Hace ${diff.inHours} horas';
+      return '${diff.inHours}h ago';
     } else {
-      return 'Hace ${diff.inDays} días';
+      return '${diff.inDays}d ago';
+    }
+  }
+
+  String localizedTimeAgo(AppLocalizations loc) {
+    final diff = DateTime.now().difference(detectedAt);
+    if (diff.inMinutes < 60) {
+      return loc
+          .translate('time_ago_minutes')
+          .replaceAll('{n}', '${diff.inMinutes}');
+    } else if (diff.inHours < 24) {
+      return loc
+          .translate('time_ago_hours')
+          .replaceAll('{n}', '${diff.inHours}');
+    } else {
+      return loc
+          .translate('time_ago_days')
+          .replaceAll('{n}', '${diff.inDays}');
     }
   }
 

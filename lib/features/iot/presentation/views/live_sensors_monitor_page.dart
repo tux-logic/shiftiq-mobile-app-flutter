@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
@@ -37,14 +38,16 @@ class _LiveSensorsMonitorPageState extends State<LiveSensorsMonitorPage> {
     return ListenableBuilder(
       listenable: widget.viewModel,
       builder: (context, _) {
+        final loc = AppLocalizations.of(context);
         final sensors = widget.viewModel.liveSensors;
 
         return Scaffold(
           backgroundColor: ShiftIQColors.warmNeutral,
           body: ShiftIQCollapsibleHeaderBody(
             header: ShiftIQPageHeader(
-              title: 'Último Snapshot OBD-II',
-              subtitle: 'Vehículo ${widget.vehiclePlate} · Lectura registrada',
+              title: loc.translate('iot_latest_snapshot_title'),
+              subtitle:
+                  '${loc.translate('iot_vehicle_label')} ${widget.vehiclePlate} · ${loc.translate('iot_recorded_reading')}',
               showBackButton: true,
             ),
             body: ShiftIQPullToRefresh(
@@ -67,26 +70,26 @@ class _LiveSensorsMonitorPageState extends State<LiveSensorsMonitorPage> {
                       color: ShiftIQColors.borderSlate,
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.history_toggle_off_rounded,
                         size: 16,
                         color: ShiftIQColors.primaryBlue,
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Text(
-                        'Último snapshot sincronizado',
-                        style: TextStyle(
+                        loc.translate('iot_latest_snapshot_synced'),
+                        style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           color: ShiftIQColors.graphiteText,
                         ),
                       ),
-                      Spacer(),
+                      const Spacer(),
                       Text(
-                        'Desliza para actualizar',
-                        style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                        loc.translate('iot_pull_to_refresh'),
+                        style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
                       ),
                     ],
                   ),
@@ -94,9 +97,9 @@ class _LiveSensorsMonitorPageState extends State<LiveSensorsMonitorPage> {
                 const SizedBox(height: 16),
 
                 // Section Title
-                const Text(
-                  'LECTURAS DEL ÚLTIMO SNAPSHOT',
-                  style: TextStyle(
+                Text(
+                  loc.translate('iot_latest_snapshot_readings'),
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.5,
@@ -114,18 +117,18 @@ class _LiveSensorsMonitorPageState extends State<LiveSensorsMonitorPage> {
                         children: [
                           const ShiftIQEmptyStateIcon(),
                           const SizedBox(height: 14),
-                          const Text(
-                            'Sin snapshots registrados',
-                            style: TextStyle(
+                          Text(
+                            loc.translate('iot_no_snapshots_recorded'),
+                            style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
                               color: ShiftIQColors.graphiteText,
                             ),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
-                            'Desliza hacia abajo para consultar nuevas lecturas',
-                            style: TextStyle(
+                          Text(
+                            loc.translate('iot_pull_down_for_readings'),
+                            style: const TextStyle(
                               fontSize: 12.5,
                               color: Color(0xFF64748B),
                             ),

@@ -132,14 +132,14 @@ class IotDto {
           branchId: json['branchId'] as String? ?? '',
           vehicleId: json['vehicleId'] as String? ?? '',
           vehiclePlate: json['vehiclePlate'] as String? ?? 'S/P',
-          vehicleModel: json['vehicleModel'] as String? ?? 'Vehículo General',
-          customerName: json['customerName'] as String? ?? 'Cliente del Taller',
+          vehicleModel: json['vehicleModel'] as String? ?? 'General Vehicle',
+          customerName: json['customerName'] as String? ?? 'Workshop Customer',
           code: json['dtcCode'] as String? ?? json['code'] as String? ?? 'P0000',
           description: json['description'] as String? ?? '',
           systemCategory: json['systemCategory'] as String? ?? 'General Engine',
           severity: _parseSeverity(json['severity']),
           aiDiagnosticRecommendation: json['aiDiagnosticRecommendation'] as String? ??
-              'Realizar escaneo computarizado preventivo.',
+              'Perform preventive computerized scan.',
           detectedAt: DateTime.tryParse(
                 json['createdAt'] as String? ?? json['detectedAt'] as String? ?? '',
               ) ??

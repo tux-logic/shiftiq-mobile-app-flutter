@@ -609,8 +609,8 @@ class _ProfilePageState extends State<ProfilePage> {
                             const Divider(height: 16, color: Color(0xFFF1F5F9)),
                             _SettingsActionTile(
                               icon: Icons.schedule_outlined,
-                              title: 'Horarios y Feriados',
-                              subtitle: 'Horario semanal y días especiales',
+                              title: loc.translate('operating_hours_title'),
+                              subtitle: loc.translate('operating_hours_subtitle'),
                               onTap: () {
                                 final branchId = vm.activeBranchId.isNotEmpty
                                     ? vm.activeBranchId
