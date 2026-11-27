@@ -14,11 +14,13 @@ import 'package:shiftiq_mobile_app_flutter/features/iot/domain/iot_domain.dart';
 /// with branding, rating, free bay availability, and a quick booking CTA.
 class CustomerWorkshopCard extends StatelessWidget {
   final CustomerBranchCatalogItem branch;
+  final BranchOperatingSchedule? schedule;
   final VoidCallback? onScheduleTap;
 
   const CustomerWorkshopCard({
     super.key,
     required this.branch,
+    this.schedule,
     this.onScheduleTap,
   });
 
@@ -149,6 +151,20 @@ class CustomerWorkshopCard extends StatelessWidget {
                   _InfoRow(
                     icon: Icons.phone_outlined,
                     text: branch.phone,
+                  ),
+                ],
+                if (schedule != null) ...[
+                  const SizedBox(height: 6),
+                  Builder(
+                    builder: (context) {
+                      final today = schedule!.resolveForDate(DateTime.now());
+                      return _InfoRow(
+                        icon: Icons.schedule_outlined,
+                        text: today.open
+                            ? 'Hoy: ${today.formattedRange}'
+                            : 'Hoy: Cerrado${today.reason != null ? ' (${today.reason})' : ''}',
+                      );
+                    },
                   ),
                 ],
                 if (branch.activeBaysCount > 0 || onScheduleTap != null) ...[
@@ -426,6 +442,16 @@ class _ScheduleAppointmentSheetContentState
     _selectedVehicleId = widget.vm.vehicles.first.id;
     final now = DateTime.now();
     _selectedDateTime = DateTime(now.year, now.month, now.day + 1, 9, 0);
+    _syncScheduleForBranch(_selectedBranchId);
+  }
+
+  Future<void> _syncScheduleForBranch(String branchId) async {
+    final schedule = await widget.vm.loadBranchSchedule(branchId);
+    if (!mounted) return;
+    final effective = schedule.resolveForDate(_selectedDateTime);
+    setState(() {
+      _selectedDateTime = effective.clampDateTime(_selectedDateTime);
+    });
   }
 
   @override
@@ -491,9 +517,10 @@ class _ScheduleAppointmentSheetContentState
                         child: _SelectableBranchTile(
                           branch: branch,
                           selected: branch.branchId == _selectedBranchId,
-                          onTap: () => setState(
-                            () => _selectedBranchId = branch.branchId,
-                          ),
+                          onTap: () {
+                            setState(() => _selectedBranchId = branch.branchId);
+                            _syncScheduleForBranch(branch.branchId);
+                          },
                         ),
                       );
                     },
@@ -527,63 +554,142 @@ class _ScheduleAppointmentSheetContentState
                 text: loc.translate('customer_appointment_date_time'),
               ),
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: _DateTimeSelectorTile(
-                      key: const Key('btn_pick_appointment_datetime'),
-                      icon: Icons.calendar_today_rounded,
-                      label: 'Fecha',
-                      value:
-                          '${_selectedDateTime.day.toString().padLeft(2, '0')}/${_selectedDateTime.month.toString().padLeft(2, '0')}/${_selectedDateTime.year}',
-                      onTap: () async {
-                        final pickedDate = await showDatePicker(
-                          context: context,
-                          initialDate: _selectedDateTime,
-                          firstDate: DateTime.now(),
-                          lastDate:
-                              DateTime.now().add(const Duration(days: 90)),
-                        );
-                        if (pickedDate == null || !context.mounted) return;
-                        setState(() {
-                          _selectedDateTime = DateTime(
-                            pickedDate.year,
-                            pickedDate.month,
-                            pickedDate.day,
-                            _selectedDateTime.hour,
-                            _selectedDateTime.minute,
-                          );
-                        });
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _DateTimeSelectorTile(
-                      key: const Key('btn_pick_appointment_time'),
-                      icon: Icons.schedule_rounded,
-                      label: 'Hora',
-                      value:
-                          '${_selectedDateTime.hour.toString().padLeft(2, '0')}:${_selectedDateTime.minute.toString().padLeft(2, '0')}',
-                      onTap: () async {
-                        final pickedTime = await showShiftIQTimePickerSheet(
-                          context,
-                          initialTime: TimeOfDay.fromDateTime(_selectedDateTime),
-                        );
-                        if (pickedTime == null || !context.mounted) return;
-                        setState(() {
-                          _selectedDateTime = DateTime(
-                            _selectedDateTime.year,
-                            _selectedDateTime.month,
-                            _selectedDateTime.day,
-                            pickedTime.hour,
-                            pickedTime.minute,
-                          );
-                        });
-                      },
-                    ),
-                  ),
-                ],
+              Builder(
+                builder: (context) {
+                  final effective = vm
+                      .scheduleForBranch(_selectedBranchId)
+                      .resolveForDate(_selectedDateTime);
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _DateTimeSelectorTile(
+                              key: const Key('btn_pick_appointment_datetime'),
+                              icon: Icons.calendar_today_rounded,
+                              label: 'Fecha',
+                              value:
+                                  '${_selectedDateTime.day.toString().padLeft(2, '0')}/${_selectedDateTime.month.toString().padLeft(2, '0')}/${_selectedDateTime.year}',
+                              onTap: () async {
+                                final pickedDate = await showDatePicker(
+                                  context: context,
+                                  initialDate: _selectedDateTime,
+                                  firstDate: DateTime.now(),
+                                  lastDate: DateTime.now()
+                                      .add(const Duration(days: 90)),
+                                );
+                                if (pickedDate == null || !context.mounted) {
+                                  return;
+                                }
+                                final nextDt = DateTime(
+                                  pickedDate.year,
+                                  pickedDate.month,
+                                  pickedDate.day,
+                                  _selectedDateTime.hour,
+                                  _selectedDateTime.minute,
+                                );
+                                final dayHours = vm
+                                    .scheduleForBranch(_selectedBranchId)
+                                    .resolveForDate(nextDt);
+                                setState(() {
+                                  _selectedDateTime =
+                                      dayHours.clampDateTime(nextDt);
+                                });
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _DateTimeSelectorTile(
+                              key: const Key('btn_pick_appointment_time'),
+                              icon: Icons.schedule_rounded,
+                              label: 'Hora',
+                              value:
+                                  '${_selectedDateTime.hour.toString().padLeft(2, '0')}:${_selectedDateTime.minute.toString().padLeft(2, '0')}',
+                              onTap: () async {
+                                if (!effective.open) {
+                                  ShiftIQToast.show(
+                                    context,
+                                    message:
+                                        'La sede está cerrada en la fecha elegida.',
+                                    type: ShiftIQToastType.info,
+                                  );
+                                  return;
+                                }
+                                final pickedTime =
+                                    await showShiftIQTimePickerSheet(
+                                  context,
+                                  initialTime:
+                                      TimeOfDay.fromDateTime(_selectedDateTime),
+                                  minimumTime: effective.openTime,
+                                  maximumTime: effective.latestStartTime,
+                                );
+                                if (pickedTime == null || !context.mounted) {
+                                  return;
+                                }
+                                final nextDt = DateTime(
+                                  _selectedDateTime.year,
+                                  _selectedDateTime.month,
+                                  _selectedDateTime.day,
+                                  pickedTime.hour,
+                                  pickedTime.minute,
+                                );
+                                setState(() {
+                                  _selectedDateTime =
+                                      effective.clampDateTime(nextDt);
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: (effective.open
+                                  ? ShiftIQColors.primaryBlue
+                                  : ShiftIQColors.severityCrimson)
+                              .withAlpha(16),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              effective.open
+                                  ? Icons.access_time_rounded
+                                  : Icons.event_busy_rounded,
+                              size: 15,
+                              color: effective.open
+                                  ? ShiftIQColors.primaryBlue
+                                  : ShiftIQColors.severityCrimson,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                effective.open
+                                    ? 'Horario de atención: ${effective.formattedRange}${effective.reason != null ? ' (${effective.reason})' : ''}'
+                                    : 'Cerrado este día${effective.reason != null ? ' · ${effective.reason}' : ''}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: effective.open
+                                      ? ShiftIQColors.primaryBlue
+                                      : ShiftIQColors.severityCrimson,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 14),
               TextField(
@@ -604,6 +710,27 @@ class _ScheduleAppointmentSheetContentState
                   onPressed: vm.isSchedulingAppointment
                       ? null
                       : () async {
+                          final effective = vm
+                              .scheduleForBranch(_selectedBranchId)
+                              .resolveForDate(_selectedDateTime);
+                          if (!effective.open) {
+                            ShiftIQToast.show(
+                              context,
+                              message:
+                                  'La sede no atiende en la fecha seleccionada.',
+                              type: ShiftIQToastType.error,
+                            );
+                            return;
+                          }
+                          if (!effective.isWithinHours(_selectedDateTime)) {
+                            ShiftIQToast.show(
+                              context,
+                              message:
+                                  'Elige una hora dentro del horario (${effective.formattedRange}).',
+                              type: ShiftIQToastType.error,
+                            );
+                            return;
+                          }
                           if (!_selectedDateTime.isAfter(DateTime.now())) {
                             ShiftIQToast.show(
                               context,

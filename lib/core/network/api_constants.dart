@@ -77,6 +77,24 @@ class ApiConstants {
       '/api/v1/branches/$branchId/subscriptions';
   static String branchSubscription(String branchId) =>
       '/api/v1/branches/$branchId/subscription';
+  static String workshopOperatingHours(String workshopId) =>
+      '/api/v1/workshops/$workshopId/operating-hours';
+  static String workshopOperatingHoursExceptions(String workshopId) =>
+      '/api/v1/workshops/$workshopId/operating-hours/exceptions';
+  static String workshopOperatingHoursExceptionById(
+    String workshopId,
+    String exceptionId,
+  ) =>
+      '/api/v1/workshops/$workshopId/operating-hours/exceptions/$exceptionId';
+  static String branchOperatingHours(String branchId) =>
+      '/api/v1/branches/$branchId/operating-hours';
+  static String branchOperatingHoursExceptions(String branchId) =>
+      '/api/v1/branches/$branchId/operating-hours/exceptions';
+  static String branchOperatingHoursExceptionById(
+    String branchId,
+    String exceptionId,
+  ) =>
+      '/api/v1/branches/$branchId/operating-hours/exceptions/$exceptionId';
 
   // Analytics Context
   static String branchAnalyticsSummary(String branchId) =>

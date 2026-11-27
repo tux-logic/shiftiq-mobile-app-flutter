@@ -1,5 +1,6 @@
 export 'package:shiftiq_mobile_app_flutter/features/core/domain/models/aggregates/branch.dart';
 export 'package:shiftiq_mobile_app_flutter/features/core/domain/models/customer_branch_catalog_item.dart';
+export 'package:shiftiq_mobile_app_flutter/features/core/domain/models/operating_hours.dart';
 export 'package:shiftiq_mobile_app_flutter/features/core/domain/models/aggregates/specialty.dart';
 export 'package:shiftiq_mobile_app_flutter/features/core/domain/models/aggregates/subscription.dart';
 export 'package:shiftiq_mobile_app_flutter/features/core/domain/models/aggregates/workshop.dart';

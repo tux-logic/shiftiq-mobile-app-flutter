@@ -23,6 +23,7 @@ import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/register_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/create_workshop.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_customer_branch_catalog.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/manage_operating_hours.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_user_branches.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_user_profile_context.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_workshops.dart';
@@ -261,6 +262,12 @@ void setupDependencies() {
     ),
   );
 
+  getIt.registerLazySingleton<ManageOperatingHoursUseCase>(
+    () => ManageOperatingHoursUseCase(
+      repository: getIt<CoreRepository>(),
+    ),
+  );
+
   getIt.registerLazySingleton<SelectActiveBranchUseCase>(
     () => SelectActiveBranchUseCase(repository: getIt<CoreRepository>()),
   );
@@ -295,6 +302,7 @@ void setupDependencies() {
       sessionStorage: getIt<SessionStorage>(),
       manageMediaUploads: getIt<ManageMediaUploads>(),
       getCustomerBranchCatalog: getIt<GetCustomerBranchCatalogUseCase>(),
+      manageOperatingHours: getIt<ManageOperatingHoursUseCase>(),
     ),
   );
 
@@ -647,6 +655,7 @@ void setupDependencies() {
       getBranchCatalog: getIt<GetCustomerBranchCatalogUseCase>(),
       createAppointment: getIt<CreateAppointmentUseCase>(),
       manageMediaUploads: getIt<ManageMediaUploads>(),
+      manageOperatingHours: getIt<ManageOperatingHoursUseCase>(),
     ),
   );
 }

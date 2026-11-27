@@ -6,6 +6,7 @@ import 'package:shiftiq_mobile_app_flutter/features/billing/application/usecases
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_customer_branch_catalog.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_user_profile_context.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/manage_operating_hours.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/create_appointment.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/fleet_domain.dart';
@@ -32,6 +33,7 @@ class CustomerHomeViewModel extends ChangeNotifier {
   final GetCustomerBranchCatalogUseCase? getBranchCatalog;
   final CreateAppointmentUseCase? createAppointment;
   final ManageMediaUploads? manageMediaUploads;
+  final ManageOperatingHoursUseCase? manageOperatingHours;
 
   CustomerHomeViewModel({
     required this.manageWorkOrders,
@@ -45,6 +47,7 @@ class CustomerHomeViewModel extends ChangeNotifier {
     this.getBranchCatalog,
     this.createAppointment,
     this.manageMediaUploads,
+    this.manageOperatingHours,
   });
 
   bool _isLoading = false;
@@ -76,6 +79,12 @@ class CustomerHomeViewModel extends ChangeNotifier {
 
   List<CustomerBranchCatalogItem> _branches = const [];
   List<CustomerBranchCatalogItem> get branches => _branches;
+
+  Map<String, BranchOperatingSchedule> _branchSchedules = const {};
+  Map<String, BranchOperatingSchedule> get branchSchedules => _branchSchedules;
+
+  BranchOperatingSchedule scheduleForBranch(String branchId) =>
+      _branchSchedules[branchId] ?? const BranchOperatingSchedule();
 
   String _customerId = '';
 
@@ -209,7 +218,10 @@ class CustomerHomeViewModel extends ChangeNotifier {
         _customerId = _summary!.customerId;
       }
 
-      await _loadVehiclesAndDtc();
+      await Future.wait([
+        _loadVehiclesAndDtc(),
+        _loadBranchSchedules(),
+      ]);
     } catch (e) {
       _error = 'Error loading your work orders: $e';
     } finally {
@@ -285,6 +297,39 @@ class CustomerHomeViewModel extends ChangeNotifier {
     } finally {
       _isSchedulingAppointment = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> _loadBranchSchedules() async {
+    if (manageOperatingHours == null || _branches.isEmpty) return;
+    final entries = await Future.wait(
+      _branches.map((b) async {
+        try {
+          final schedule =
+              await manageOperatingHours!.getBranchSchedule(b.branchId);
+          return MapEntry(b.branchId, schedule);
+        } catch (_) {
+          return MapEntry(b.branchId, const BranchOperatingSchedule());
+        }
+      }),
+    );
+    _branchSchedules = Map.fromEntries(entries);
+  }
+
+  /// Ensures the operating schedule for [branchId] is loaded and returns it.
+  Future<BranchOperatingSchedule> loadBranchSchedule(String branchId) async {
+    final existing = _branchSchedules[branchId];
+    if (existing != null) return existing;
+    if (manageOperatingHours == null) {
+      return const BranchOperatingSchedule();
+    }
+    try {
+      final fetched = await manageOperatingHours!.getBranchSchedule(branchId);
+      _branchSchedules = {..._branchSchedules, branchId: fetched};
+      notifyListeners();
+      return fetched;
+    } catch (_) {
+      return const BranchOperatingSchedule();
     }
   }
 

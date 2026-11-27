@@ -15,6 +15,7 @@ import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_page
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_page.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/operating_hours_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_logout_sheet.dart';
@@ -557,7 +558,11 @@ class _ProfilePageState extends State<ProfilePage> {
                               ...vm.customerBranches.map(
                                 (branch) => Padding(
                                   padding: const EdgeInsets.only(bottom: 10),
-                                  child: CustomerWorkshopCard(branch: branch),
+                                  child: CustomerWorkshopCard(
+                                    branch: branch,
+                                    schedule: vm.customerBranchSchedules[
+                                        branch.branchId],
+                                  ),
                                 ),
                               ),
                           ],
@@ -597,6 +602,25 @@ class _ProfilePageState extends State<ProfilePage> {
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder: (_) => const BranchSelectionPage(),
+                                  ),
+                                );
+                              },
+                            ),
+                            const Divider(height: 16, color: Color(0xFFF1F5F9)),
+                            _SettingsActionTile(
+                              icon: Icons.schedule_outlined,
+                              title: 'Horarios y Feriados',
+                              subtitle: 'Horario semanal y días especiales',
+                              onTap: () {
+                                final branchId = vm.activeBranchId.isNotEmpty
+                                    ? vm.activeBranchId
+                                    : ApiConstants.defaultBranchId;
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => OperatingHoursPage(
+                                      branchId: branchId,
+                                      workshopId: vm.activeWorkshopId,
+                                    ),
                                   ),
                                 );
                               },

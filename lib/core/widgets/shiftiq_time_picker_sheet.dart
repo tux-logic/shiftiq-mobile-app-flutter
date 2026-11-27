@@ -7,10 +7,25 @@ import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 Future<TimeOfDay?> showShiftIQTimePickerSheet(
   BuildContext context, {
   required TimeOfDay initialTime,
+  TimeOfDay? minimumTime,
+  TimeOfDay? maximumTime,
   String title = 'Seleccionar hora',
   String confirmLabel = 'Confirmar',
 }) {
+  final minDate = minimumTime != null
+      ? DateTime(2026, 1, 1, minimumTime.hour, minimumTime.minute)
+      : null;
+  final maxDate = maximumTime != null
+      ? DateTime(2026, 1, 1, maximumTime.hour, maximumTime.minute)
+      : null;
+  final validBounds =
+      minDate != null && maxDate != null ? !minDate.isAfter(maxDate) : true;
+
   var selected = DateTime(2026, 1, 1, initialTime.hour, initialTime.minute);
+  if (validBounds) {
+    if (minDate != null && selected.isBefore(minDate)) selected = minDate;
+    if (maxDate != null && selected.isAfter(maxDate)) selected = maxDate;
+  }
 
   return showModalBottomSheet<TimeOfDay>(
     context: context,
@@ -59,6 +74,8 @@ Future<TimeOfDay?> showShiftIQTimePickerSheet(
                     mode: CupertinoDatePickerMode.time,
                     use24hFormat: true,
                     initialDateTime: selected,
+                    minimumDate: validBounds ? minDate : null,
+                    maximumDate: validBounds ? maxDate : null,
                     onDateTimeChanged: (dt) {
                       selected = dt;
                     },

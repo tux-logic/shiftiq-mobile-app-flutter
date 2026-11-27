@@ -11,6 +11,7 @@ import 'package:shiftiq_mobile_app_flutter/core/network/api_client.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_time_picker_sheet.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/application/usecases/get_customer_summary.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/infrastructure/remote/analytics_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/infrastructure/repositories/analytics_repository_impl.dart';
@@ -525,6 +526,67 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(picked, const TimeOfDay(hour: 10, minute: 30));
+    },
+  );
+
+  test(
+    'BranchOperatingSchedule resolves precedence and clamps times to workshop hours',
+    () {
+      const schedule = BranchOperatingSchedule(
+        weeklyDays: [
+          OperatingHoursDay(
+            dayOfWeek: 'MONDAY',
+            open: true,
+            openTime: '09:00',
+            closeTime: '17:00',
+            slotDurationMinutes: 60,
+          ),
+          OperatingHoursDay(
+            dayOfWeek: 'SUNDAY',
+            open: false,
+          ),
+        ],
+        exceptions: [
+          OperatingHoursException(
+            id: 'ex-1',
+            date: '2026-12-07',
+            open: true,
+            openTime: '10:00',
+            closeTime: '13:00',
+            reason: 'Medio día',
+          ),
+          OperatingHoursException(
+            id: 'ex-2',
+            date: '2026-12-25',
+            open: false,
+            reason: 'Navidad',
+          ),
+        ],
+      );
+
+      // Regular Monday -> 09:00..16:00 (latest start = 17:00 - 60m)
+      final regularMonday = schedule.resolveForDate(DateTime(2026, 11, 30));
+      expect(regularMonday.open, isTrue);
+      expect(regularMonday.formattedRange, '09:00 - 17:00');
+      expect(regularMonday.latestStartTime, const TimeOfDay(hour: 16, minute: 0));
+      final clampedEarly = regularMonday.clampDateTime(DateTime(2026, 11, 30, 7, 15));
+      expect(clampedEarly.hour, 9);
+      expect(clampedEarly.minute, 0);
+
+      // Monday with half-day exception overrides weekly schedule
+      final halfDayMonday = schedule.resolveForDate(DateTime(2026, 12, 7));
+      expect(halfDayMonday.open, isTrue);
+      expect(halfDayMonday.formattedRange, '10:00 - 13:00');
+      expect(halfDayMonday.reason, 'Medio día');
+
+      // Closed Sunday
+      final sunday = schedule.resolveForDate(DateTime(2026, 11, 29));
+      expect(sunday.open, isFalse);
+
+      // Closed holiday exception
+      final christmas = schedule.resolveForDate(DateTime(2026, 12, 25));
+      expect(christmas.open, isFalse);
+      expect(christmas.reason, 'Navidad');
     },
   );
 }

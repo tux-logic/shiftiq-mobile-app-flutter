@@ -587,3 +587,82 @@ class CustomerBranchCatalogDto {
     );
   }
 }
+
+/// DTO representing a weekday operating-hours entry.
+class OperatingHoursDayDto {
+  final String dayOfWeek;
+  final bool open;
+  final String? openTime;
+  final String? closeTime;
+  final int slotDurationMinutes;
+  final String? source;
+
+  OperatingHoursDayDto({
+    required this.dayOfWeek,
+    required this.open,
+    this.openTime,
+    this.closeTime,
+    this.slotDurationMinutes = 60,
+    this.source,
+  });
+
+  factory OperatingHoursDayDto.fromJson(Map<String, dynamic> json) {
+    return OperatingHoursDayDto(
+      dayOfWeek: (json['dayOfWeek'] ?? '').toString(),
+      open: json['open'] as bool? ?? true,
+      openTime: json['openTime']?.toString(),
+      closeTime: json['closeTime']?.toString(),
+      slotDurationMinutes:
+          (json['slotDurationMinutes'] as num?)?.toInt() ?? 60,
+      source: json['source']?.toString(),
+    );
+  }
+
+  OperatingHoursDay toDomain() => OperatingHoursDay(
+        dayOfWeek: dayOfWeek,
+        open: open,
+        openTime: openTime,
+        closeTime: closeTime,
+        slotDurationMinutes: slotDurationMinutes,
+        source: source,
+      );
+}
+
+/// DTO representing an operating-hours holiday/special exception.
+class OperatingHoursExceptionDto {
+  final String id;
+  final String date;
+  final bool open;
+  final String? openTime;
+  final String? closeTime;
+  final String? reason;
+
+  OperatingHoursExceptionDto({
+    required this.id,
+    required this.date,
+    required this.open,
+    this.openTime,
+    this.closeTime,
+    this.reason,
+  });
+
+  factory OperatingHoursExceptionDto.fromJson(Map<String, dynamic> json) {
+    return OperatingHoursExceptionDto(
+      id: (json['id'] ?? '').toString(),
+      date: (json['date'] ?? '').toString(),
+      open: json['open'] as bool? ?? false,
+      openTime: json['openTime']?.toString(),
+      closeTime: json['closeTime']?.toString(),
+      reason: json['reason']?.toString(),
+    );
+  }
+
+  OperatingHoursException toDomain() => OperatingHoursException(
+        id: id,
+        date: date,
+        open: open,
+        openTime: openTime,
+        closeTime: closeTime,
+        reason: reason,
+      );
+}
