@@ -137,6 +137,14 @@ class CoreRepositoryImpl implements CoreRepository {
   }
 
   @override
+  Future<List<CustomerBranchCatalogItem>> getBranchCatalog() async {
+    final list = await branchApi.getBranchCatalog();
+    return list
+        .map((json) => CustomerBranchCatalogDto.fromJson(json).toDomain())
+        .toList();
+  }
+
+  @override
   Future<void> setActiveBranch(Branch branch) async {
     await sessionStorage.setActiveBranch(
       branchId: branch.id,

@@ -1101,4 +1101,51 @@ class AppLocalizationsGenEn extends AppLocalizationsGen {
   @override
   String get no_vehicles_subtitle =>
       'Register your vehicle to view OBD-II telemetry, DTC alerts, and workshop history here.';
+
+  @override
+  String get customer_my_workshop_section => 'MY WORKSHOP';
+
+  @override
+  String get customer_no_workshop_title => 'No workshop linked';
+
+  @override
+  String get customer_no_workshop_subtitle =>
+      'Once a workshop registers you as an active customer, its branches will appear here for booking.';
+
+  @override
+  String get customer_upcoming_appointments_section => 'UPCOMING APPOINTMENTS';
+
+  @override
+  String get customer_no_upcoming_appointments =>
+      'You have no upcoming scheduled appointments.';
+
+  @override
+  String get customer_schedule_appointment => 'Book appointment';
+
+  @override
+  String get customer_free_bays_today => 'free bays today';
+
+  @override
+  String get customer_select_branch => 'Workshop branch *';
+
+  @override
+  String get customer_select_vehicle => 'Vehicle *';
+
+  @override
+  String get customer_appointment_date_time => 'Date & time *';
+
+  @override
+  String get customer_appointment_notes_hint => 'Notes or reason (optional)';
+
+  @override
+  String get customer_appointment_created_success =>
+      'Appointment booked successfully';
+
+  @override
+  String get customer_appointment_future_required =>
+      'Please select a future date and time';
+
+  @override
+  String get customer_add_vehicle_first =>
+      'Register a vehicle in the Vehicles tab first to book an appointment.';
 }

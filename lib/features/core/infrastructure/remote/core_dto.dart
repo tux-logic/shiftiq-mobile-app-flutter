@@ -510,3 +510,80 @@ class UserProfileContextDto {
     );
   }
 }
+
+/// DTO representing an entry from `GET /api/v1/branches/catalog`.
+class CustomerBranchCatalogDto {
+  final String branchId;
+  final String workshopId;
+  final String workshopBrandName;
+  final String workshopBusinessName;
+  final String branchCode;
+  final String branchName;
+  final String address;
+  final String phone;
+  final String? coverImageUrl;
+  final double? latitude;
+  final double? longitude;
+  final double averageRating;
+  final int reviewCount;
+  final int activeBaysCount;
+  final int freeBaysToday;
+
+  CustomerBranchCatalogDto({
+    required this.branchId,
+    required this.workshopId,
+    required this.workshopBrandName,
+    required this.workshopBusinessName,
+    required this.branchCode,
+    required this.branchName,
+    required this.address,
+    required this.phone,
+    this.coverImageUrl,
+    this.latitude,
+    this.longitude,
+    this.averageRating = 0.0,
+    this.reviewCount = 0,
+    this.activeBaysCount = 0,
+    this.freeBaysToday = 0,
+  });
+
+  factory CustomerBranchCatalogDto.fromJson(Map<String, dynamic> json) {
+    return CustomerBranchCatalogDto(
+      branchId: (json['branchId'] ?? json['id'] ?? '').toString(),
+      workshopId: (json['workshopId'] ?? '').toString(),
+      workshopBrandName: (json['workshopBrandName'] ?? '').toString(),
+      workshopBusinessName: (json['workshopBusinessName'] ?? '').toString(),
+      branchCode: (json['branchCode'] ?? '').toString(),
+      branchName: (json['branchName'] ?? '').toString(),
+      address: (json['address'] ?? '').toString(),
+      phone: (json['phone'] ?? '').toString(),
+      coverImageUrl: json['coverImageUrl']?.toString(),
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
+      averageRating: (json['averageRating'] as num?)?.toDouble() ?? 0.0,
+      reviewCount: (json['reviewCount'] as num?)?.toInt() ?? 0,
+      activeBaysCount: (json['activeBaysCount'] as num?)?.toInt() ?? 0,
+      freeBaysToday: (json['freeBaysToday'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  CustomerBranchCatalogItem toDomain() {
+    return CustomerBranchCatalogItem(
+      branchId: branchId,
+      workshopId: workshopId,
+      workshopBrandName: workshopBrandName,
+      workshopBusinessName: workshopBusinessName,
+      branchCode: branchCode,
+      branchName: branchName,
+      address: address,
+      phone: phone,
+      coverImageUrl: coverImageUrl,
+      latitude: latitude,
+      longitude: longitude,
+      averageRating: averageRating,
+      reviewCount: reviewCount,
+      activeBaysCount: activeBaysCount,
+      freeBaysToday: freeBaysToday,
+    );
+  }
+}

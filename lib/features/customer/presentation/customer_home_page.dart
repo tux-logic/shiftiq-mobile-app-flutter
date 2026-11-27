@@ -19,6 +19,7 @@ import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/sh
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_profile_avatar_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/widgets/customer_analytics_charts.dart';
+import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/widgets/customer_workshop_and_appointments.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/domain/iot_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/controllers/telemetry_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/views/live_sensors_monitor_page.dart';
@@ -107,7 +108,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
       _ => loc.translate('customer_portal_title'),
     };
 
-    return Scaffold(
+    Widget buildScaffold(BuildContext context) => Scaffold(
       extendBody: true,
       backgroundColor: ShiftIQColors.warmNeutral,
       body: ShiftIQCollapsibleHeaderBody(
@@ -121,25 +122,32 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
             ),
           ],
         ),
-        body: _viewModel == null
-            ? _buildBodyForTab(context, loc, email, null)
-            : ListenableBuilder(
-                listenable: _viewModel!,
-                builder: (context, _) =>
-                    _buildBodyForTab(context, loc, email, _viewModel),
-              ),
+        body: _buildBodyForTab(context, loc, email, _viewModel),
       ),
-      floatingActionButton: (_selectedTab == 1 && _viewModel != null)
+      floatingActionButton: (_selectedTab == 0 &&
+              _viewModel != null &&
+              _viewModel!.branches.isNotEmpty)
           ? Padding(
               padding: const EdgeInsets.only(bottom: 4),
               child: ShiftIQPrimaryPillButton(
-                key: const Key('btn_customer_add_vehicle'),
-                label: loc.translate('add_vehicle'),
-                icon: Icons.add_rounded,
-                onPressed: () => _showAddVehicleSheet(context, _viewModel!),
+                key: const Key('btn_customer_schedule_appointment'),
+                label: loc.translate('customer_schedule_appointment'),
+                icon: Icons.calendar_today_rounded,
+                onPressed: () =>
+                    showCustomerScheduleAppointmentSheet(context, _viewModel!),
               ),
             )
-          : null,
+          : (_selectedTab == 1 && _viewModel != null)
+              ? Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: ShiftIQPrimaryPillButton(
+                    key: const Key('btn_customer_add_vehicle'),
+                    label: loc.translate('add_vehicle'),
+                    icon: Icons.add_rounded,
+                    onPressed: () => _showAddVehicleSheet(context, _viewModel!),
+                  ),
+                )
+              : null,
       bottomNavigationBar: ShiftIQFloatingNavBar(
         key: const Key('customer_navigation_bar'),
         selectedIndex: _selectedTab,
@@ -177,6 +185,12 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           ),
         ],
       ),
+    );
+
+    if (_viewModel == null) return buildScaffold(context);
+    return ListenableBuilder(
+      listenable: _viewModel!,
+      builder: (context, _) => buildScaffold(context),
     );
   }
 
@@ -280,6 +294,142 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           if (vm != null && vm.workOrders.isNotEmpty) ...[
             const SizedBox(height: 14),
             CustomerWorkOrderSpendingChart(workOrders: vm.workOrders),
+          ],
+          if (vm != null) ...[
+            const SizedBox(height: 22),
+            Text(
+              loc.translate('customer_my_workshop_section'),
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF64748B),
+                letterSpacing: 0.6,
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (vm.branches.isEmpty)
+              ShiftIQTactileCard(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: ShiftIQColors.borderSlate),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.store_mall_directory_outlined,
+                          color: Color(0xFF64748B),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              loc.translate('customer_no_workshop_title'),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: ShiftIQColors.graphiteText,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              loc.translate('customer_no_workshop_subtitle'),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              ...vm.branches.map(
+                (branch) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: CustomerWorkshopCard(
+                    branch: branch,
+                    onScheduleTap: () => showCustomerScheduleAppointmentSheet(
+                      context,
+                      vm,
+                      initialBranchId: branch.branchId,
+                    ),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 10),
+            Text(
+              loc.translate('customer_upcoming_appointments_section'),
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF64748B),
+                letterSpacing: 0.6,
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (summary == null || summary.upcomingAppointments.isEmpty)
+              ShiftIQTactileCard(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: ShiftIQColors.borderSlate),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.event_note_outlined,
+                        color: Color(0xFF64748B),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          loc.translate('customer_no_upcoming_appointments'),
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            color: Color(0xFF64748B),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              ...summary.upcomingAppointments.map((apt) {
+                final branch = vm.branches
+                    .where((b) => b.branchId == apt.branchId)
+                    .firstOrNull;
+                final vehicle = vm.vehicles
+                    .where((v) => v.id == apt.vehicleId)
+                    .firstOrNull;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: CustomerUpcomingAppointmentCard(
+                    appointment: apt,
+                    branch: branch,
+                    vehicle: vehicle,
+                  ),
+                );
+              }),
           ],
           if (activeOrders.isNotEmpty) ...[
             const SizedBox(height: 22),

@@ -1,4 +1,5 @@
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/models/aggregates/branch.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/domain/models/customer_branch_catalog_item.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/models/aggregates/specialty.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/models/aggregates/subscription.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/models/aggregates/workshop.dart';
@@ -54,6 +55,8 @@ abstract class CoreRepository {
   Future<Branch> getBranchById(String branchId);
 
   Future<List<Branch>> getBranchesByWorkshop(String workshopId);
+
+  Future<List<CustomerBranchCatalogItem>> getBranchCatalog();
 
   Future<void> setActiveBranch(Branch branch);
 

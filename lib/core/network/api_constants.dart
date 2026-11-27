@@ -69,6 +69,7 @@ class ApiConstants {
   ) =>
       '/api/v1/workshops/$workshopId/specialties/$specialtyId/history';
   static const String branches = '/api/v1/branches';
+  static const String branchesCatalog = '/api/v1/branches/catalog';
   static String branchById(String id) => '/api/v1/branches/$id';
   static String workshopBranches(String workshopId) =>
       '/api/v1/branches?workshopId=$workshopId';

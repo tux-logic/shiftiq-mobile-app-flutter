@@ -22,6 +22,7 @@ import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/forgot_pas
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/register_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/create_workshop.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_customer_branch_catalog.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_user_branches.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_user_profile_context.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_workshops.dart';
@@ -251,6 +252,12 @@ void setupDependencies() {
     () => GetUserBranchesUseCase(
       repository: getIt<CoreRepository>(),
       employeeRegistrationApi: getIt<EmployeeRegistrationApi>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<GetCustomerBranchCatalogUseCase>(
+    () => GetCustomerBranchCatalogUseCase(
+      repository: getIt<CoreRepository>(),
     ),
   );
 
@@ -636,6 +643,8 @@ void setupDependencies() {
       registerVehicle: getIt<RegisterVehicle>(),
       getUserProfileContext: getIt<GetUserProfileContextUseCase>(),
       getDtcAlerts: getIt<GetDtcAlerts>(),
+      getBranchCatalog: getIt<GetCustomerBranchCatalogUseCase>(),
+      createAppointment: getIt<CreateAppointmentUseCase>(),
     ),
   );
 }

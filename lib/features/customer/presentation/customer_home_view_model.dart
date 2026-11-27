@@ -4,7 +4,11 @@ import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/analytics_d
 import 'package:shiftiq_mobile_app_flutter/features/billing/application/usecases/manage_checkouts.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/application/usecases/manage_quotes.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_customer_branch_catalog.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_user_profile_context.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/create_appointment.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/fleet_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/application/usecases/get_customer_vehicles.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/application/usecases/get_dtc_alerts.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/application/usecases/register_vehicle.dart';
@@ -24,6 +28,8 @@ class CustomerHomeViewModel extends ChangeNotifier {
   final RegisterVehicle? registerVehicle;
   final GetUserProfileContextUseCase? getUserProfileContext;
   final GetDtcAlerts? getDtcAlerts;
+  final GetCustomerBranchCatalogUseCase? getBranchCatalog;
+  final CreateAppointmentUseCase? createAppointment;
 
   CustomerHomeViewModel({
     required this.manageWorkOrders,
@@ -34,6 +40,8 @@ class CustomerHomeViewModel extends ChangeNotifier {
     this.registerVehicle,
     this.getUserProfileContext,
     this.getDtcAlerts,
+    this.getBranchCatalog,
+    this.createAppointment,
   });
 
   bool _isLoading = false;
@@ -51,11 +59,19 @@ class CustomerHomeViewModel extends ChangeNotifier {
   bool _isRegisteringVehicle = false;
   bool get isRegisteringVehicle => _isRegisteringVehicle;
 
+  bool _isSchedulingAppointment = false;
+  bool get isSchedulingAppointment => _isSchedulingAppointment;
+
   String? _error;
   String? get error => _error;
 
   CustomerAnalyticsSummary? _summary;
   CustomerAnalyticsSummary? get summary => _summary;
+
+  List<CustomerBranchCatalogItem> _branches = const [];
+  List<CustomerBranchCatalogItem> get branches => _branches;
+
+  String _customerId = '';
 
   List<Vehicle> _vehicles = const [];
   List<Vehicle> get vehicles => _vehicles;
@@ -134,12 +150,25 @@ class CustomerHomeViewModel extends ChangeNotifier {
               .then<CustomerAnalyticsSummary?>((s) => s)
               .catchError((_) => null)
           : Future.value(null);
+      final branchesFuture = getBranchCatalog != null
+          ? getBranchCatalog!
+              .execute()
+              .catchError((_) => <CustomerBranchCatalogItem>[])
+          : Future.value(<CustomerBranchCatalogItem>[]);
 
-      final results =
-          await Future.wait([ordersFuture, quotesFuture, summaryFuture]);
+      final results = await Future.wait([
+        ordersFuture,
+        quotesFuture,
+        summaryFuture,
+        branchesFuture,
+      ]);
       _workOrders = results[0] as List<WorkOrder>;
       _quotes = results[1] as List<Quote>;
       _summary = results[2] as CustomerAnalyticsSummary?;
+      _branches = results[3] as List<CustomerBranchCatalogItem>;
+      if ((_summary?.customerId ?? '').isNotEmpty) {
+        _customerId = _summary!.customerId;
+      }
 
       await _loadVehiclesAndDtc();
     } catch (e) {
@@ -150,16 +179,80 @@ class CustomerHomeViewModel extends ChangeNotifier {
     }
   }
 
+  Future<String> _resolveCustomerId() async {
+    if ((_summary?.customerId ?? '').isNotEmpty) {
+      _customerId = _summary!.customerId;
+      return _customerId;
+    }
+    if (_customerId.isNotEmpty) return _customerId;
+    if (getUserProfileContext != null) {
+      try {
+        final ctx = await getUserProfileContext!.execute();
+        _customerId = ctx.customer?.customerId ?? '';
+      } catch (_) {}
+    }
+    return _customerId;
+  }
+
+  /// Schedules a new workshop appointment for the authenticated customer via
+  /// `POST /api/v1/appointments` and refreshes the customer summary.
+  Future<Appointment?> scheduleAppointment({
+    required String branchId,
+    required String vehicleId,
+    required DateTime scheduledStart,
+    DateTime? scheduledEnd,
+    String? notes,
+  }) async {
+    if (createAppointment == null) {
+      _error = 'Appointment scheduling is unavailable in this session.';
+      notifyListeners();
+      return null;
+    }
+
+    _isSchedulingAppointment = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final customerId = await _resolveCustomerId();
+      if (customerId.isEmpty) {
+        _error = 'Unable to resolve customer profile for appointment booking.';
+        return null;
+      }
+
+      final vehicle = _vehicles.where((v) => v.id == vehicleId).firstOrNull;
+      final created = await createAppointment!.execute(
+        branchId: branchId,
+        customerId: customerId,
+        vehicleId: vehicleId,
+        scheduledStart: scheduledStart,
+        scheduledEnd: scheduledEnd,
+        notes: notes?.trim() ?? '',
+        vehiclePlate: vehicle?.plateNumber ?? 'S/P',
+        vehicleModel: vehicle != null
+            ? '${vehicle.brand} ${vehicle.model}'.trim()
+            : 'Vehicle',
+      );
+
+      if (getCustomerSummary != null) {
+        try {
+          _summary = await getCustomerSummary!.execute();
+        } catch (_) {}
+      }
+      return created;
+    } catch (e) {
+      _error = e.toString().replaceFirst('Exception: ', '');
+      return null;
+    } finally {
+      _isSchedulingAppointment = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> _loadVehiclesAndDtc() async {
     if (getCustomerVehicles == null) return;
 
-    var customerId = _summary?.customerId ?? '';
-    if (customerId.isEmpty && getUserProfileContext != null) {
-      try {
-        final ctx = await getUserProfileContext!.execute();
-        customerId = ctx.customer?.customerId ?? '';
-      } catch (_) {}
-    }
+    final customerId = await _resolveCustomerId();
     if (customerId.isEmpty) return;
 
     try {

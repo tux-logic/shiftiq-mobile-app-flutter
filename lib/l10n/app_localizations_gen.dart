@@ -2239,6 +2239,90 @@ abstract class AppLocalizationsGen {
   /// In es, this message translates to:
   /// **'Registra tu vehículo para ver aquí su telemetría OBD-II, alertas DTC e historial en taller.'**
   String get no_vehicles_subtitle;
+
+  /// No description provided for @customer_my_workshop_section.
+  ///
+  /// In es, this message translates to:
+  /// **'MI TALLER ASOCIADO'**
+  String get customer_my_workshop_section;
+
+  /// No description provided for @customer_no_workshop_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin taller asociado'**
+  String get customer_no_workshop_title;
+
+  /// No description provided for @customer_no_workshop_subtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando un taller te registre como cliente activo, verás aquí sus sedes y podrás agendar citas.'**
+  String get customer_no_workshop_subtitle;
+
+  /// No description provided for @customer_upcoming_appointments_section.
+  ///
+  /// In es, this message translates to:
+  /// **'PRÓXIMAS CITAS'**
+  String get customer_upcoming_appointments_section;
+
+  /// No description provided for @customer_no_upcoming_appointments.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes citas programadas próximamente.'**
+  String get customer_no_upcoming_appointments;
+
+  /// No description provided for @customer_schedule_appointment.
+  ///
+  /// In es, this message translates to:
+  /// **'Agendar cita'**
+  String get customer_schedule_appointment;
+
+  /// No description provided for @customer_free_bays_today.
+  ///
+  /// In es, this message translates to:
+  /// **'bahías libres hoy'**
+  String get customer_free_bays_today;
+
+  /// No description provided for @customer_select_branch.
+  ///
+  /// In es, this message translates to:
+  /// **'Sede del taller *'**
+  String get customer_select_branch;
+
+  /// No description provided for @customer_select_vehicle.
+  ///
+  /// In es, this message translates to:
+  /// **'Vehículo *'**
+  String get customer_select_vehicle;
+
+  /// No description provided for @customer_appointment_date_time.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha y hora *'**
+  String get customer_appointment_date_time;
+
+  /// No description provided for @customer_appointment_notes_hint.
+  ///
+  /// In es, this message translates to:
+  /// **'Motivo o notas (opcional)'**
+  String get customer_appointment_notes_hint;
+
+  /// No description provided for @customer_appointment_created_success.
+  ///
+  /// In es, this message translates to:
+  /// **'Cita agendada correctamente'**
+  String get customer_appointment_created_success;
+
+  /// No description provided for @customer_appointment_future_required.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una fecha y hora futura'**
+  String get customer_appointment_future_required;
+
+  /// No description provided for @customer_add_vehicle_first.
+  ///
+  /// In es, this message translates to:
+  /// **'Registra primero un vehículo en la pestaña Vehículos para agendar una cita.'**
+  String get customer_add_vehicle_first;
 }
 
 class _AppLocalizationsGenDelegate

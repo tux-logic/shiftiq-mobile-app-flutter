@@ -72,6 +72,17 @@ class BranchApi {
     return response as Map<String, dynamic>;
   }
 
+  /// GET /api/v1/branches/catalog - List active branches scoped to customer workshops.
+  Future<List<Map<String, dynamic>>> getBranchCatalog() async {
+    final response = await apiClient.get(
+      ApiConstants.branchesCatalog,
+    );
+    if (response is List) {
+      return response.cast<Map<String, dynamic>>();
+    }
+    return [];
+  }
+
   /// GET /api/v1/branches/{branchId} - Get branch details by ID.
   Future<Map<String, dynamic>> getBranchById(String branchId) async {
     final response = await apiClient.get(
