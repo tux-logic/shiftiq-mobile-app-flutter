@@ -2605,6 +2605,210 @@ abstract class AppLocalizationsGen {
   /// In es, this message translates to:
   /// **'Elige una hora dentro del horario'**
   String get customer_time_outside_hours_error;
+
+  /// No description provided for @iot_latest_snapshot_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Último Snapshot OBD-II'**
+  String get iot_latest_snapshot_title;
+
+  /// No description provided for @iot_vehicle_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Vehículo'**
+  String get iot_vehicle_label;
+
+  /// No description provided for @iot_recorded_reading.
+  ///
+  /// In es, this message translates to:
+  /// **'Lectura registrada'**
+  String get iot_recorded_reading;
+
+  /// No description provided for @iot_latest_snapshot_synced.
+  ///
+  /// In es, this message translates to:
+  /// **'Último snapshot sincronizado'**
+  String get iot_latest_snapshot_synced;
+
+  /// No description provided for @iot_pull_to_refresh.
+  ///
+  /// In es, this message translates to:
+  /// **'Desliza para actualizar'**
+  String get iot_pull_to_refresh;
+
+  /// No description provided for @iot_latest_snapshot_readings.
+  ///
+  /// In es, this message translates to:
+  /// **'LECTURAS DEL ÚLTIMO SNAPSHOT'**
+  String get iot_latest_snapshot_readings;
+
+  /// No description provided for @iot_no_snapshots_recorded.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin snapshots registrados'**
+  String get iot_no_snapshots_recorded;
+
+  /// No description provided for @iot_pull_down_for_readings.
+  ///
+  /// In es, this message translates to:
+  /// **'Desliza hacia abajo para consultar nuevas lecturas'**
+  String get iot_pull_down_for_readings;
+
+  /// No description provided for @iot_min_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Mín'**
+  String get iot_min_label;
+
+  /// No description provided for @iot_max_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Máx'**
+  String get iot_max_label;
+
+  /// No description provided for @iot_no_active_telemetry_branch.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay vehículos con telemetría activa en esta sede.'**
+  String get iot_no_active_telemetry_branch;
+
+  /// No description provided for @iot_obd_alert_prefix.
+  ///
+  /// In es, this message translates to:
+  /// **'Alerta OBD-II Código'**
+  String get iot_obd_alert_prefix;
+
+  /// No description provided for @iot_ai_diagnosis_prefix.
+  ///
+  /// In es, this message translates to:
+  /// **'Diagnóstico IA'**
+  String get iot_ai_diagnosis_prefix;
+
+  /// No description provided for @iot_telemetry_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Telemetría IoT & OBD-II'**
+  String get iot_telemetry_title;
+
+  /// No description provided for @iot_dtc_snapshots_subtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Alertas DTC & Snapshots'**
+  String get iot_dtc_snapshots_subtitle;
+
+  /// No description provided for @iot_obd_snapshots_badge.
+  ///
+  /// In es, this message translates to:
+  /// **'Snapshots OBD-II'**
+  String get iot_obd_snapshots_badge;
+
+  /// No description provided for @iot_tab_all.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas'**
+  String get iot_tab_all;
+
+  /// No description provided for @iot_tab_critical.
+  ///
+  /// In es, this message translates to:
+  /// **'Críticas'**
+  String get iot_tab_critical;
+
+  /// No description provided for @iot_tab_moderate.
+  ///
+  /// In es, this message translates to:
+  /// **'Moderadas'**
+  String get iot_tab_moderate;
+
+  /// No description provided for @iot_no_active_dtc_fleet.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin códigos DTC activos en la flota'**
+  String get iot_no_active_dtc_fleet;
+
+  /// No description provided for @iot_all_vehicles_normal.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos los vehículos conectados operan dentro de parámetros'**
+  String get iot_all_vehicles_normal;
+
+  /// No description provided for @iot_diagnosis_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Diagnóstico'**
+  String get iot_diagnosis_title;
+
+  /// No description provided for @iot_system_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Sistema'**
+  String get iot_system_label;
+
+  /// No description provided for @iot_ai_recommendation_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Recomendación Técnica IA ShiftIQ'**
+  String get iot_ai_recommendation_title;
+
+  /// No description provided for @iot_freeze_frame_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Parámetros Freeze Frame en el Momento del Fallo'**
+  String get iot_freeze_frame_title;
+
+  /// No description provided for @dtc_severity_critical.
+  ///
+  /// In es, this message translates to:
+  /// **'Crítica / Inmediata'**
+  String get dtc_severity_critical;
+
+  /// No description provided for @dtc_severity_moderate.
+  ///
+  /// In es, this message translates to:
+  /// **'Moderada / Advertencia'**
+  String get dtc_severity_moderate;
+
+  /// No description provided for @dtc_severity_low.
+  ///
+  /// In es, this message translates to:
+  /// **'Baja / Informativa'**
+  String get dtc_severity_low;
+
+  /// No description provided for @dtc_status_active.
+  ///
+  /// In es, this message translates to:
+  /// **'Activo / No Resuelto'**
+  String get dtc_status_active;
+
+  /// No description provided for @dtc_status_in_inspection.
+  ///
+  /// In es, this message translates to:
+  /// **'En Diagnóstico'**
+  String get dtc_status_in_inspection;
+
+  /// No description provided for @dtc_status_resolved.
+  ///
+  /// In es, this message translates to:
+  /// **'Resuelto / Borrado'**
+  String get dtc_status_resolved;
+
+  /// No description provided for @time_ago_minutes.
+  ///
+  /// In es, this message translates to:
+  /// **'Hace {n} min'**
+  String time_ago_minutes(Object n);
+
+  /// No description provided for @time_ago_hours.
+  ///
+  /// In es, this message translates to:
+  /// **'Hace {n} horas'**
+  String time_ago_hours(Object n);
+
+  /// No description provided for @time_ago_days.
+  ///
+  /// In es, this message translates to:
+  /// **'Hace {n} días'**
+  String time_ago_days(Object n);
 }
 
 class _AppLocalizationsGenDelegate

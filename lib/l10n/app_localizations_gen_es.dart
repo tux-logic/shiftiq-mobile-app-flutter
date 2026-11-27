@@ -1306,4 +1306,116 @@ class AppLocalizationsGenEs extends AppLocalizationsGen {
   @override
   String get customer_time_outside_hours_error =>
       'Elige una hora dentro del horario';
+
+  @override
+  String get iot_latest_snapshot_title => 'Último Snapshot OBD-II';
+
+  @override
+  String get iot_vehicle_label => 'Vehículo';
+
+  @override
+  String get iot_recorded_reading => 'Lectura registrada';
+
+  @override
+  String get iot_latest_snapshot_synced => 'Último snapshot sincronizado';
+
+  @override
+  String get iot_pull_to_refresh => 'Desliza para actualizar';
+
+  @override
+  String get iot_latest_snapshot_readings => 'LECTURAS DEL ÚLTIMO SNAPSHOT';
+
+  @override
+  String get iot_no_snapshots_recorded => 'Sin snapshots registrados';
+
+  @override
+  String get iot_pull_down_for_readings =>
+      'Desliza hacia abajo para consultar nuevas lecturas';
+
+  @override
+  String get iot_min_label => 'Mín';
+
+  @override
+  String get iot_max_label => 'Máx';
+
+  @override
+  String get iot_no_active_telemetry_branch =>
+      'No hay vehículos con telemetría activa en esta sede.';
+
+  @override
+  String get iot_obd_alert_prefix => 'Alerta OBD-II Código';
+
+  @override
+  String get iot_ai_diagnosis_prefix => 'Diagnóstico IA';
+
+  @override
+  String get iot_telemetry_title => 'Telemetría IoT & OBD-II';
+
+  @override
+  String get iot_dtc_snapshots_subtitle => 'Alertas DTC & Snapshots';
+
+  @override
+  String get iot_obd_snapshots_badge => 'Snapshots OBD-II';
+
+  @override
+  String get iot_tab_all => 'Todas';
+
+  @override
+  String get iot_tab_critical => 'Críticas';
+
+  @override
+  String get iot_tab_moderate => 'Moderadas';
+
+  @override
+  String get iot_no_active_dtc_fleet => 'Sin códigos DTC activos en la flota';
+
+  @override
+  String get iot_all_vehicles_normal =>
+      'Todos los vehículos conectados operan dentro de parámetros';
+
+  @override
+  String get iot_diagnosis_title => 'Diagnóstico';
+
+  @override
+  String get iot_system_label => 'Sistema';
+
+  @override
+  String get iot_ai_recommendation_title => 'Recomendación Técnica IA ShiftIQ';
+
+  @override
+  String get iot_freeze_frame_title =>
+      'Parámetros Freeze Frame en el Momento del Fallo';
+
+  @override
+  String get dtc_severity_critical => 'Crítica / Inmediata';
+
+  @override
+  String get dtc_severity_moderate => 'Moderada / Advertencia';
+
+  @override
+  String get dtc_severity_low => 'Baja / Informativa';
+
+  @override
+  String get dtc_status_active => 'Activo / No Resuelto';
+
+  @override
+  String get dtc_status_in_inspection => 'En Diagnóstico';
+
+  @override
+  String get dtc_status_resolved => 'Resuelto / Borrado';
+
+  @override
+  String time_ago_minutes(Object n) {
+    return 'Hace $n min';
+  }
+
+  @override
+  String time_ago_hours(Object n) {
+    return 'Hace $n horas';
+  }
+
+  @override
+  String time_ago_days(Object n) {
+    return 'Hace $n días';
+  }
 }

@@ -1071,7 +1071,7 @@ class _CustomerVehicleCard extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    '${alert.code} · ${alert.severity.label}',
+                    '${alert.code} · ${alert.severity.localizedLabel(AppLocalizations.of(context))}',
                     style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w700,

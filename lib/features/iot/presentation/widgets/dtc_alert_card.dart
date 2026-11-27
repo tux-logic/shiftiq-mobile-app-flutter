@@ -103,7 +103,7 @@ class DtcAlertCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Flexible(
                             child: Text(
-                              alert.severity.label,
+                              alert.severity.localizedLabel(loc),
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
                               style: TextStyle(
@@ -119,7 +119,7 @@ class DtcAlertCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    alert.formattedTimeAgo,
+                    alert.localizedTimeAgo(loc),
                     style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
                   ),
                 ],

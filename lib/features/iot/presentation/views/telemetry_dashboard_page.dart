@@ -90,13 +90,14 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage>
   }
 
   void _openLiveSensors() {
+    final loc = AppLocalizations.of(context);
     final plate = _viewModel.alerts.isNotEmpty
         ? _viewModel.alerts.first.vehiclePlate
         : '';
     if (plate.isEmpty) {
       ShiftIQToast.show(
         context,
-        message: 'No hay vehículos con telemetría activa en esta sede.',
+        message: loc.translate('iot_no_active_telemetry_branch'),
         type: ShiftIQToastType.warning,
       );
       return;
@@ -112,6 +113,7 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage>
   }
 
   void _openWorkOrderFromDtc(DtcAlert alert) {
+    final loc = AppLocalizations.of(context);
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => CreateWorkOrderPage(
@@ -120,7 +122,7 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage>
           initialCustomerName: alert.customerName,
           initialModel: alert.vehicleModel,
           initialDiagnostic:
-              'Alerta OBD-II Código ${alert.code}: ${alert.description}. Diagnóstico IA: ${alert.aiDiagnosticRecommendation}',
+              '${loc.translate('iot_obd_alert_prefix')} ${alert.code}: ${alert.description}. ${loc.translate('iot_ai_diagnosis_prefix')}: ${alert.aiDiagnosticRecommendation}',
         ),
       ),
     );
@@ -133,8 +135,8 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage>
       backgroundColor: ShiftIQColors.warmNeutral,
       body: ShiftIQCollapsibleHeaderBody(
         header: ShiftIQPageHeader(
-          title: 'Telemetría IoT & OBD-II',
-          subtitle: 'Alertas DTC & Snapshots · $_branchName',
+          title: loc.translate('iot_telemetry_title'),
+          subtitle: '${loc.translate('iot_dtc_snapshots_subtitle')} · $_branchName',
         ),
         body: ListenableBuilder(
         listenable: _viewModel,
@@ -175,18 +177,18 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage>
                           color: ShiftIQColors.primaryBlue.withAlpha(18),
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.history_toggle_off_rounded,
                               size: 14,
                               color: ShiftIQColors.primaryBlue,
                             ),
-                            SizedBox(width: 6),
+                            const SizedBox(width: 6),
                             Text(
-                              'Snapshots OBD-II',
-                              style: TextStyle(
+                              loc.translate('iot_obd_snapshots_badge'),
+                              style: const TextStyle(
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w700,
                                 color: ShiftIQColors.primaryBlue,
@@ -211,17 +213,17 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage>
                 controller: _tabController,
                 tabs: [
                   ShiftIQKanbanTabItem(
-                    label: 'Todas',
+                    label: loc.translate('iot_tab_all'),
                     count: _viewModel.alertsForSeverity(null).length,
                   ),
                   ShiftIQKanbanTabItem(
-                    label: 'Críticas',
+                    label: loc.translate('iot_tab_critical'),
                     count: _viewModel
                         .alertsForSeverity(DtcSeverity.critical)
                         .length,
                   ),
                   ShiftIQKanbanTabItem(
-                    label: 'Moderadas',
+                    label: loc.translate('iot_tab_moderate'),
                     count: _viewModel
                         .alertsForSeverity(DtcSeverity.moderate)
                         .length,
@@ -282,6 +284,7 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage>
   }
 
   Widget _buildAlertsTab(bool isLoading, DtcSeverity? severity) {
+    final loc = AppLocalizations.of(context);
     final tabAlerts = _viewModel.alertsForSeverity(severity);
     return ShiftIQPullToRefresh(
       onRefresh: () => _viewModel.loadDtcAlerts(_effectiveBranchId),
@@ -293,23 +296,23 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage>
                 ? ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(32, 64, 32, 120),
-                    children: const [
-                      Center(child: ShiftIQEmptyStateIcon()),
-                      SizedBox(height: 16),
+                    children: [
+                      const Center(child: ShiftIQEmptyStateIcon()),
+                      const SizedBox(height: 16),
                       Text(
-                        'Sin códigos DTC activos en la flota',
+                        loc.translate('iot_no_active_dtc_fleet'),
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 15.5,
                           fontWeight: FontWeight.w700,
                           color: ShiftIQColors.graphiteText,
                         ),
                       ),
-                      SizedBox(height: 6),
+                      const SizedBox(height: 6),
                       Text(
-                        'Todos los vehículos conectados operan dentro de parámetros',
+                        loc.translate('iot_all_vehicles_normal'),
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 13,
                           color: Color(0xFF64748B),
                         ),

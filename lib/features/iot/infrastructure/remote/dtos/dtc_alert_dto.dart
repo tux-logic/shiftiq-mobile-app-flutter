@@ -39,15 +39,15 @@ class DtcAlertDto {
       branchId: json['branchId']?.toString() ?? json['branch_id']?.toString() ?? '',
       vehicleId: json['vehicleId']?.toString() ?? json['vehicle_id']?.toString() ?? '',
       vehiclePlate: json['vehiclePlate']?.toString() ?? json['vehicle_plate']?.toString() ?? 'S/P',
-      vehicleModel: json['vehicleModel']?.toString() ?? json['vehicle_model']?.toString() ?? 'Vehículo General',
-      customerName: json['customerName']?.toString() ?? json['customer_name']?.toString() ?? 'Cliente General',
+      vehicleModel: json['vehicleModel']?.toString() ?? json['vehicle_model']?.toString() ?? 'General Vehicle',
+      customerName: json['customerName']?.toString() ?? json['customer_name']?.toString() ?? 'General Customer',
       code: json['dtcCode']?.toString() ?? json['code']?.toString() ?? 'P0000',
-      description: json['description']?.toString() ?? 'Código DTC',
-      systemCategory: json['systemCategory']?.toString() ?? json['system_category']?.toString() ?? 'Motor',
+      description: json['description']?.toString() ?? 'DTC Code',
+      systemCategory: json['systemCategory']?.toString() ?? json['system_category']?.toString() ?? 'Engine',
       severity: json['severity']?.toString() ?? 'MODERATE',
       aiDiagnosticRecommendation: json['aiDiagnosticRecommendation']?.toString() ??
           json['ai_diagnostic_recommendation']?.toString() ??
-          'Inspección computarizada requerida',
+          'Computerized inspection required',
       detectedAt: json['createdAt']?.toString() ??
           json['detectedAt']?.toString() ??
           json['detected_at']?.toString() ??

@@ -19,6 +19,7 @@ class DtcDetailPage extends StatelessWidget {
   });
 
   void _openWorkOrder(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => CreateWorkOrderPage(
@@ -27,7 +28,7 @@ class DtcDetailPage extends StatelessWidget {
           initialCustomerName: alert.customerName,
           initialModel: alert.vehicleModel,
           initialDiagnostic:
-              'Alerta OBD-II Código ${alert.code}: ${alert.description}. Diagnóstico IA: ${alert.aiDiagnosticRecommendation}',
+              '${loc.translate('iot_obd_alert_prefix')} ${alert.code}: ${alert.description}. ${loc.translate('iot_ai_diagnosis_prefix')}: ${alert.aiDiagnosticRecommendation}',
         ),
       ),
     );
@@ -47,7 +48,7 @@ class DtcDetailPage extends StatelessWidget {
       backgroundColor: ShiftIQColors.warmNeutral,
       body: ShiftIQCollapsibleHeaderBody(
         header: ShiftIQPageHeader(
-          title: 'Diagnóstico ${alert.code}',
+          title: '${loc.translate('iot_diagnosis_title')} ${alert.code}',
           subtitle: '${alert.vehiclePlate} · ${alert.vehicleModel}',
           showBackButton: true,
         ),
@@ -95,7 +96,7 @@ class DtcDetailPage extends StatelessWidget {
                       ),
                       const SizedBox(width: 10),
                       Text(
-                        alert.severity.label,
+                        alert.severity.localizedLabel(loc),
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -104,7 +105,7 @@ class DtcDetailPage extends StatelessWidget {
                       ),
                       const Spacer(),
                       Text(
-                        alert.formattedTimeAgo,
+                        alert.localizedTimeAgo(loc),
                         style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
                       ),
                     ],
@@ -120,7 +121,7 @@ class DtcDetailPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Sistema: ${alert.systemCategory}',
+                    '${loc.translate('iot_system_label')}: ${alert.systemCategory}',
                     style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                   ),
                 ],
@@ -147,9 +148,9 @@ class DtcDetailPage extends StatelessWidget {
                         size: 20,
                       ),
                       const SizedBox(width: 8),
-                      const Text(
-                        'Recomendación Técnica IA ShiftIQ',
-                        style: TextStyle(
+                      Text(
+                        loc.translate('iot_ai_recommendation_title'),
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: ShiftIQColors.primaryBlue,
@@ -172,9 +173,9 @@ class DtcDetailPage extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Freeze Frame Data Table
-            const Text(
-              'Parámetros Freeze Frame en el Momento del Fallo',
-              style: TextStyle(
+            Text(
+              loc.translate('iot_freeze_frame_title'),
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: ShiftIQColors.graphiteText,

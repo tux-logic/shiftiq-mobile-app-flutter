@@ -1297,4 +1297,116 @@ class AppLocalizationsGenEn extends AppLocalizationsGen {
   @override
   String get customer_time_outside_hours_error =>
       'Choose a time within operating hours';
+
+  @override
+  String get iot_latest_snapshot_title => 'Latest OBD-II Snapshot';
+
+  @override
+  String get iot_vehicle_label => 'Vehicle';
+
+  @override
+  String get iot_recorded_reading => 'Recorded reading';
+
+  @override
+  String get iot_latest_snapshot_synced => 'Latest snapshot synced';
+
+  @override
+  String get iot_pull_to_refresh => 'Pull down to refresh';
+
+  @override
+  String get iot_latest_snapshot_readings => 'LATEST SNAPSHOT READINGS';
+
+  @override
+  String get iot_no_snapshots_recorded => 'No snapshots recorded';
+
+  @override
+  String get iot_pull_down_for_readings =>
+      'Pull down to check for new readings';
+
+  @override
+  String get iot_min_label => 'Min';
+
+  @override
+  String get iot_max_label => 'Max';
+
+  @override
+  String get iot_no_active_telemetry_branch =>
+      'No vehicles with active telemetry in this branch.';
+
+  @override
+  String get iot_obd_alert_prefix => 'OBD-II Alert Code';
+
+  @override
+  String get iot_ai_diagnosis_prefix => 'AI Diagnosis';
+
+  @override
+  String get iot_telemetry_title => 'IoT & OBD-II Telemetry';
+
+  @override
+  String get iot_dtc_snapshots_subtitle => 'DTC Alerts & Snapshots';
+
+  @override
+  String get iot_obd_snapshots_badge => 'OBD-II Snapshots';
+
+  @override
+  String get iot_tab_all => 'All';
+
+  @override
+  String get iot_tab_critical => 'Critical';
+
+  @override
+  String get iot_tab_moderate => 'Moderate';
+
+  @override
+  String get iot_no_active_dtc_fleet => 'No active DTC codes in the fleet';
+
+  @override
+  String get iot_all_vehicles_normal =>
+      'All connected vehicles are operating within parameters';
+
+  @override
+  String get iot_diagnosis_title => 'Diagnosis';
+
+  @override
+  String get iot_system_label => 'System';
+
+  @override
+  String get iot_ai_recommendation_title =>
+      'ShiftIQ AI Technical Recommendation';
+
+  @override
+  String get iot_freeze_frame_title => 'Freeze Frame Parameters at Fault Time';
+
+  @override
+  String get dtc_severity_critical => 'Critical / Immediate';
+
+  @override
+  String get dtc_severity_moderate => 'Moderate / Warning';
+
+  @override
+  String get dtc_severity_low => 'Low / Informational';
+
+  @override
+  String get dtc_status_active => 'Active / Unresolved';
+
+  @override
+  String get dtc_status_in_inspection => 'In Inspection';
+
+  @override
+  String get dtc_status_resolved => 'Resolved / Cleared';
+
+  @override
+  String time_ago_minutes(Object n) {
+    return '${n}m ago';
+  }
+
+  @override
+  String time_ago_hours(Object n) {
+    return '${n}h ago';
+  }
+
+  @override
+  String time_ago_days(Object n) {
+    return '${n}d ago';
+  }
 }
