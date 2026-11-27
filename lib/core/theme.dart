@@ -172,6 +172,9 @@ class MaterialTheme {
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
+      timePickerTheme: const TimePickerThemeData(
+        inputDecorationTheme: InputDecorationTheme(),
+      ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: colorScheme.surface,
         indicatorColor: colorScheme.primaryContainer.withAlpha(80),

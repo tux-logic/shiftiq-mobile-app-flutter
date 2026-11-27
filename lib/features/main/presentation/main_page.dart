@@ -4,6 +4,7 @@ import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_floating_nav_bar.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/views/dashboard_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/analytics/presentation/views/employee_dashboard_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_page.dart';
@@ -48,12 +49,14 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage>
     with SingleTickerProviderStateMixin {
   late int _currentIndex;
-  int _transitionDirection = 1;
   late final AnimationController _tabController;
   late final Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   MobileRoleScope? _cachedScope;
   late List<_NavDestinationSpec> _cachedSpecs;
+  final _workOrdersKey = GlobalKey<WorkOrdersPageState>();
+  final _appointmentsKey = GlobalKey<AppointmentsPageState>();
+  final _inventoryKey = GlobalKey<InventoryPageState>();
 
   MobileRoleScope get _effectiveScope {
     if (widget.roleScope != null) return widget.roleScope!;
@@ -93,10 +96,9 @@ class _MainPageState extends State<MainPage>
     if (index == _currentIndex) return;
     final direction = index > _currentIndex ? 1 : -1;
     setState(() {
-      _transitionDirection = direction;
       _currentIndex = index;
       _slideAnimation = Tween<Offset>(
-        begin: Offset(0.025 * _transitionDirection, 0),
+        begin: Offset(0.025 * direction, 0),
         end: Offset.zero,
       ).animate(
         CurvedAnimation(parent: _tabController, curve: Curves.easeOutCubic),
@@ -130,7 +132,7 @@ class _MainPageState extends State<MainPage>
           labelKey: 'orders_tab',
           page: override != null && override.length > 1
               ? override[1]
-              : const WorkOrdersPage(),
+              : WorkOrdersPage(key: _workOrdersKey),
         ),
         _NavDestinationSpec(
           key: const Key('nav_appointments'),
@@ -139,7 +141,7 @@ class _MainPageState extends State<MainPage>
           labelKey: 'appointments_tab',
           page: override != null && override.length > 2
               ? override[2]
-              : const AppointmentsPage(),
+              : AppointmentsPage(key: _appointmentsKey),
         ),
         _NavDestinationSpec(
           key: const Key('nav_inventory'),
@@ -148,7 +150,7 @@ class _MainPageState extends State<MainPage>
           labelKey: 'inventory_tab',
           page: override != null && override.length > 3
               ? override[3]
-              : const InventoryPage(),
+              : InventoryPage(key: _inventoryKey),
         ),
         _NavDestinationSpec(
           key: const Key('nav_telemetry'),
@@ -218,12 +220,16 @@ class _MainPageState extends State<MainPage>
         opacity: _fadeAnimation,
         child: SlideTransition(
           position: _slideAnimation,
-          child: IndexedStack(
-            index: safeIndex,
-            children: specs.map((spec) => spec.page).toList(),
+          child: ShiftIQActiveTabScope(
+            activeIndex: safeIndex,
+            child: IndexedStack(
+              index: safeIndex,
+              children: specs.map((spec) => spec.page).toList(),
+            ),
           ),
         ),
       ),
+      floatingActionButton: _buildOuterFloatingActionButton(scope, safeIndex, loc),
       bottomNavigationBar: ShiftIQFloatingNavBar(
         key: const Key('main_navigation_bar'),
         selectedIndex: safeIndex,
@@ -238,6 +244,41 @@ class _MainPageState extends State<MainPage>
               ),
             )
             .toList(),
+      ),
+    );
+  }
+
+  Widget? _buildOuterFloatingActionButton(
+    MobileRoleScope scope,
+    int safeIndex,
+    AppLocalizations loc,
+  ) {
+    if (scope != MobileRoleScope.ownerAdmin) return null;
+
+    final config = switch (safeIndex) {
+      1 => (
+          label: 'Nueva OT',
+          onPressed: () => _workOrdersKey.currentState?.openCreateModal(),
+        ),
+      2 => (
+          label: loc.translate('new_appointment'),
+          onPressed: () => _appointmentsKey.currentState?.openCreateModal(),
+        ),
+      3 => (
+          label: loc.translate('new_product'),
+          onPressed: () => _inventoryKey.currentState?.openCreateModal(),
+        ),
+      _ => null,
+    };
+
+    if (config == null) return null;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: ShiftIQPrimaryPillButton(
+        label: config.label,
+        icon: Icons.add_rounded,
+        onPressed: config.onPressed,
       ),
     );
   }

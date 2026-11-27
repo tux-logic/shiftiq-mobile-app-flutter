@@ -381,7 +381,7 @@ class AppLocalizationsGenEs extends AppLocalizationsGen {
   String get valuation => 'VALUACIÓN';
 
   @override
-  String get add_batch_btn => '+ Lote';
+  String get add_batch_btn => 'Lote';
 
   @override
   String get batch_entry => 'Ingresar Lote';
@@ -1068,4 +1068,119 @@ class AppLocalizationsGenEs extends AppLocalizationsGen {
 
   @override
   String get pending_short => 'Pend.';
+
+  @override
+  String get add_vehicle => 'Agregar vehículo';
+
+  @override
+  String get add_vehicle_title => 'Registrar Nuevo Vehículo';
+
+  @override
+  String get vehicle_plate_label => 'Placa *';
+
+  @override
+  String get vehicle_brand_label => 'Marca *';
+
+  @override
+  String get vehicle_model_label => 'Modelo *';
+
+  @override
+  String get vehicle_year_label => 'Año *';
+
+  @override
+  String get vehicle_vin_label => 'VIN (17 caracteres) *';
+
+  @override
+  String get vehicle_vin_error => 'El VIN debe tener exactamente 17 caracteres';
+
+  @override
+  String get vehicle_year_error => 'Ingrese un año válido';
+
+  @override
+  String get vehicle_save_btn => 'Guardar Vehículo';
+
+  @override
+  String get vehicle_registered_success => 'Vehículo registrado correctamente';
+
+  @override
+  String get no_vehicles_title => 'Sin vehículos registrados';
+
+  @override
+  String get no_vehicles_subtitle =>
+      'Registra tu vehículo para ver aquí su telemetría OBD-II, alertas DTC e historial en taller.';
+
+  @override
+  String get customer_my_workshop_section => 'MI TALLER ASOCIADO';
+
+  @override
+  String get customer_no_workshop_title => 'Sin taller asociado';
+
+  @override
+  String get customer_no_workshop_subtitle =>
+      'Cuando un taller te registre como cliente activo, verás aquí sus sedes y podrás agendar citas.';
+
+  @override
+  String get customer_upcoming_appointments_section => 'PRÓXIMAS CITAS';
+
+  @override
+  String get customer_no_upcoming_appointments =>
+      'No tienes citas programadas próximamente.';
+
+  @override
+  String get customer_schedule_appointment => 'Agendar cita';
+
+  @override
+  String get customer_free_bays_today => 'bahías libres hoy';
+
+  @override
+  String get customer_select_branch => 'Sede del taller *';
+
+  @override
+  String get customer_select_vehicle => 'Vehículo *';
+
+  @override
+  String get customer_appointment_date_time => 'Fecha y hora *';
+
+  @override
+  String get customer_appointment_notes_hint => 'Motivo o notas (opcional)';
+
+  @override
+  String get customer_appointment_created_success =>
+      'Cita agendada correctamente';
+
+  @override
+  String get customer_appointment_future_required =>
+      'Elige una fecha y hora futura';
+
+  @override
+  String get customer_add_vehicle_first =>
+      'Registra primero un vehículo en la pestaña Vehículos para agendar una cita.';
+
+  @override
+  String get vehicle_pick_photo_gallery => 'Galería';
+
+  @override
+  String get vehicle_pick_photo_camera => 'Cámara';
+
+  @override
+  String get customer_appointments_header_sub =>
+      'Agenda y consulta tus próximas visitas';
+
+  @override
+  String get customer_tomorrow => 'Mañana';
+
+  @override
+  String get customer_other_date => 'Otra fecha';
+
+  @override
+  String get customer_other_time => 'Otra hora';
+
+  @override
+  String get customer_reason_maintenance => 'Mantenimiento preventivo';
+
+  @override
+  String get customer_reason_brakes => 'Revisión de frenos';
+
+  @override
+  String get customer_reason_obd2 => 'Diagnóstico OBD-II';
 }

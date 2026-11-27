@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:shiftiq_mobile_app_flutter/core/auth/mobile_role_scope.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_customer_branch_catalog.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/manage_operating_hours.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/core_dto.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/profile_api.dart';
@@ -15,12 +17,16 @@ class ProfileViewModel extends ChangeNotifier {
   final EmployeeRegistrationApi employeeRegistrationApi;
   final SessionStorage sessionStorage;
   final ManageMediaUploads? manageMediaUploads;
+  final GetCustomerBranchCatalogUseCase? getCustomerBranchCatalog;
+  final ManageOperatingHoursUseCase? manageOperatingHours;
 
   ProfileViewModel({
     required this.profileApi,
     required this.employeeRegistrationApi,
     required this.sessionStorage,
     this.manageMediaUploads,
+    this.getCustomerBranchCatalog,
+    this.manageOperatingHours,
   });
 
   bool _isLoading = false;
@@ -57,6 +63,20 @@ class ProfileViewModel extends ChangeNotifier {
 
   double _salary = 0.0;
   double get salary => _salary;
+
+  List<CustomerBranchCatalogItem> _customerBranches = const [];
+  List<CustomerBranchCatalogItem> get customerBranches => _customerBranches;
+
+  Map<String, BranchOperatingSchedule> _customerBranchSchedules = const {};
+  Map<String, BranchOperatingSchedule> get customerBranchSchedules =>
+      _customerBranchSchedules;
+
+  String get activeWorkshopId =>
+      sessionStorage.activeWorkshopId ??
+      _profileContext?.employee?.workshopId ??
+      '';
+
+  bool get isCustomer => !isOwnerAdmin && !isEmployee;
 
   bool get isOwner {
     final roles = _profileContext?.roles ?? sessionStorage.roles;
@@ -172,6 +192,28 @@ class ProfileViewModel extends ChangeNotifier {
           }
         } catch (_) {
           // Keep default '-' if registration query fails
+        }
+      }
+      // 3. Fetch associated workshop branches for customer accounts
+      if (isCustomer && getCustomerBranchCatalog != null) {
+        try {
+          _customerBranches = await getCustomerBranchCatalog!.execute();
+          if (manageOperatingHours != null && _customerBranches.isNotEmpty) {
+            final entries = await Future.wait(
+              _customerBranches.map((b) async {
+                try {
+                  final schedule = await manageOperatingHours!
+                      .getBranchSchedule(b.branchId);
+                  return MapEntry(b.branchId, schedule);
+                } catch (_) {
+                  return MapEntry(b.branchId, const BranchOperatingSchedule());
+                }
+              }),
+            );
+            _customerBranchSchedules = Map.fromEntries(entries);
+          }
+        } catch (_) {
+          // Keep empty list if catalog call fails
         }
       }
     } catch (e) {

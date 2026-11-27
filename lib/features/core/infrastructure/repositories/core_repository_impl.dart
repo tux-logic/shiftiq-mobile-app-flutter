@@ -137,6 +137,14 @@ class CoreRepositoryImpl implements CoreRepository {
   }
 
   @override
+  Future<List<CustomerBranchCatalogItem>> getBranchCatalog() async {
+    final list = await branchApi.getBranchCatalog();
+    return list
+        .map((json) => CustomerBranchCatalogDto.fromJson(json).toDomain())
+        .toList();
+  }
+
+  @override
   Future<void> setActiveBranch(Branch branch) async {
     await sessionStorage.setActiveBranch(
       branchId: branch.id,
@@ -396,6 +404,139 @@ class CoreRepositoryImpl implements CoreRepository {
   @override
   Future<void> deleteCustomerProfile(String customerId) {
     return profileApi.deleteCustomerProfile(customerId);
+  }
+
+  @override
+  Future<List<OperatingHoursDay>> getBranchOperatingHours(
+    String branchId,
+  ) async {
+    final list = await branchApi.getBranchOperatingHours(branchId);
+    return list
+        .map((json) => OperatingHoursDayDto.fromJson(json).toDomain())
+        .toList();
+  }
+
+  @override
+  Future<List<OperatingHoursDay>> updateBranchOperatingHours(
+    String branchId,
+    List<OperatingHoursDay> days,
+  ) async {
+    final list = await branchApi.updateBranchOperatingHours(
+      branchId,
+      days.map((d) => d.toRequestJson()).toList(),
+    );
+    return list
+        .map((json) => OperatingHoursDayDto.fromJson(json).toDomain())
+        .toList();
+  }
+
+  @override
+  Future<void> deleteBranchOperatingHours(String branchId) {
+    return branchApi.deleteBranchOperatingHours(branchId);
+  }
+
+  @override
+  Future<List<OperatingHoursException>> getBranchOperatingHoursExceptions(
+    String branchId,
+  ) async {
+    final list = await branchApi.getBranchOperatingHoursExceptions(branchId);
+    return list
+        .map((json) => OperatingHoursExceptionDto.fromJson(json).toDomain())
+        .toList();
+  }
+
+  @override
+  Future<OperatingHoursException> createBranchOperatingHoursException({
+    required String branchId,
+    required String date,
+    required bool open,
+    String? openTime,
+    String? closeTime,
+    String? reason,
+  }) async {
+    final json = await branchApi.createBranchOperatingHoursException(
+      branchId: branchId,
+      date: date,
+      open: open,
+      openTime: openTime,
+      closeTime: closeTime,
+      reason: reason,
+    );
+    return OperatingHoursExceptionDto.fromJson(json).toDomain();
+  }
+
+  @override
+  Future<void> deleteBranchOperatingHoursException(
+    String branchId,
+    String exceptionId,
+  ) {
+    return branchApi.deleteBranchOperatingHoursException(branchId, exceptionId);
+  }
+
+  @override
+  Future<List<OperatingHoursDay>> getWorkshopOperatingHours(
+    String workshopId,
+  ) async {
+    final list = await branchApi.getWorkshopOperatingHours(workshopId);
+    return list
+        .map((json) => OperatingHoursDayDto.fromJson(json).toDomain())
+        .toList();
+  }
+
+  @override
+  Future<List<OperatingHoursDay>> updateWorkshopOperatingHours(
+    String workshopId,
+    List<OperatingHoursDay> days,
+  ) async {
+    final list = await branchApi.updateWorkshopOperatingHours(
+      workshopId,
+      days.map((d) => d.toRequestJson()).toList(),
+    );
+    return list
+        .map((json) => OperatingHoursDayDto.fromJson(json).toDomain())
+        .toList();
+  }
+
+  @override
+  Future<List<OperatingHoursException>> getWorkshopOperatingHoursExceptions(
+    String workshopId,
+  ) async {
+    final list =
+        await branchApi.getWorkshopOperatingHoursExceptions(workshopId);
+    return list
+        .map((json) => OperatingHoursExceptionDto.fromJson(json).toDomain())
+        .toList();
+  }
+
+  @override
+  Future<OperatingHoursException> createWorkshopOperatingHoursException({
+    required String workshopId,
+    required String date,
+    required bool open,
+    String? openTime,
+    String? closeTime,
+    String? reason,
+  }) async {
+    final json = await branchApi.createWorkshopOperatingHoursException(
+      workshopId: workshopId,
+      date: date,
+      open: open,
+      openTime: openTime,
+      closeTime: closeTime,
+      reason: reason,
+    );
+    return OperatingHoursExceptionDto.fromJson(json).toDomain();
+  }
+
+  @override
+  Future<void> deleteWorkshopOperatingHoursException(
+    String workshopId,
+    String exceptionId,
+  ) {
+    return branchApi.deleteWorkshopOperatingHoursException(
+      workshopId,
+      exceptionId,
+    );
   }
 }
 

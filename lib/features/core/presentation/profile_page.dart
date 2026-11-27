@@ -15,9 +15,11 @@ import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_page
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/login_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_selection_page.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/operating_hours_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_logout_sheet.dart';
+import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/widgets/customer_workshop_and_appointments.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/services_catalog_page.dart';
 
 /// Redesigned user profile screen displaying live backend identity and branch context.
@@ -538,6 +540,36 @@ class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(height: 14),
                       ],
 
+                      // Associated Workshop Card (Customer only)
+                      if (vm.isCustomer) ...[
+                        _ProfileSectionCard(
+                          icon: Icons.store_mall_directory_outlined,
+                          title: loc.translate('customer_my_workshop_section'),
+                          children: [
+                            if (vm.customerBranches.isEmpty)
+                              Text(
+                                loc.translate('customer_no_workshop_subtitle'),
+                                style: const TextStyle(
+                                  fontSize: 12.5,
+                                  color: Color(0xFF64748B),
+                                ),
+                              )
+                            else
+                              ...vm.customerBranches.map(
+                                (branch) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: CustomerWorkshopCard(
+                                    branch: branch,
+                                    schedule: vm.customerBranchSchedules[
+                                        branch.branchId],
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                      ],
+
                       // Workshop Settings Card (Owner / Admin only)
                       if (vm.isOwnerAdmin) ...[
                         _ProfileSectionCard(
@@ -570,6 +602,25 @@ class _ProfilePageState extends State<ProfilePage> {
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder: (_) => const BranchSelectionPage(),
+                                  ),
+                                );
+                              },
+                            ),
+                            const Divider(height: 16, color: Color(0xFFF1F5F9)),
+                            _SettingsActionTile(
+                              icon: Icons.schedule_outlined,
+                              title: 'Horarios y Feriados',
+                              subtitle: 'Horario semanal y días especiales',
+                              onTap: () {
+                                final branchId = vm.activeBranchId.isNotEmpty
+                                    ? vm.activeBranchId
+                                    : ApiConstants.defaultBranchId;
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => OperatingHoursPage(
+                                      branchId: branchId,
+                                      workshopId: vm.activeWorkshopId,
+                                    ),
                                   ),
                                 );
                               },

@@ -381,7 +381,7 @@ class AppLocalizationsGenEn extends AppLocalizationsGen {
   String get valuation => 'VALUATION';
 
   @override
-  String get add_batch_btn => '+ Batch';
+  String get add_batch_btn => 'Batch';
 
   @override
   String get batch_entry => 'Enter Batch';
@@ -1061,4 +1061,119 @@ class AppLocalizationsGenEn extends AppLocalizationsGen {
 
   @override
   String get pending_short => 'Pend.';
+
+  @override
+  String get add_vehicle => 'Add vehicle';
+
+  @override
+  String get add_vehicle_title => 'Register New Vehicle';
+
+  @override
+  String get vehicle_plate_label => 'Plate number *';
+
+  @override
+  String get vehicle_brand_label => 'Brand *';
+
+  @override
+  String get vehicle_model_label => 'Model *';
+
+  @override
+  String get vehicle_year_label => 'Year *';
+
+  @override
+  String get vehicle_vin_label => 'VIN (17 characters) *';
+
+  @override
+  String get vehicle_vin_error => 'VIN must be exactly 17 characters long';
+
+  @override
+  String get vehicle_year_error => 'Enter a valid year';
+
+  @override
+  String get vehicle_save_btn => 'Save Vehicle';
+
+  @override
+  String get vehicle_registered_success => 'Vehicle registered successfully';
+
+  @override
+  String get no_vehicles_title => 'No vehicles registered';
+
+  @override
+  String get no_vehicles_subtitle =>
+      'Register your vehicle to view OBD-II telemetry, DTC alerts, and workshop history here.';
+
+  @override
+  String get customer_my_workshop_section => 'MY WORKSHOP';
+
+  @override
+  String get customer_no_workshop_title => 'No workshop linked';
+
+  @override
+  String get customer_no_workshop_subtitle =>
+      'Once a workshop registers you as an active customer, its branches will appear here for booking.';
+
+  @override
+  String get customer_upcoming_appointments_section => 'UPCOMING APPOINTMENTS';
+
+  @override
+  String get customer_no_upcoming_appointments =>
+      'You have no upcoming scheduled appointments.';
+
+  @override
+  String get customer_schedule_appointment => 'Book appointment';
+
+  @override
+  String get customer_free_bays_today => 'free bays today';
+
+  @override
+  String get customer_select_branch => 'Workshop branch *';
+
+  @override
+  String get customer_select_vehicle => 'Vehicle *';
+
+  @override
+  String get customer_appointment_date_time => 'Date & time *';
+
+  @override
+  String get customer_appointment_notes_hint => 'Notes or reason (optional)';
+
+  @override
+  String get customer_appointment_created_success =>
+      'Appointment booked successfully';
+
+  @override
+  String get customer_appointment_future_required =>
+      'Please select a future date and time';
+
+  @override
+  String get customer_add_vehicle_first =>
+      'Register a vehicle in the Vehicles tab first to book an appointment.';
+
+  @override
+  String get vehicle_pick_photo_gallery => 'Gallery';
+
+  @override
+  String get vehicle_pick_photo_camera => 'Camera';
+
+  @override
+  String get customer_appointments_header_sub =>
+      'Book and track your upcoming visits';
+
+  @override
+  String get customer_tomorrow => 'Tomorrow';
+
+  @override
+  String get customer_other_date => 'Other date';
+
+  @override
+  String get customer_other_time => 'Other time';
+
+  @override
+  String get customer_reason_maintenance => 'Preventive maintenance';
+
+  @override
+  String get customer_reason_brakes => 'Brake inspection';
+
+  @override
+  String get customer_reason_obd2 => 'OBD-II diagnostic';
 }

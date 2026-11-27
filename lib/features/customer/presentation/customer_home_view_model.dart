@@ -4,12 +4,19 @@ import 'package:shiftiq_mobile_app_flutter/features/analytics/domain/analytics_d
 import 'package:shiftiq_mobile_app_flutter/features/billing/application/usecases/manage_checkouts.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/application/usecases/manage_quotes.dart';
 import 'package:shiftiq_mobile_app_flutter/features/billing/domain/billing_domain.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_customer_branch_catalog.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_user_profile_context.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/manage_operating_hours.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/create_appointment.dart';
+import 'package:shiftiq_mobile_app_flutter/features/fleet/domain/fleet_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/application/usecases/get_customer_vehicles.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/application/usecases/get_dtc_alerts.dart';
+import 'package:shiftiq_mobile_app_flutter/features/iot/application/usecases/register_vehicle.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/domain/iot_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/application/usecases/manage_work_orders.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/domain/operations_domain.dart';
+import 'package:shiftiq_mobile_app_flutter/features/shared/application/usecases/manage_media_uploads.dart';
 
 /// ViewModel managing the customer portal: executive summary (`GET /api/v1/analytics/me/customer-summary`),
 /// customer vehicles & OBD-II/DTC alerts, read-only work orders (`GET /api/v1/work-orders/me`),
@@ -20,8 +27,13 @@ class CustomerHomeViewModel extends ChangeNotifier {
   final ManageCheckouts? manageCheckouts;
   final GetCustomerSummaryUseCase? getCustomerSummary;
   final GetCustomerVehicles? getCustomerVehicles;
+  final RegisterVehicle? registerVehicle;
   final GetUserProfileContextUseCase? getUserProfileContext;
   final GetDtcAlerts? getDtcAlerts;
+  final GetCustomerBranchCatalogUseCase? getBranchCatalog;
+  final CreateAppointmentUseCase? createAppointment;
+  final ManageMediaUploads? manageMediaUploads;
+  final ManageOperatingHoursUseCase? manageOperatingHours;
 
   CustomerHomeViewModel({
     required this.manageWorkOrders,
@@ -29,8 +41,13 @@ class CustomerHomeViewModel extends ChangeNotifier {
     this.manageCheckouts,
     this.getCustomerSummary,
     this.getCustomerVehicles,
+    this.registerVehicle,
     this.getUserProfileContext,
     this.getDtcAlerts,
+    this.getBranchCatalog,
+    this.createAppointment,
+    this.manageMediaUploads,
+    this.manageOperatingHours,
   });
 
   bool _isLoading = false;
@@ -45,11 +62,31 @@ class CustomerHomeViewModel extends ChangeNotifier {
   String? _payingQuoteId;
   String? get payingQuoteId => _payingQuoteId;
 
+  bool _isRegisteringVehicle = false;
+  bool get isRegisteringVehicle => _isRegisteringVehicle;
+
+  bool _isUploadingVehiclePhoto = false;
+  bool get isUploadingVehiclePhoto => _isUploadingVehiclePhoto;
+
+  bool _isSchedulingAppointment = false;
+  bool get isSchedulingAppointment => _isSchedulingAppointment;
+
   String? _error;
   String? get error => _error;
 
   CustomerAnalyticsSummary? _summary;
   CustomerAnalyticsSummary? get summary => _summary;
+
+  List<CustomerBranchCatalogItem> _branches = const [];
+  List<CustomerBranchCatalogItem> get branches => _branches;
+
+  Map<String, BranchOperatingSchedule> _branchSchedules = const {};
+  Map<String, BranchOperatingSchedule> get branchSchedules => _branchSchedules;
+
+  BranchOperatingSchedule scheduleForBranch(String branchId) =>
+      _branchSchedules[branchId] ?? const BranchOperatingSchedule();
+
+  String _customerId = '';
 
   List<Vehicle> _vehicles = const [];
   List<Vehicle> get vehicles => _vehicles;
@@ -75,6 +112,76 @@ class CustomerHomeViewModel extends ChangeNotifier {
         .length;
   }
 
+  /// Uploads a customer vehicle photo via `POST /api/v1/media/upload`
+  /// using `folder=uploads` (permitted for `ROLE_CUSTOMER`).
+  Future<String?> uploadVehiclePhoto({
+    required List<int> fileBytes,
+    required String fileName,
+  }) async {
+    if (manageMediaUploads == null) {
+      _error = 'Media upload is unavailable in this session.';
+      notifyListeners();
+      return null;
+    }
+
+    _isUploadingVehiclePhoto = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final result = await manageMediaUploads!.uploadImage(
+        fileBytes: fileBytes,
+        fileName: fileName,
+      );
+      return result.url;
+    } catch (e) {
+      _error = e.toString().replaceFirst('Exception: ', '');
+      return null;
+    } finally {
+      _isUploadingVehiclePhoto = false;
+      notifyListeners();
+    }
+  }
+
+  /// Registers a new vehicle for the authenticated customer via `POST /api/v1/vehicles`.
+  Future<Vehicle?> addVehicle({
+    required String plateNumber,
+    required String brand,
+    required String model,
+    required int year,
+    required String vin,
+    String? photoUrl,
+  }) async {
+    if (registerVehicle == null) {
+      _error = 'Vehicle registration is unavailable in this session.';
+      notifyListeners();
+      return null;
+    }
+
+    _isRegisteringVehicle = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final created = await registerVehicle!.execute(
+        plateNumber: plateNumber,
+        brand: brand,
+        model: model,
+        year: year,
+        vin: vin,
+        photoUrl: photoUrl,
+      );
+      _vehicles = [..._vehicles, created];
+      return created;
+    } catch (e) {
+      _error = e.toString().replaceFirst('Exception: ', '');
+      return null;
+    } finally {
+      _isRegisteringVehicle = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> load() async {
     _isLoading = true;
     _error = null;
@@ -91,14 +198,30 @@ class CustomerHomeViewModel extends ChangeNotifier {
               .then<CustomerAnalyticsSummary?>((s) => s)
               .catchError((_) => null)
           : Future.value(null);
+      final branchesFuture = getBranchCatalog != null
+          ? getBranchCatalog!
+              .execute()
+              .catchError((_) => <CustomerBranchCatalogItem>[])
+          : Future.value(<CustomerBranchCatalogItem>[]);
 
-      final results =
-          await Future.wait([ordersFuture, quotesFuture, summaryFuture]);
+      final results = await Future.wait([
+        ordersFuture,
+        quotesFuture,
+        summaryFuture,
+        branchesFuture,
+      ]);
       _workOrders = results[0] as List<WorkOrder>;
       _quotes = results[1] as List<Quote>;
       _summary = results[2] as CustomerAnalyticsSummary?;
+      _branches = results[3] as List<CustomerBranchCatalogItem>;
+      if ((_summary?.customerId ?? '').isNotEmpty) {
+        _customerId = _summary!.customerId;
+      }
 
-      await _loadVehiclesAndDtc();
+      await Future.wait([
+        _loadVehiclesAndDtc(),
+        _loadBranchSchedules(),
+      ]);
     } catch (e) {
       _error = 'Error loading your work orders: $e';
     } finally {
@@ -107,16 +230,113 @@ class CustomerHomeViewModel extends ChangeNotifier {
     }
   }
 
+  Future<String> _resolveCustomerId() async {
+    if ((_summary?.customerId ?? '').isNotEmpty) {
+      _customerId = _summary!.customerId;
+      return _customerId;
+    }
+    if (_customerId.isNotEmpty) return _customerId;
+    if (getUserProfileContext != null) {
+      try {
+        final ctx = await getUserProfileContext!.execute();
+        _customerId = ctx.customer?.customerId ?? '';
+      } catch (_) {}
+    }
+    return _customerId;
+  }
+
+  /// Schedules a new workshop appointment for the authenticated customer via
+  /// `POST /api/v1/appointments` and refreshes the customer summary.
+  Future<Appointment?> scheduleAppointment({
+    required String branchId,
+    required String vehicleId,
+    required DateTime scheduledStart,
+    DateTime? scheduledEnd,
+    String? notes,
+  }) async {
+    if (createAppointment == null) {
+      _error = 'Appointment scheduling is unavailable in this session.';
+      notifyListeners();
+      return null;
+    }
+
+    _isSchedulingAppointment = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final customerId = await _resolveCustomerId();
+      if (customerId.isEmpty) {
+        _error = 'Unable to resolve customer profile for appointment booking.';
+        return null;
+      }
+
+      final vehicle = _vehicles.where((v) => v.id == vehicleId).firstOrNull;
+      final created = await createAppointment!.execute(
+        branchId: branchId,
+        customerId: customerId,
+        vehicleId: vehicleId,
+        scheduledStart: scheduledStart,
+        scheduledEnd: scheduledEnd,
+        notes: notes?.trim() ?? '',
+        vehiclePlate: vehicle?.plateNumber ?? 'S/P',
+        vehicleModel: vehicle != null
+            ? '${vehicle.brand} ${vehicle.model}'.trim()
+            : 'Vehicle',
+      );
+
+      if (getCustomerSummary != null) {
+        try {
+          _summary = await getCustomerSummary!.execute();
+        } catch (_) {}
+      }
+      return created;
+    } catch (e) {
+      _error = e.toString().replaceFirst('Exception: ', '');
+      return null;
+    } finally {
+      _isSchedulingAppointment = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _loadBranchSchedules() async {
+    if (manageOperatingHours == null || _branches.isEmpty) return;
+    final entries = await Future.wait(
+      _branches.map((b) async {
+        try {
+          final schedule =
+              await manageOperatingHours!.getBranchSchedule(b.branchId);
+          return MapEntry(b.branchId, schedule);
+        } catch (_) {
+          return MapEntry(b.branchId, const BranchOperatingSchedule());
+        }
+      }),
+    );
+    _branchSchedules = Map.fromEntries(entries);
+  }
+
+  /// Ensures the operating schedule for [branchId] is loaded and returns it.
+  Future<BranchOperatingSchedule> loadBranchSchedule(String branchId) async {
+    final existing = _branchSchedules[branchId];
+    if (existing != null) return existing;
+    if (manageOperatingHours == null) {
+      return const BranchOperatingSchedule();
+    }
+    try {
+      final fetched = await manageOperatingHours!.getBranchSchedule(branchId);
+      _branchSchedules = {..._branchSchedules, branchId: fetched};
+      notifyListeners();
+      return fetched;
+    } catch (_) {
+      return const BranchOperatingSchedule();
+    }
+  }
+
   Future<void> _loadVehiclesAndDtc() async {
     if (getCustomerVehicles == null) return;
 
-    var customerId = _summary?.customerId ?? '';
-    if (customerId.isEmpty && getUserProfileContext != null) {
-      try {
-        final ctx = await getUserProfileContext!.execute();
-        customerId = ctx.customer?.customerId ?? '';
-      } catch (_) {}
-    }
+    final customerId = await _resolveCustomerId();
     if (customerId.isEmpty) return;
 
     try {

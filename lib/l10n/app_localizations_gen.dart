@@ -833,7 +833,7 @@ abstract class AppLocalizationsGen {
   /// No description provided for @add_batch_btn.
   ///
   /// In es, this message translates to:
-  /// **'+ Lote'**
+  /// **'Lote'**
   String get add_batch_btn;
 
   /// No description provided for @batch_entry.
@@ -2161,6 +2161,222 @@ abstract class AppLocalizationsGen {
   /// In es, this message translates to:
   /// **'Pend.'**
   String get pending_short;
+
+  /// No description provided for @add_vehicle.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar vehículo'**
+  String get add_vehicle;
+
+  /// No description provided for @add_vehicle_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrar Nuevo Vehículo'**
+  String get add_vehicle_title;
+
+  /// No description provided for @vehicle_plate_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Placa *'**
+  String get vehicle_plate_label;
+
+  /// No description provided for @vehicle_brand_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Marca *'**
+  String get vehicle_brand_label;
+
+  /// No description provided for @vehicle_model_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Modelo *'**
+  String get vehicle_model_label;
+
+  /// No description provided for @vehicle_year_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Año *'**
+  String get vehicle_year_label;
+
+  /// No description provided for @vehicle_vin_label.
+  ///
+  /// In es, this message translates to:
+  /// **'VIN (17 caracteres) *'**
+  String get vehicle_vin_label;
+
+  /// No description provided for @vehicle_vin_error.
+  ///
+  /// In es, this message translates to:
+  /// **'El VIN debe tener exactamente 17 caracteres'**
+  String get vehicle_vin_error;
+
+  /// No description provided for @vehicle_year_error.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingrese un año válido'**
+  String get vehicle_year_error;
+
+  /// No description provided for @vehicle_save_btn.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar Vehículo'**
+  String get vehicle_save_btn;
+
+  /// No description provided for @vehicle_registered_success.
+  ///
+  /// In es, this message translates to:
+  /// **'Vehículo registrado correctamente'**
+  String get vehicle_registered_success;
+
+  /// No description provided for @no_vehicles_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin vehículos registrados'**
+  String get no_vehicles_title;
+
+  /// No description provided for @no_vehicles_subtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Registra tu vehículo para ver aquí su telemetría OBD-II, alertas DTC e historial en taller.'**
+  String get no_vehicles_subtitle;
+
+  /// No description provided for @customer_my_workshop_section.
+  ///
+  /// In es, this message translates to:
+  /// **'MI TALLER ASOCIADO'**
+  String get customer_my_workshop_section;
+
+  /// No description provided for @customer_no_workshop_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin taller asociado'**
+  String get customer_no_workshop_title;
+
+  /// No description provided for @customer_no_workshop_subtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando un taller te registre como cliente activo, verás aquí sus sedes y podrás agendar citas.'**
+  String get customer_no_workshop_subtitle;
+
+  /// No description provided for @customer_upcoming_appointments_section.
+  ///
+  /// In es, this message translates to:
+  /// **'PRÓXIMAS CITAS'**
+  String get customer_upcoming_appointments_section;
+
+  /// No description provided for @customer_no_upcoming_appointments.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes citas programadas próximamente.'**
+  String get customer_no_upcoming_appointments;
+
+  /// No description provided for @customer_schedule_appointment.
+  ///
+  /// In es, this message translates to:
+  /// **'Agendar cita'**
+  String get customer_schedule_appointment;
+
+  /// No description provided for @customer_free_bays_today.
+  ///
+  /// In es, this message translates to:
+  /// **'bahías libres hoy'**
+  String get customer_free_bays_today;
+
+  /// No description provided for @customer_select_branch.
+  ///
+  /// In es, this message translates to:
+  /// **'Sede del taller *'**
+  String get customer_select_branch;
+
+  /// No description provided for @customer_select_vehicle.
+  ///
+  /// In es, this message translates to:
+  /// **'Vehículo *'**
+  String get customer_select_vehicle;
+
+  /// No description provided for @customer_appointment_date_time.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha y hora *'**
+  String get customer_appointment_date_time;
+
+  /// No description provided for @customer_appointment_notes_hint.
+  ///
+  /// In es, this message translates to:
+  /// **'Motivo o notas (opcional)'**
+  String get customer_appointment_notes_hint;
+
+  /// No description provided for @customer_appointment_created_success.
+  ///
+  /// In es, this message translates to:
+  /// **'Cita agendada correctamente'**
+  String get customer_appointment_created_success;
+
+  /// No description provided for @customer_appointment_future_required.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una fecha y hora futura'**
+  String get customer_appointment_future_required;
+
+  /// No description provided for @customer_add_vehicle_first.
+  ///
+  /// In es, this message translates to:
+  /// **'Registra primero un vehículo en la pestaña Vehículos para agendar una cita.'**
+  String get customer_add_vehicle_first;
+
+  /// No description provided for @vehicle_pick_photo_gallery.
+  ///
+  /// In es, this message translates to:
+  /// **'Galería'**
+  String get vehicle_pick_photo_gallery;
+
+  /// No description provided for @vehicle_pick_photo_camera.
+  ///
+  /// In es, this message translates to:
+  /// **'Cámara'**
+  String get vehicle_pick_photo_camera;
+
+  /// No description provided for @customer_appointments_header_sub.
+  ///
+  /// In es, this message translates to:
+  /// **'Agenda y consulta tus próximas visitas'**
+  String get customer_appointments_header_sub;
+
+  /// No description provided for @customer_tomorrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Mañana'**
+  String get customer_tomorrow;
+
+  /// No description provided for @customer_other_date.
+  ///
+  /// In es, this message translates to:
+  /// **'Otra fecha'**
+  String get customer_other_date;
+
+  /// No description provided for @customer_other_time.
+  ///
+  /// In es, this message translates to:
+  /// **'Otra hora'**
+  String get customer_other_time;
+
+  /// No description provided for @customer_reason_maintenance.
+  ///
+  /// In es, this message translates to:
+  /// **'Mantenimiento preventivo'**
+  String get customer_reason_maintenance;
+
+  /// No description provided for @customer_reason_brakes.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisión de frenos'**
+  String get customer_reason_brakes;
+
+  /// No description provided for @customer_reason_obd2.
+  ///
+  /// In es, this message translates to:
+  /// **'Diagnóstico OBD-II'**
+  String get customer_reason_obd2;
 }
 
 class _AppLocalizationsGenDelegate
