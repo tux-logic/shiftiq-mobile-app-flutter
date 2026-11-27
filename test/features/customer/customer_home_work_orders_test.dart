@@ -239,7 +239,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(calledQuotesMe, isTrue);
-      expect(find.text('MIS COTIZACIONES Y PAGOS'), findsOneWidget);
+      expect(find.text('Quotes & Payments'), findsOneWidget);
       expect(find.text('Pagar con Mercado Pago'), findsOneWidget);
 
       await tester.ensureVisible(find.byKey(const Key('pay_quote_quote-1')));

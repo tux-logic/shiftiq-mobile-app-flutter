@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/domain/model/entities/live_sensor_reading.dart';
 
@@ -12,6 +13,7 @@ class SensorGaugeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final statusColor = sensor.statusColor;
 
     return Container(
@@ -81,11 +83,11 @@ class SensorGaugeCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Mín: ${sensor.normalMin.toInt()} ${sensor.unit}',
+                '${loc.translate('iot_min_label')}: ${sensor.normalMin.toInt()} ${sensor.unit}',
                 style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
               ),
               Text(
-                'Máx: ${sensor.normalMax.toInt()} ${sensor.unit}',
+                '${loc.translate('iot_max_label')}: ${sensor.normalMax.toInt()} ${sensor.unit}',
                 style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
               ),
             ],

@@ -381,7 +381,7 @@ class AppLocalizationsGenEs extends AppLocalizationsGen {
   String get valuation => 'VALUACIÓN';
 
   @override
-  String get add_batch_btn => '+ Lote';
+  String get add_batch_btn => 'Lote';
 
   @override
   String get batch_entry => 'Ingresar Lote';
@@ -1068,4 +1068,354 @@ class AppLocalizationsGenEs extends AppLocalizationsGen {
 
   @override
   String get pending_short => 'Pend.';
+
+  @override
+  String get add_vehicle => 'Agregar vehículo';
+
+  @override
+  String get add_vehicle_title => 'Registrar Nuevo Vehículo';
+
+  @override
+  String get vehicle_plate_label => 'Placa *';
+
+  @override
+  String get vehicle_brand_label => 'Marca *';
+
+  @override
+  String get vehicle_model_label => 'Modelo *';
+
+  @override
+  String get vehicle_year_label => 'Año *';
+
+  @override
+  String get vehicle_vin_label => 'VIN (17 caracteres) *';
+
+  @override
+  String get vehicle_vin_error => 'El VIN debe tener exactamente 17 caracteres';
+
+  @override
+  String get vehicle_year_error => 'Ingrese un año válido';
+
+  @override
+  String get vehicle_save_btn => 'Guardar Vehículo';
+
+  @override
+  String get vehicle_registered_success => 'Vehículo registrado correctamente';
+
+  @override
+  String get no_vehicles_title => 'Sin vehículos registrados';
+
+  @override
+  String get no_vehicles_subtitle =>
+      'Registra tu vehículo para ver aquí su telemetría OBD-II, alertas DTC e historial en taller.';
+
+  @override
+  String get customer_my_workshop_section => 'MI TALLER ASOCIADO';
+
+  @override
+  String get customer_no_workshop_title => 'Sin taller asociado';
+
+  @override
+  String get customer_no_workshop_subtitle =>
+      'Cuando un taller te registre como cliente activo, verás aquí sus sedes y podrás agendar citas.';
+
+  @override
+  String get customer_upcoming_appointments_section => 'PRÓXIMAS CITAS';
+
+  @override
+  String get customer_no_upcoming_appointments =>
+      'No tienes citas programadas próximamente.';
+
+  @override
+  String get customer_schedule_appointment => 'Agendar cita';
+
+  @override
+  String get customer_free_bays_today => 'bahías libres hoy';
+
+  @override
+  String get customer_select_branch => 'Sede del taller *';
+
+  @override
+  String get customer_select_vehicle => 'Vehículo *';
+
+  @override
+  String get customer_appointment_date_time => 'Fecha y hora *';
+
+  @override
+  String get customer_appointment_notes_hint => 'Motivo o notas (opcional)';
+
+  @override
+  String get customer_appointment_created_success =>
+      'Cita agendada correctamente';
+
+  @override
+  String get customer_appointment_future_required =>
+      'Elige una fecha y hora futura';
+
+  @override
+  String get customer_add_vehicle_first =>
+      'Registra primero un vehículo en la pestaña Vehículos para agendar una cita.';
+
+  @override
+  String get vehicle_pick_photo_gallery => 'Galería';
+
+  @override
+  String get vehicle_pick_photo_camera => 'Cámara';
+
+  @override
+  String get customer_appointments_header_sub =>
+      'Agenda y consulta tus próximas visitas';
+
+  @override
+  String get closed_label => 'Cerrado';
+
+  @override
+  String get today_label => 'Hoy';
+
+  @override
+  String get select_time_title => 'Seleccionar hora';
+
+  @override
+  String get add_action => 'Agregar';
+
+  @override
+  String get date_label => 'Fecha';
+
+  @override
+  String get time_label => 'Hora';
+
+  @override
+  String get operating_hours_title => 'Horarios y Feriados';
+
+  @override
+  String get operating_hours_subtitle => 'Horario semanal y días especiales';
+
+  @override
+  String get operating_hours_header_sub =>
+      'Configura la atención semanal y días especiales';
+
+  @override
+  String get operating_hours_this_branch => 'Esta sede';
+
+  @override
+  String get operating_hours_workshop_global => 'Global taller';
+
+  @override
+  String get operating_hours_weekly_section => 'HORARIO SEMANAL';
+
+  @override
+  String get operating_hours_save_btn => 'Guardar horario';
+
+  @override
+  String get operating_hours_saving => 'Guardando...';
+
+  @override
+  String get operating_hours_inherit_btn => 'Heredar';
+
+  @override
+  String get operating_hours_saved_success =>
+      'Horarios guardados correctamente';
+
+  @override
+  String get operating_hours_inherited_success =>
+      'Se restauró la herencia del horario global del taller';
+
+  @override
+  String get operating_hours_open_time_title => 'Hora de apertura';
+
+  @override
+  String get operating_hours_close_time_title => 'Hora de cierre';
+
+  @override
+  String get operating_hours_holidays_section => 'FERIADOS Y EXCEPCIONES';
+
+  @override
+  String get operating_hours_no_exceptions =>
+      'Sin feriados o excepciones registradas.';
+
+  @override
+  String get operating_hours_new_exception_title => 'Nueva excepción / feriado';
+
+  @override
+  String get operating_hours_special_hours_toggle =>
+      'Atiende en horario especial';
+
+  @override
+  String get operating_hours_opening_short => 'Apertura';
+
+  @override
+  String get operating_hours_closing_short => 'Cierre';
+
+  @override
+  String get operating_hours_reason_label => 'Motivo (ej. Fiestas Patrias)';
+
+  @override
+  String get operating_hours_load_error => 'No se pudo cargar los horarios';
+
+  @override
+  String get operating_hours_save_error => 'Error al guardar horarios';
+
+  @override
+  String get operating_hours_inherit_error => 'No se pudo restaurar';
+
+  @override
+  String get operating_hours_exception_error =>
+      'No se pudo registrar la excepción';
+
+  @override
+  String get weekday_monday => 'Lunes';
+
+  @override
+  String get weekday_tuesday => 'Martes';
+
+  @override
+  String get weekday_wednesday => 'Miércoles';
+
+  @override
+  String get weekday_thursday => 'Jueves';
+
+  @override
+  String get weekday_friday => 'Viernes';
+
+  @override
+  String get weekday_saturday => 'Sábado';
+
+  @override
+  String get weekday_sunday => 'Domingo';
+
+  @override
+  String get customer_assigned_branch_fallback => 'Sede asignada';
+
+  @override
+  String get customer_registered_vehicle_fallback => 'Vehículo registrado';
+
+  @override
+  String get customer_branch_closed_on_date =>
+      'La sede está cerrada en la fecha elegida.';
+
+  @override
+  String get customer_service_hours_label => 'Horario de atención';
+
+  @override
+  String get customer_closed_this_day => 'Cerrado este día';
+
+  @override
+  String get customer_branch_closed_submit_error =>
+      'La sede no atiende en la fecha seleccionada.';
+
+  @override
+  String get customer_time_outside_hours_error =>
+      'Elige una hora dentro del horario';
+
+  @override
+  String get iot_latest_snapshot_title => 'Último Snapshot OBD-II';
+
+  @override
+  String get iot_vehicle_label => 'Vehículo';
+
+  @override
+  String get iot_recorded_reading => 'Lectura registrada';
+
+  @override
+  String get iot_latest_snapshot_synced => 'Último snapshot sincronizado';
+
+  @override
+  String get iot_pull_to_refresh => 'Desliza para actualizar';
+
+  @override
+  String get iot_latest_snapshot_readings => 'LECTURAS DEL ÚLTIMO SNAPSHOT';
+
+  @override
+  String get iot_no_snapshots_recorded => 'Sin snapshots registrados';
+
+  @override
+  String get iot_pull_down_for_readings =>
+      'Desliza hacia abajo para consultar nuevas lecturas';
+
+  @override
+  String get iot_min_label => 'Mín';
+
+  @override
+  String get iot_max_label => 'Máx';
+
+  @override
+  String get iot_no_active_telemetry_branch =>
+      'No hay vehículos con telemetría activa en esta sede.';
+
+  @override
+  String get iot_obd_alert_prefix => 'Alerta OBD-II Código';
+
+  @override
+  String get iot_ai_diagnosis_prefix => 'Diagnóstico IA';
+
+  @override
+  String get iot_telemetry_title => 'Telemetría IoT & OBD-II';
+
+  @override
+  String get iot_dtc_snapshots_subtitle => 'Alertas DTC & Snapshots';
+
+  @override
+  String get iot_obd_snapshots_badge => 'Snapshots OBD-II';
+
+  @override
+  String get iot_tab_all => 'Todas';
+
+  @override
+  String get iot_tab_critical => 'Críticas';
+
+  @override
+  String get iot_tab_moderate => 'Moderadas';
+
+  @override
+  String get iot_no_active_dtc_fleet => 'Sin códigos DTC activos en la flota';
+
+  @override
+  String get iot_all_vehicles_normal =>
+      'Todos los vehículos conectados operan dentro de parámetros';
+
+  @override
+  String get iot_diagnosis_title => 'Diagnóstico';
+
+  @override
+  String get iot_system_label => 'Sistema';
+
+  @override
+  String get iot_ai_recommendation_title => 'Recomendación Técnica IA ShiftIQ';
+
+  @override
+  String get iot_freeze_frame_title =>
+      'Parámetros Freeze Frame en el Momento del Fallo';
+
+  @override
+  String get dtc_severity_critical => 'Crítica / Inmediata';
+
+  @override
+  String get dtc_severity_moderate => 'Moderada / Advertencia';
+
+  @override
+  String get dtc_severity_low => 'Baja / Informativa';
+
+  @override
+  String get dtc_status_active => 'Activo / No Resuelto';
+
+  @override
+  String get dtc_status_in_inspection => 'En Diagnóstico';
+
+  @override
+  String get dtc_status_resolved => 'Resuelto / Borrado';
+
+  @override
+  String time_ago_minutes(Object n) {
+    return 'Hace $n min';
+  }
+
+  @override
+  String time_ago_hours(Object n) {
+    return 'Hace $n horas';
+  }
+
+  @override
+  String time_ago_days(Object n) {
+    return 'Hace $n días';
+  }
 }

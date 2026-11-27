@@ -510,3 +510,159 @@ class UserProfileContextDto {
     );
   }
 }
+
+/// DTO representing an entry from `GET /api/v1/branches/catalog`.
+class CustomerBranchCatalogDto {
+  final String branchId;
+  final String workshopId;
+  final String workshopBrandName;
+  final String workshopBusinessName;
+  final String branchCode;
+  final String branchName;
+  final String address;
+  final String phone;
+  final String? coverImageUrl;
+  final double? latitude;
+  final double? longitude;
+  final double averageRating;
+  final int reviewCount;
+  final int activeBaysCount;
+  final int freeBaysToday;
+
+  CustomerBranchCatalogDto({
+    required this.branchId,
+    required this.workshopId,
+    required this.workshopBrandName,
+    required this.workshopBusinessName,
+    required this.branchCode,
+    required this.branchName,
+    required this.address,
+    required this.phone,
+    this.coverImageUrl,
+    this.latitude,
+    this.longitude,
+    this.averageRating = 0.0,
+    this.reviewCount = 0,
+    this.activeBaysCount = 0,
+    this.freeBaysToday = 0,
+  });
+
+  factory CustomerBranchCatalogDto.fromJson(Map<String, dynamic> json) {
+    return CustomerBranchCatalogDto(
+      branchId: (json['branchId'] ?? json['id'] ?? '').toString(),
+      workshopId: (json['workshopId'] ?? '').toString(),
+      workshopBrandName: (json['workshopBrandName'] ?? '').toString(),
+      workshopBusinessName: (json['workshopBusinessName'] ?? '').toString(),
+      branchCode: (json['branchCode'] ?? '').toString(),
+      branchName: (json['branchName'] ?? '').toString(),
+      address: (json['address'] ?? '').toString(),
+      phone: (json['phone'] ?? '').toString(),
+      coverImageUrl: json['coverImageUrl']?.toString(),
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
+      averageRating: (json['averageRating'] as num?)?.toDouble() ?? 0.0,
+      reviewCount: (json['reviewCount'] as num?)?.toInt() ?? 0,
+      activeBaysCount: (json['activeBaysCount'] as num?)?.toInt() ?? 0,
+      freeBaysToday: (json['freeBaysToday'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  CustomerBranchCatalogItem toDomain() {
+    return CustomerBranchCatalogItem(
+      branchId: branchId,
+      workshopId: workshopId,
+      workshopBrandName: workshopBrandName,
+      workshopBusinessName: workshopBusinessName,
+      branchCode: branchCode,
+      branchName: branchName,
+      address: address,
+      phone: phone,
+      coverImageUrl: coverImageUrl,
+      latitude: latitude,
+      longitude: longitude,
+      averageRating: averageRating,
+      reviewCount: reviewCount,
+      activeBaysCount: activeBaysCount,
+      freeBaysToday: freeBaysToday,
+    );
+  }
+}
+
+/// DTO representing a weekday operating-hours entry.
+class OperatingHoursDayDto {
+  final String dayOfWeek;
+  final bool open;
+  final String? openTime;
+  final String? closeTime;
+  final int slotDurationMinutes;
+  final String? source;
+
+  OperatingHoursDayDto({
+    required this.dayOfWeek,
+    required this.open,
+    this.openTime,
+    this.closeTime,
+    this.slotDurationMinutes = 60,
+    this.source,
+  });
+
+  factory OperatingHoursDayDto.fromJson(Map<String, dynamic> json) {
+    return OperatingHoursDayDto(
+      dayOfWeek: (json['dayOfWeek'] ?? '').toString(),
+      open: json['open'] as bool? ?? true,
+      openTime: json['openTime']?.toString(),
+      closeTime: json['closeTime']?.toString(),
+      slotDurationMinutes:
+          (json['slotDurationMinutes'] as num?)?.toInt() ?? 60,
+      source: json['source']?.toString(),
+    );
+  }
+
+  OperatingHoursDay toDomain() => OperatingHoursDay(
+        dayOfWeek: dayOfWeek,
+        open: open,
+        openTime: openTime,
+        closeTime: closeTime,
+        slotDurationMinutes: slotDurationMinutes,
+        source: source,
+      );
+}
+
+/// DTO representing an operating-hours holiday/special exception.
+class OperatingHoursExceptionDto {
+  final String id;
+  final String date;
+  final bool open;
+  final String? openTime;
+  final String? closeTime;
+  final String? reason;
+
+  OperatingHoursExceptionDto({
+    required this.id,
+    required this.date,
+    required this.open,
+    this.openTime,
+    this.closeTime,
+    this.reason,
+  });
+
+  factory OperatingHoursExceptionDto.fromJson(Map<String, dynamic> json) {
+    return OperatingHoursExceptionDto(
+      id: (json['id'] ?? '').toString(),
+      date: (json['date'] ?? '').toString(),
+      open: json['open'] as bool? ?? false,
+      openTime: json['openTime']?.toString(),
+      closeTime: json['closeTime']?.toString(),
+      reason: json['reason']?.toString(),
+    );
+  }
+
+  OperatingHoursException toDomain() => OperatingHoursException(
+        id: id,
+        date: date,
+        open: open,
+        openTime: openTime,
+        closeTime: closeTime,
+        reason: reason,
+      );
+}

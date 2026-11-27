@@ -833,7 +833,7 @@ abstract class AppLocalizationsGen {
   /// No description provided for @add_batch_btn.
   ///
   /// In es, this message translates to:
-  /// **'+ Lote'**
+  /// **'Lote'**
   String get add_batch_btn;
 
   /// No description provided for @batch_entry.
@@ -2161,6 +2161,654 @@ abstract class AppLocalizationsGen {
   /// In es, this message translates to:
   /// **'Pend.'**
   String get pending_short;
+
+  /// No description provided for @add_vehicle.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar vehículo'**
+  String get add_vehicle;
+
+  /// No description provided for @add_vehicle_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrar Nuevo Vehículo'**
+  String get add_vehicle_title;
+
+  /// No description provided for @vehicle_plate_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Placa *'**
+  String get vehicle_plate_label;
+
+  /// No description provided for @vehicle_brand_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Marca *'**
+  String get vehicle_brand_label;
+
+  /// No description provided for @vehicle_model_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Modelo *'**
+  String get vehicle_model_label;
+
+  /// No description provided for @vehicle_year_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Año *'**
+  String get vehicle_year_label;
+
+  /// No description provided for @vehicle_vin_label.
+  ///
+  /// In es, this message translates to:
+  /// **'VIN (17 caracteres) *'**
+  String get vehicle_vin_label;
+
+  /// No description provided for @vehicle_vin_error.
+  ///
+  /// In es, this message translates to:
+  /// **'El VIN debe tener exactamente 17 caracteres'**
+  String get vehicle_vin_error;
+
+  /// No description provided for @vehicle_year_error.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingrese un año válido'**
+  String get vehicle_year_error;
+
+  /// No description provided for @vehicle_save_btn.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar Vehículo'**
+  String get vehicle_save_btn;
+
+  /// No description provided for @vehicle_registered_success.
+  ///
+  /// In es, this message translates to:
+  /// **'Vehículo registrado correctamente'**
+  String get vehicle_registered_success;
+
+  /// No description provided for @no_vehicles_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin vehículos registrados'**
+  String get no_vehicles_title;
+
+  /// No description provided for @no_vehicles_subtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Registra tu vehículo para ver aquí su telemetría OBD-II, alertas DTC e historial en taller.'**
+  String get no_vehicles_subtitle;
+
+  /// No description provided for @customer_my_workshop_section.
+  ///
+  /// In es, this message translates to:
+  /// **'MI TALLER ASOCIADO'**
+  String get customer_my_workshop_section;
+
+  /// No description provided for @customer_no_workshop_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin taller asociado'**
+  String get customer_no_workshop_title;
+
+  /// No description provided for @customer_no_workshop_subtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando un taller te registre como cliente activo, verás aquí sus sedes y podrás agendar citas.'**
+  String get customer_no_workshop_subtitle;
+
+  /// No description provided for @customer_upcoming_appointments_section.
+  ///
+  /// In es, this message translates to:
+  /// **'PRÓXIMAS CITAS'**
+  String get customer_upcoming_appointments_section;
+
+  /// No description provided for @customer_no_upcoming_appointments.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes citas programadas próximamente.'**
+  String get customer_no_upcoming_appointments;
+
+  /// No description provided for @customer_schedule_appointment.
+  ///
+  /// In es, this message translates to:
+  /// **'Agendar cita'**
+  String get customer_schedule_appointment;
+
+  /// No description provided for @customer_free_bays_today.
+  ///
+  /// In es, this message translates to:
+  /// **'bahías libres hoy'**
+  String get customer_free_bays_today;
+
+  /// No description provided for @customer_select_branch.
+  ///
+  /// In es, this message translates to:
+  /// **'Sede del taller *'**
+  String get customer_select_branch;
+
+  /// No description provided for @customer_select_vehicle.
+  ///
+  /// In es, this message translates to:
+  /// **'Vehículo *'**
+  String get customer_select_vehicle;
+
+  /// No description provided for @customer_appointment_date_time.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha y hora *'**
+  String get customer_appointment_date_time;
+
+  /// No description provided for @customer_appointment_notes_hint.
+  ///
+  /// In es, this message translates to:
+  /// **'Motivo o notas (opcional)'**
+  String get customer_appointment_notes_hint;
+
+  /// No description provided for @customer_appointment_created_success.
+  ///
+  /// In es, this message translates to:
+  /// **'Cita agendada correctamente'**
+  String get customer_appointment_created_success;
+
+  /// No description provided for @customer_appointment_future_required.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una fecha y hora futura'**
+  String get customer_appointment_future_required;
+
+  /// No description provided for @customer_add_vehicle_first.
+  ///
+  /// In es, this message translates to:
+  /// **'Registra primero un vehículo en la pestaña Vehículos para agendar una cita.'**
+  String get customer_add_vehicle_first;
+
+  /// No description provided for @vehicle_pick_photo_gallery.
+  ///
+  /// In es, this message translates to:
+  /// **'Galería'**
+  String get vehicle_pick_photo_gallery;
+
+  /// No description provided for @vehicle_pick_photo_camera.
+  ///
+  /// In es, this message translates to:
+  /// **'Cámara'**
+  String get vehicle_pick_photo_camera;
+
+  /// No description provided for @customer_appointments_header_sub.
+  ///
+  /// In es, this message translates to:
+  /// **'Agenda y consulta tus próximas visitas'**
+  String get customer_appointments_header_sub;
+
+  /// No description provided for @closed_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrado'**
+  String get closed_label;
+
+  /// No description provided for @today_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy'**
+  String get today_label;
+
+  /// No description provided for @select_time_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Seleccionar hora'**
+  String get select_time_title;
+
+  /// No description provided for @add_action.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar'**
+  String get add_action;
+
+  /// No description provided for @date_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha'**
+  String get date_label;
+
+  /// No description provided for @time_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Hora'**
+  String get time_label;
+
+  /// No description provided for @operating_hours_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Horarios y Feriados'**
+  String get operating_hours_title;
+
+  /// No description provided for @operating_hours_subtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Horario semanal y días especiales'**
+  String get operating_hours_subtitle;
+
+  /// No description provided for @operating_hours_header_sub.
+  ///
+  /// In es, this message translates to:
+  /// **'Configura la atención semanal y días especiales'**
+  String get operating_hours_header_sub;
+
+  /// No description provided for @operating_hours_this_branch.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta sede'**
+  String get operating_hours_this_branch;
+
+  /// No description provided for @operating_hours_workshop_global.
+  ///
+  /// In es, this message translates to:
+  /// **'Global taller'**
+  String get operating_hours_workshop_global;
+
+  /// No description provided for @operating_hours_weekly_section.
+  ///
+  /// In es, this message translates to:
+  /// **'HORARIO SEMANAL'**
+  String get operating_hours_weekly_section;
+
+  /// No description provided for @operating_hours_save_btn.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar horario'**
+  String get operating_hours_save_btn;
+
+  /// No description provided for @operating_hours_saving.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardando...'**
+  String get operating_hours_saving;
+
+  /// No description provided for @operating_hours_inherit_btn.
+  ///
+  /// In es, this message translates to:
+  /// **'Heredar'**
+  String get operating_hours_inherit_btn;
+
+  /// No description provided for @operating_hours_saved_success.
+  ///
+  /// In es, this message translates to:
+  /// **'Horarios guardados correctamente'**
+  String get operating_hours_saved_success;
+
+  /// No description provided for @operating_hours_inherited_success.
+  ///
+  /// In es, this message translates to:
+  /// **'Se restauró la herencia del horario global del taller'**
+  String get operating_hours_inherited_success;
+
+  /// No description provided for @operating_hours_open_time_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Hora de apertura'**
+  String get operating_hours_open_time_title;
+
+  /// No description provided for @operating_hours_close_time_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Hora de cierre'**
+  String get operating_hours_close_time_title;
+
+  /// No description provided for @operating_hours_holidays_section.
+  ///
+  /// In es, this message translates to:
+  /// **'FERIADOS Y EXCEPCIONES'**
+  String get operating_hours_holidays_section;
+
+  /// No description provided for @operating_hours_no_exceptions.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin feriados o excepciones registradas.'**
+  String get operating_hours_no_exceptions;
+
+  /// No description provided for @operating_hours_new_exception_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva excepción / feriado'**
+  String get operating_hours_new_exception_title;
+
+  /// No description provided for @operating_hours_special_hours_toggle.
+  ///
+  /// In es, this message translates to:
+  /// **'Atiende en horario especial'**
+  String get operating_hours_special_hours_toggle;
+
+  /// No description provided for @operating_hours_opening_short.
+  ///
+  /// In es, this message translates to:
+  /// **'Apertura'**
+  String get operating_hours_opening_short;
+
+  /// No description provided for @operating_hours_closing_short.
+  ///
+  /// In es, this message translates to:
+  /// **'Cierre'**
+  String get operating_hours_closing_short;
+
+  /// No description provided for @operating_hours_reason_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Motivo (ej. Fiestas Patrias)'**
+  String get operating_hours_reason_label;
+
+  /// No description provided for @operating_hours_load_error.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo cargar los horarios'**
+  String get operating_hours_load_error;
+
+  /// No description provided for @operating_hours_save_error.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al guardar horarios'**
+  String get operating_hours_save_error;
+
+  /// No description provided for @operating_hours_inherit_error.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo restaurar'**
+  String get operating_hours_inherit_error;
+
+  /// No description provided for @operating_hours_exception_error.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo registrar la excepción'**
+  String get operating_hours_exception_error;
+
+  /// No description provided for @weekday_monday.
+  ///
+  /// In es, this message translates to:
+  /// **'Lunes'**
+  String get weekday_monday;
+
+  /// No description provided for @weekday_tuesday.
+  ///
+  /// In es, this message translates to:
+  /// **'Martes'**
+  String get weekday_tuesday;
+
+  /// No description provided for @weekday_wednesday.
+  ///
+  /// In es, this message translates to:
+  /// **'Miércoles'**
+  String get weekday_wednesday;
+
+  /// No description provided for @weekday_thursday.
+  ///
+  /// In es, this message translates to:
+  /// **'Jueves'**
+  String get weekday_thursday;
+
+  /// No description provided for @weekday_friday.
+  ///
+  /// In es, this message translates to:
+  /// **'Viernes'**
+  String get weekday_friday;
+
+  /// No description provided for @weekday_saturday.
+  ///
+  /// In es, this message translates to:
+  /// **'Sábado'**
+  String get weekday_saturday;
+
+  /// No description provided for @weekday_sunday.
+  ///
+  /// In es, this message translates to:
+  /// **'Domingo'**
+  String get weekday_sunday;
+
+  /// No description provided for @customer_assigned_branch_fallback.
+  ///
+  /// In es, this message translates to:
+  /// **'Sede asignada'**
+  String get customer_assigned_branch_fallback;
+
+  /// No description provided for @customer_registered_vehicle_fallback.
+  ///
+  /// In es, this message translates to:
+  /// **'Vehículo registrado'**
+  String get customer_registered_vehicle_fallback;
+
+  /// No description provided for @customer_branch_closed_on_date.
+  ///
+  /// In es, this message translates to:
+  /// **'La sede está cerrada en la fecha elegida.'**
+  String get customer_branch_closed_on_date;
+
+  /// No description provided for @customer_service_hours_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Horario de atención'**
+  String get customer_service_hours_label;
+
+  /// No description provided for @customer_closed_this_day.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrado este día'**
+  String get customer_closed_this_day;
+
+  /// No description provided for @customer_branch_closed_submit_error.
+  ///
+  /// In es, this message translates to:
+  /// **'La sede no atiende en la fecha seleccionada.'**
+  String get customer_branch_closed_submit_error;
+
+  /// No description provided for @customer_time_outside_hours_error.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una hora dentro del horario'**
+  String get customer_time_outside_hours_error;
+
+  /// No description provided for @iot_latest_snapshot_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Último Snapshot OBD-II'**
+  String get iot_latest_snapshot_title;
+
+  /// No description provided for @iot_vehicle_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Vehículo'**
+  String get iot_vehicle_label;
+
+  /// No description provided for @iot_recorded_reading.
+  ///
+  /// In es, this message translates to:
+  /// **'Lectura registrada'**
+  String get iot_recorded_reading;
+
+  /// No description provided for @iot_latest_snapshot_synced.
+  ///
+  /// In es, this message translates to:
+  /// **'Último snapshot sincronizado'**
+  String get iot_latest_snapshot_synced;
+
+  /// No description provided for @iot_pull_to_refresh.
+  ///
+  /// In es, this message translates to:
+  /// **'Desliza para actualizar'**
+  String get iot_pull_to_refresh;
+
+  /// No description provided for @iot_latest_snapshot_readings.
+  ///
+  /// In es, this message translates to:
+  /// **'LECTURAS DEL ÚLTIMO SNAPSHOT'**
+  String get iot_latest_snapshot_readings;
+
+  /// No description provided for @iot_no_snapshots_recorded.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin snapshots registrados'**
+  String get iot_no_snapshots_recorded;
+
+  /// No description provided for @iot_pull_down_for_readings.
+  ///
+  /// In es, this message translates to:
+  /// **'Desliza hacia abajo para consultar nuevas lecturas'**
+  String get iot_pull_down_for_readings;
+
+  /// No description provided for @iot_min_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Mín'**
+  String get iot_min_label;
+
+  /// No description provided for @iot_max_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Máx'**
+  String get iot_max_label;
+
+  /// No description provided for @iot_no_active_telemetry_branch.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay vehículos con telemetría activa en esta sede.'**
+  String get iot_no_active_telemetry_branch;
+
+  /// No description provided for @iot_obd_alert_prefix.
+  ///
+  /// In es, this message translates to:
+  /// **'Alerta OBD-II Código'**
+  String get iot_obd_alert_prefix;
+
+  /// No description provided for @iot_ai_diagnosis_prefix.
+  ///
+  /// In es, this message translates to:
+  /// **'Diagnóstico IA'**
+  String get iot_ai_diagnosis_prefix;
+
+  /// No description provided for @iot_telemetry_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Telemetría IoT & OBD-II'**
+  String get iot_telemetry_title;
+
+  /// No description provided for @iot_dtc_snapshots_subtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Alertas DTC & Snapshots'**
+  String get iot_dtc_snapshots_subtitle;
+
+  /// No description provided for @iot_obd_snapshots_badge.
+  ///
+  /// In es, this message translates to:
+  /// **'Snapshots OBD-II'**
+  String get iot_obd_snapshots_badge;
+
+  /// No description provided for @iot_tab_all.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas'**
+  String get iot_tab_all;
+
+  /// No description provided for @iot_tab_critical.
+  ///
+  /// In es, this message translates to:
+  /// **'Críticas'**
+  String get iot_tab_critical;
+
+  /// No description provided for @iot_tab_moderate.
+  ///
+  /// In es, this message translates to:
+  /// **'Moderadas'**
+  String get iot_tab_moderate;
+
+  /// No description provided for @iot_no_active_dtc_fleet.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin códigos DTC activos en la flota'**
+  String get iot_no_active_dtc_fleet;
+
+  /// No description provided for @iot_all_vehicles_normal.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos los vehículos conectados operan dentro de parámetros'**
+  String get iot_all_vehicles_normal;
+
+  /// No description provided for @iot_diagnosis_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Diagnóstico'**
+  String get iot_diagnosis_title;
+
+  /// No description provided for @iot_system_label.
+  ///
+  /// In es, this message translates to:
+  /// **'Sistema'**
+  String get iot_system_label;
+
+  /// No description provided for @iot_ai_recommendation_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Recomendación Técnica IA ShiftIQ'**
+  String get iot_ai_recommendation_title;
+
+  /// No description provided for @iot_freeze_frame_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Parámetros Freeze Frame en el Momento del Fallo'**
+  String get iot_freeze_frame_title;
+
+  /// No description provided for @dtc_severity_critical.
+  ///
+  /// In es, this message translates to:
+  /// **'Crítica / Inmediata'**
+  String get dtc_severity_critical;
+
+  /// No description provided for @dtc_severity_moderate.
+  ///
+  /// In es, this message translates to:
+  /// **'Moderada / Advertencia'**
+  String get dtc_severity_moderate;
+
+  /// No description provided for @dtc_severity_low.
+  ///
+  /// In es, this message translates to:
+  /// **'Baja / Informativa'**
+  String get dtc_severity_low;
+
+  /// No description provided for @dtc_status_active.
+  ///
+  /// In es, this message translates to:
+  /// **'Activo / No Resuelto'**
+  String get dtc_status_active;
+
+  /// No description provided for @dtc_status_in_inspection.
+  ///
+  /// In es, this message translates to:
+  /// **'En Diagnóstico'**
+  String get dtc_status_in_inspection;
+
+  /// No description provided for @dtc_status_resolved.
+  ///
+  /// In es, this message translates to:
+  /// **'Resuelto / Borrado'**
+  String get dtc_status_resolved;
+
+  /// No description provided for @time_ago_minutes.
+  ///
+  /// In es, this message translates to:
+  /// **'Hace {n} min'**
+  String time_ago_minutes(Object n);
+
+  /// No description provided for @time_ago_hours.
+  ///
+  /// In es, this message translates to:
+  /// **'Hace {n} horas'**
+  String time_ago_hours(Object n);
+
+  /// No description provided for @time_ago_days.
+  ///
+  /// In es, this message translates to:
+  /// **'Hace {n} días'**
+  String time_ago_days(Object n);
 }
 
 class _AppLocalizationsGenDelegate

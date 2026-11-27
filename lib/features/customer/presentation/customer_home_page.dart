@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shiftiq_mobile_app_flutter/core/di/dependency_injection.dart';
 import 'package:shiftiq_mobile_app_flutter/core/localization/app_localizations.dart';
@@ -7,7 +8,9 @@ import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
 import 'package:shiftiq_mobile_app_flutter/core/theme.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_empty_state.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_floating_nav_bar.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_navy_banner_fallback.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_page_header.dart';
+import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_primary_pill_button.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_pull_to_refresh.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_skeleton.dart';
 import 'package:shiftiq_mobile_app_flutter/core/widgets/shiftiq_tactile_card.dart';
@@ -18,6 +21,7 @@ import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/sh
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_profile_avatar_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/widgets/customer_analytics_charts.dart';
+import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/widgets/customer_workshop_and_appointments.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/domain/iot_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/controllers/telemetry_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/iot/presentation/views/live_sensors_monitor_page.dart';
@@ -94,19 +98,21 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
     final headerSubtitle = switch (_selectedTab) {
       1 => loc.translate('customer_vehicles_header_sub'),
-      2 => loc.translate('customer_orders_header_sub'),
-      3 => loc.translate('customer_payments_header_sub'),
+      2 => loc.translate('customer_appointments_header_sub'),
+      3 => loc.translate('customer_orders_header_sub'),
+      4 => loc.translate('customer_payments_header_sub'),
       _ => email.isNotEmpty ? email : null,
     };
 
     final headerTitle = switch (_selectedTab) {
       1 => loc.translate('customer_vehicles_title'),
-      2 => loc.translate('customer_orders_title'),
-      3 => '${loc.translate('quotes')} & ${loc.translate('customer_tab_payments')}',
+      2 => loc.translate('appointments_tab'),
+      3 => loc.translate('customer_orders_title'),
+      4 => '${loc.translate('quotes')} & ${loc.translate('customer_tab_payments')}',
       _ => loc.translate('customer_portal_title'),
     };
 
-    return Scaffold(
+    Widget buildScaffold(BuildContext context) => Scaffold(
       extendBody: true,
       backgroundColor: ShiftIQColors.warmNeutral,
       body: ShiftIQCollapsibleHeaderBody(
@@ -120,14 +126,34 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
             ),
           ],
         ),
-        body: _viewModel == null
-            ? _buildBodyForTab(context, loc, email, null)
-            : ListenableBuilder(
-                listenable: _viewModel!,
-                builder: (context, _) =>
-                    _buildBodyForTab(context, loc, email, _viewModel),
-              ),
+        body: _buildBodyForTab(context, loc, email, _viewModel),
       ),
+      floatingActionButton: (_selectedTab == 1 && _viewModel != null)
+          ? Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: ShiftIQPrimaryPillButton(
+                key: const Key('btn_customer_add_vehicle'),
+                label: loc.translate('add_vehicle'),
+                icon: Icons.add_rounded,
+                onPressed: () => _showAddVehicleSheet(context, _viewModel!),
+              ),
+            )
+          : (_selectedTab == 2 &&
+                  _viewModel != null &&
+                  _viewModel!.branches.isNotEmpty)
+              ? Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: ShiftIQPrimaryPillButton(
+                    key: const Key('btn_customer_schedule_appointment'),
+                    label: loc.translate('customer_schedule_appointment'),
+                    icon: Icons.calendar_today_rounded,
+                    onPressed: () => showCustomerScheduleAppointmentSheet(
+                      context,
+                      _viewModel!,
+                    ),
+                  ),
+                )
+              : null,
       bottomNavigationBar: ShiftIQFloatingNavBar(
         key: const Key('customer_navigation_bar'),
         selectedIndex: _selectedTab,
@@ -152,6 +178,12 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
             label: loc.translate('customer_tab_vehicles'),
           ),
           ShiftIQNavItem(
+            key: const Key('customer_nav_appointments'),
+            icon: Icons.calendar_today_outlined,
+            selectedIcon: Icons.calendar_month_rounded,
+            label: loc.translate('appointments_tab'),
+          ),
+          ShiftIQNavItem(
             key: const Key('customer_nav_orders'),
             icon: Icons.build_circle_outlined,
             selectedIcon: Icons.build_circle_rounded,
@@ -165,6 +197,12 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           ),
         ],
       ),
+    );
+
+    if (_viewModel == null) return buildScaffold(context);
+    return ListenableBuilder(
+      listenable: _viewModel!,
+      builder: (context, _) => buildScaffold(context),
     );
   }
 
@@ -190,9 +228,10 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
         );
       },
       child: switch (_selectedTab) {
-        1 => _buildVehiclesTab(vm),
-        2 => _buildOrdersTab(vm),
-        3 => _buildQuotesAndPaymentsTab(context, vm),
+        1 => _buildVehiclesTab(context, loc, vm),
+        2 => _buildAppointmentsTab(context, loc, vm),
+        3 => _buildOrdersTab(vm),
+        4 => _buildQuotesAndPaymentsTab(context, vm),
         _ => _buildSummaryTab(context, loc, email, vm),
       },
     );
@@ -333,29 +372,25 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     );
   }
 
-  Widget _buildVehiclesTab(CustomerHomeViewModel? vm) {
+  Widget _buildVehiclesTab(
+    BuildContext context,
+    AppLocalizations loc,
+    CustomerHomeViewModel? vm,
+  ) {
     final vehicles = vm?.vehicles ?? const <Vehicle>[];
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 110),
       children: [
-        const Text(
-          'MIS VEHÍCULOS Y TELEMETRÍA OBD-II',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF64748B),
-            letterSpacing: 0.6,
-          ),
-        ),
-        const SizedBox(height: 12),
         if (vm != null && vm.isLoading && vehicles.isEmpty)
           const ShiftIQSkeletonCardList(itemCount: 2)
         else if (vehicles.isEmpty)
-          const _CustomerMessageCard(
-            title: 'Sin vehículos registrados',
-            subtitle:
-                'Cuando registres o vincules un vehículo con el taller verás aquí su estado OBD-II y alertas DTC.',
+          _CustomerMessageCard(
+            title: loc.translate('no_vehicles_title'),
+            subtitle: loc.translate('no_vehicles_subtitle'),
+            actionLabel: vm != null ? loc.translate('add_vehicle') : null,
+            onAction:
+                vm != null ? () => _showAddVehicleSheet(context, vm) : null,
           )
         else
           ...vehicles.map(
@@ -372,21 +407,83 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     );
   }
 
+  Future<void> _showAddVehicleSheet(
+    BuildContext context,
+    CustomerHomeViewModel vm,
+  ) async {
+    final loc = AppLocalizations.of(context);
+    final created = await showModalBottomSheet<Vehicle?>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) => _AddVehicleSheet(vm: vm),
+    );
+
+    if (created != null && context.mounted) {
+      ShiftIQToast.show(
+        context,
+        message: loc.translate('vehicle_registered_success'),
+        type: ShiftIQToastType.success,
+      );
+    }
+  }
+
+  Widget _buildAppointmentsTab(
+    BuildContext context,
+    AppLocalizations loc,
+    CustomerHomeViewModel? vm,
+  ) {
+    final appointments = vm?.summary?.upcomingAppointments ?? const [];
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 110),
+      children: [
+        if (vm != null && vm.isLoading && vm.summary == null)
+          const ShiftIQSkeletonCardList(itemCount: 3)
+        else if (appointments.isEmpty)
+          _CustomerMessageCard(
+            title: loc.translate('appointments_tab'),
+            subtitle: loc.translate('customer_no_upcoming_appointments'),
+          )
+        else ...[
+          Text(
+            loc.translate('customer_upcoming_appointments_section'),
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF64748B),
+              letterSpacing: 0.6,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...appointments.map((apt) {
+            final branch = vm!.branches
+                .where((b) => b.branchId == apt.branchId)
+                .firstOrNull;
+            final vehicle =
+                vm.vehicles.where((v) => v.id == apt.vehicleId).firstOrNull;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: CustomerUpcomingAppointmentCard(
+                appointment: apt,
+                branch: branch,
+                vehicle: vehicle,
+              ),
+            );
+          }),
+        ],
+      ],
+    );
+  }
+
   Widget _buildOrdersTab(CustomerHomeViewModel? vm) {
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 110),
       children: [
-        const Text(
-          'MIS ÓRDENES DE TRABAJO',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF64748B),
-            letterSpacing: 0.6,
-          ),
-        ),
-        const SizedBox(height: 12),
         if (vm != null && vm.isLoading && vm.workOrders.isEmpty)
           const ShiftIQSkeletonCardList(itemCount: 2)
         else if (vm != null && vm.error != null && vm.workOrders.isEmpty)
@@ -423,18 +520,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     final quotes = vm?.quotes ?? const <Quote>[];
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 110),
       children: [
-        const Text(
-          'MIS COTIZACIONES Y PAGOS',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF64748B),
-            letterSpacing: 0.6,
-          ),
-        ),
-        const SizedBox(height: 12),
         if (vm != null && vm.isLoading && quotes.isEmpty)
           const ShiftIQSkeletonCardList(itemCount: 2)
         else if (quotes.isEmpty)
@@ -810,9 +897,9 @@ class _CustomerVehicleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final activeAlerts =
         alerts.where((a) => a.status != DtcStatus.resolved).toList();
+    final hasPhoto = vehicle.photoUrl != null && vehicle.photoUrl!.isNotEmpty;
 
     return Container(
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
@@ -821,68 +908,150 @@ class _CustomerVehicleCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: ShiftIQColors.primaryBlue.withAlpha(18),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.directions_car_filled_rounded,
-                  color: ShiftIQColors.primaryBlue,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      vehicle.displayName,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: ShiftIQColors.graphiteText,
+          ClipRRect(
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(17)),
+            child: SizedBox(
+              height: 116,
+              width: double.infinity,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (hasPhoto)
+                    Image.network(
+                      vehicle.photoUrl!,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, progress) {
+                        if (progress == null) return child;
+                        return const ShiftIQNavyBannerFallback(
+                          watermarkIcon: Icons.directions_car_filled_rounded,
+                        );
+                      },
+                      errorBuilder: (_, _, _) =>
+                          const ShiftIQNavyBannerFallback(
+                        watermarkIcon: Icons.directions_car_filled_rounded,
+                      ),
+                    )
+                  else
+                    const ShiftIQNavyBannerFallback(
+                      watermarkIcon: Icons.directions_car_filled_rounded,
+                    ),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          const Color(0xFF0F172A).withValues(alpha: 0.22),
+                          const Color(0xFF0F172A).withValues(alpha: 0.58),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Placa ${vehicle.plateNumber} · VIN ${vehicle.vin.isNotEmpty ? vehicle.vin : "-"}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF64748B),
+                  ),
+                  Positioned(
+                    top: 10,
+                    left: 12,
+                    right: 12,
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFF0F172A).withValues(alpha: 0.72),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.25),
+                            ),
+                          ),
+                          child: Text(
+                            vehicle.plateNumber,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: 0.4,
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.92),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            activeAlerts.isEmpty
+                                ? 'Sin alertas'
+                                : '${activeAlerts.length} DTC',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: activeAlerts.isEmpty
+                                  ? ShiftIQColors.preventiveGreen
+                                  : ShiftIQColors.severityCrimson,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: ShiftIQColors.primaryBlue.withAlpha(18),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.directions_car_filled_rounded,
+                        color: ShiftIQColors.primaryBlue,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            vehicle.displayName,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              color: ShiftIQColors.graphiteText,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Placa ${vehicle.plateNumber} · VIN ${vehicle.vin.isNotEmpty ? vehicle.vin : "-"}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: (activeAlerts.isEmpty
-                          ? ShiftIQColors.preventiveGreen
-                          : ShiftIQColors.severityCrimson)
-                      .withAlpha(22),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  activeAlerts.isEmpty
-                      ? 'Sin alertas'
-                      : '${activeAlerts.length} DTC',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: activeAlerts.isEmpty
-                        ? ShiftIQColors.preventiveGreen
-                        : ShiftIQColors.severityCrimson,
-                  ),
-                ),
-              ),
-            ],
-          ),
           if (activeAlerts.isNotEmpty) ...[
             const SizedBox(height: 12),
             Wrap(
@@ -902,7 +1071,7 @@ class _CustomerVehicleCard extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    '${alert.code} · ${alert.severity.label}',
+                    '${alert.code} · ${alert.severity.localizedLabel(AppLocalizations.of(context))}',
                     style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w700,
@@ -922,6 +1091,9 @@ class _CustomerVehicleCard extends StatelessWidget {
             icon: Icons.sensors_rounded,
             label: 'Ver sensores OBD-II',
             onPressed: onOpenObd2,
+          ),
+              ],
+            ),
           ),
         ],
       ),
@@ -1375,6 +1547,365 @@ class _CustomerWorkOrderCard extends StatelessWidget {
             ],
           ),
         ),
+    );
+  }
+}
+
+class _AddVehicleSheet extends StatefulWidget {
+  final CustomerHomeViewModel vm;
+
+  const _AddVehicleSheet({required this.vm});
+
+  @override
+  State<_AddVehicleSheet> createState() => _AddVehicleSheetState();
+}
+
+class _AddVehicleSheetState extends State<_AddVehicleSheet> {
+  final _formKey = GlobalKey<FormState>();
+  final _plateCtrl = TextEditingController();
+  final _brandCtrl = TextEditingController();
+  final _modelCtrl = TextEditingController();
+  late final TextEditingController _yearCtrl;
+  final _vinCtrl = TextEditingController();
+  final _picker = ImagePicker();
+  Uint8List? _selectedPhotoBytes;
+  String? _selectedPhotoName;
+
+  Future<void> _pickPhoto(ImageSource source) async {
+    try {
+      final file = await _picker.pickImage(
+        source: source,
+        imageQuality: 80,
+        maxWidth: 1280,
+      );
+      if (file == null || !mounted) return;
+      final bytes = await file.readAsBytes();
+      if (!mounted) return;
+      setState(() {
+        _selectedPhotoBytes = bytes;
+        _selectedPhotoName = file.name.isNotEmpty ? file.name : 'vehicle.jpg';
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ShiftIQToast.show(
+        context,
+        message: 'No se pudo seleccionar la imagen: $e',
+        type: ShiftIQToastType.error,
+      );
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _yearCtrl = TextEditingController(text: '${DateTime.now().year}');
+  }
+
+  @override
+  void dispose() {
+    _plateCtrl.dispose();
+    _brandCtrl.dispose();
+    _modelCtrl.dispose();
+    _yearCtrl.dispose();
+    _vinCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+    final vm = widget.vm;
+
+    return ListenableBuilder(
+      listenable: vm,
+      builder: (context, _) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        loc.translate('add_vehicle_title'),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: ShiftIQColors.graphiteText,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.of(context).pop(null),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: SizedBox(
+                      height: 120,
+                      width: double.infinity,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          if (_selectedPhotoBytes != null)
+                            Image.memory(
+                              _selectedPhotoBytes!,
+                              fit: BoxFit.cover,
+                            )
+                          else
+                            const ShiftIQNavyBannerFallback(
+                              watermarkIcon:
+                                  Icons.directions_car_filled_rounded,
+                            ),
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A)
+                                  .withValues(alpha: 0.35),
+                            ),
+                          ),
+                          Center(
+                            child: Wrap(
+                              spacing: 8,
+                              children: [
+                                OutlinedButton.icon(
+                                  key: const Key('btn_vehicle_photo_gallery'),
+                                  onPressed: vm.isUploadingVehiclePhoto
+                                      ? null
+                                      : () => _pickPhoto(ImageSource.gallery),
+                                  icon: const Icon(
+                                    Icons.photo_library_outlined,
+                                    size: 16,
+                                  ),
+                                  label: Text(
+                                    loc.translate('vehicle_pick_photo_gallery'),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    backgroundColor: const Color(0xFF0F172A)
+                                        .withValues(alpha: 0.55),
+                                    side: BorderSide(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.4),
+                                    ),
+                                  ),
+                                ),
+                                OutlinedButton.icon(
+                                  key: const Key('btn_vehicle_photo_camera'),
+                                  onPressed: vm.isUploadingVehiclePhoto
+                                      ? null
+                                      : () => _pickPhoto(ImageSource.camera),
+                                  icon: const Icon(
+                                    Icons.photo_camera_outlined,
+                                    size: 16,
+                                  ),
+                                  label: Text(
+                                    loc.translate('vehicle_pick_photo_camera'),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    backgroundColor: const Color(0xFF0F172A)
+                                        .withValues(alpha: 0.55),
+                                    side: BorderSide(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.4),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: TextFormField(
+                          key: const Key('field_vehicle_plate'),
+                          controller: _plateCtrl,
+                          textCapitalization: TextCapitalization.characters,
+                          decoration: InputDecoration(
+                            labelText: loc.translate('vehicle_plate_label'),
+                            hintText: 'ABC-123',
+                            prefixIcon: const Icon(Icons.badge_outlined),
+                          ),
+                          validator: (val) => val == null || val.trim().isEmpty
+                              ? loc.translate('plate_required')
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 1,
+                        child: TextFormField(
+                          key: const Key('field_vehicle_year'),
+                          controller: _yearCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: loc.translate('vehicle_year_label'),
+                          ),
+                          validator: (val) {
+                            final y = int.tryParse((val ?? '').trim());
+                            if (y == null ||
+                                y < 1900 ||
+                                y > DateTime.now().year + 1) {
+                              return loc.translate('vehicle_year_error');
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          key: const Key('field_vehicle_brand'),
+                          controller: _brandCtrl,
+                          textCapitalization: TextCapitalization.words,
+                          decoration: InputDecoration(
+                            labelText: loc.translate('vehicle_brand_label'),
+                            hintText: 'Toyota',
+                            prefixIcon:
+                                const Icon(Icons.directions_car_outlined),
+                          ),
+                          validator: (val) => val == null || val.trim().isEmpty
+                              ? loc.translate('vehicle_brand_label')
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextFormField(
+                          key: const Key('field_vehicle_model'),
+                          controller: _modelCtrl,
+                          textCapitalization: TextCapitalization.words,
+                          decoration: InputDecoration(
+                            labelText: loc.translate('vehicle_model_label'),
+                            hintText: 'Corolla',
+                          ),
+                          validator: (val) => val == null || val.trim().isEmpty
+                              ? loc.translate('vehicle_model_label')
+                              : null,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    key: const Key('field_vehicle_vin'),
+                    controller: _vinCtrl,
+                    textCapitalization: TextCapitalization.characters,
+                    maxLength: 17,
+                    decoration: InputDecoration(
+                      labelText: loc.translate('vehicle_vin_label'),
+                      hintText: '9BRBL3HE2P0123456',
+                      prefixIcon: const Icon(Icons.qr_code_2_rounded),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.trim().length != 17) {
+                        return loc.translate('vehicle_vin_error');
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      key: const Key('btn_submit_add_vehicle'),
+                      onPressed: (vm.isRegisteringVehicle ||
+                              vm.isUploadingVehiclePhoto)
+                          ? null
+                          : () async {
+                              if (!_formKey.currentState!.validate()) return;
+                              String? uploadedPhotoUrl;
+                              if (_selectedPhotoBytes != null &&
+                                  _selectedPhotoName != null) {
+                                uploadedPhotoUrl = await vm.uploadVehiclePhoto(
+                                  fileBytes: _selectedPhotoBytes!,
+                                  fileName: _selectedPhotoName!,
+                                );
+                                if (!context.mounted) return;
+                                if (uploadedPhotoUrl == null) {
+                                  ShiftIQToast.show(
+                                    context,
+                                    message: vm.error ??
+                                        'No se pudo subir la foto del vehículo',
+                                    type: ShiftIQToastType.error,
+                                  );
+                                  return;
+                                }
+                              }
+                              final vehicle = await vm.addVehicle(
+                                plateNumber: _plateCtrl.text,
+                                brand: _brandCtrl.text,
+                                model: _modelCtrl.text,
+                                year: int.parse(_yearCtrl.text.trim()),
+                                vin: _vinCtrl.text,
+                                photoUrl: uploadedPhotoUrl,
+                              );
+                              if (!context.mounted) return;
+                              if (vehicle != null) {
+                                Navigator.of(context).pop(vehicle);
+                              } else if (vm.error != null) {
+                                ShiftIQToast.show(
+                                  context,
+                                  message: vm.error!,
+                                  type: ShiftIQToastType.error,
+                                );
+                              }
+                            },
+                      icon: (vm.isRegisteringVehicle ||
+                              vm.isUploadingVehiclePhoto)
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.check_circle_outline),
+                      label: Text(
+                        loc.translate('vehicle_save_btn'),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: ShiftIQColors.primaryBlue,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

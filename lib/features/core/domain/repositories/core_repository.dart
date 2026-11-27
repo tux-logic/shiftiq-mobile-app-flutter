@@ -1,4 +1,6 @@
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/models/aggregates/branch.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/domain/models/customer_branch_catalog_item.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/domain/models/operating_hours.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/models/aggregates/specialty.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/models/aggregates/subscription.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/models/aggregates/workshop.dart';
@@ -54,6 +56,8 @@ abstract class CoreRepository {
   Future<Branch> getBranchById(String branchId);
 
   Future<List<Branch>> getBranchesByWorkshop(String workshopId);
+
+  Future<List<CustomerBranchCatalogItem>> getBranchCatalog();
 
   Future<void> setActiveBranch(Branch branch);
 
@@ -160,6 +164,50 @@ abstract class CoreRepository {
   });
 
   Future<void> deleteCustomerProfile(String customerId);
+
+  // --- Operating Hours & Exceptions ---
+  Future<List<OperatingHoursDay>> getBranchOperatingHours(String branchId);
+  Future<List<OperatingHoursDay>> updateBranchOperatingHours(
+    String branchId,
+    List<OperatingHoursDay> days,
+  );
+  Future<void> deleteBranchOperatingHours(String branchId);
+  Future<List<OperatingHoursException>> getBranchOperatingHoursExceptions(
+    String branchId,
+  );
+  Future<OperatingHoursException> createBranchOperatingHoursException({
+    required String branchId,
+    required String date,
+    required bool open,
+    String? openTime,
+    String? closeTime,
+    String? reason,
+  });
+  Future<void> deleteBranchOperatingHoursException(
+    String branchId,
+    String exceptionId,
+  );
+
+  Future<List<OperatingHoursDay>> getWorkshopOperatingHours(String workshopId);
+  Future<List<OperatingHoursDay>> updateWorkshopOperatingHours(
+    String workshopId,
+    List<OperatingHoursDay> days,
+  );
+  Future<List<OperatingHoursException>> getWorkshopOperatingHoursExceptions(
+    String workshopId,
+  );
+  Future<OperatingHoursException> createWorkshopOperatingHoursException({
+    required String workshopId,
+    required String date,
+    required bool open,
+    String? openTime,
+    String? closeTime,
+    String? reason,
+  });
+  Future<void> deleteWorkshopOperatingHoursException(
+    String workshopId,
+    String exceptionId,
+  );
 }
 
 /// Backward compatibility alias.

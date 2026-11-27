@@ -72,6 +72,17 @@ class BranchApi {
     return response as Map<String, dynamic>;
   }
 
+  /// GET /api/v1/branches/catalog - List active branches scoped to customer workshops.
+  Future<List<Map<String, dynamic>>> getBranchCatalog() async {
+    final response = await apiClient.get(
+      ApiConstants.branchesCatalog,
+    );
+    if (response is List) {
+      return response.cast<Map<String, dynamic>>();
+    }
+    return [];
+  }
+
   /// GET /api/v1/branches/{branchId} - Get branch details by ID.
   Future<Map<String, dynamic>> getBranchById(String branchId) async {
     final response = await apiClient.get(
@@ -119,6 +130,141 @@ class BranchApi {
   Future<void> cancelSubscription(String branchId) async {
     await apiClient.delete(
       ApiConstants.branchSubscription(branchId),
+    );
+  }
+
+  /// GET /api/v1/branches/{branchId}/operating-hours
+  Future<List<Map<String, dynamic>>> getBranchOperatingHours(
+    String branchId,
+  ) async {
+    final response =
+        await apiClient.get(ApiConstants.branchOperatingHours(branchId));
+    if (response is List) return response.cast<Map<String, dynamic>>();
+    return [];
+  }
+
+  /// PUT /api/v1/branches/{branchId}/operating-hours
+  Future<List<Map<String, dynamic>>> updateBranchOperatingHours(
+    String branchId,
+    List<Map<String, dynamic>> days,
+  ) async {
+    final response = await apiClient.put(
+      ApiConstants.branchOperatingHours(branchId),
+      body: {'days': days},
+    );
+    if (response is List) return response.cast<Map<String, dynamic>>();
+    return [];
+  }
+
+  /// DELETE /api/v1/branches/{branchId}/operating-hours
+  Future<void> deleteBranchOperatingHours(String branchId) async {
+    await apiClient.delete(ApiConstants.branchOperatingHours(branchId));
+  }
+
+  /// GET /api/v1/branches/{branchId}/operating-hours/exceptions
+  Future<List<Map<String, dynamic>>> getBranchOperatingHoursExceptions(
+    String branchId,
+  ) async {
+    final response = await apiClient
+        .get(ApiConstants.branchOperatingHoursExceptions(branchId));
+    if (response is List) return response.cast<Map<String, dynamic>>();
+    return [];
+  }
+
+  /// POST /api/v1/branches/{branchId}/operating-hours/exceptions
+  Future<Map<String, dynamic>> createBranchOperatingHoursException({
+    required String branchId,
+    required String date,
+    required bool open,
+    String? openTime,
+    String? closeTime,
+    String? reason,
+  }) async {
+    final response = await apiClient.post(
+      ApiConstants.branchOperatingHoursExceptions(branchId),
+      body: {
+        'date': date,
+        'open': open,
+        'openTime': open ? openTime : null,
+        'closeTime': open ? closeTime : null,
+        if (reason != null && reason.trim().isNotEmpty) 'reason': reason.trim(),
+      },
+    );
+    return response as Map<String, dynamic>;
+  }
+
+  /// DELETE /api/v1/branches/{branchId}/operating-hours/exceptions/{exceptionId}
+  Future<void> deleteBranchOperatingHoursException(
+    String branchId,
+    String exceptionId,
+  ) async {
+    await apiClient.delete(
+      ApiConstants.branchOperatingHoursExceptionById(branchId, exceptionId),
+    );
+  }
+
+  /// GET /api/v1/workshops/{workshopId}/operating-hours
+  Future<List<Map<String, dynamic>>> getWorkshopOperatingHours(
+    String workshopId,
+  ) async {
+    final response =
+        await apiClient.get(ApiConstants.workshopOperatingHours(workshopId));
+    if (response is List) return response.cast<Map<String, dynamic>>();
+    return [];
+  }
+
+  /// PUT /api/v1/workshops/{workshopId}/operating-hours
+  Future<List<Map<String, dynamic>>> updateWorkshopOperatingHours(
+    String workshopId,
+    List<Map<String, dynamic>> days,
+  ) async {
+    final response = await apiClient.put(
+      ApiConstants.workshopOperatingHours(workshopId),
+      body: {'days': days},
+    );
+    if (response is List) return response.cast<Map<String, dynamic>>();
+    return [];
+  }
+
+  /// GET /api/v1/workshops/{workshopId}/operating-hours/exceptions
+  Future<List<Map<String, dynamic>>> getWorkshopOperatingHoursExceptions(
+    String workshopId,
+  ) async {
+    final response = await apiClient
+        .get(ApiConstants.workshopOperatingHoursExceptions(workshopId));
+    if (response is List) return response.cast<Map<String, dynamic>>();
+    return [];
+  }
+
+  /// POST /api/v1/workshops/{workshopId}/operating-hours/exceptions
+  Future<Map<String, dynamic>> createWorkshopOperatingHoursException({
+    required String workshopId,
+    required String date,
+    required bool open,
+    String? openTime,
+    String? closeTime,
+    String? reason,
+  }) async {
+    final response = await apiClient.post(
+      ApiConstants.workshopOperatingHoursExceptions(workshopId),
+      body: {
+        'date': date,
+        'open': open,
+        'openTime': open ? openTime : null,
+        'closeTime': open ? closeTime : null,
+        if (reason != null && reason.trim().isNotEmpty) 'reason': reason.trim(),
+      },
+    );
+    return response as Map<String, dynamic>;
+  }
+
+  /// DELETE /api/v1/workshops/{workshopId}/operating-hours/exceptions/{exceptionId}
+  Future<void> deleteWorkshopOperatingHoursException(
+    String workshopId,
+    String exceptionId,
+  ) async {
+    await apiClient.delete(
+      ApiConstants.workshopOperatingHoursExceptionById(workshopId, exceptionId),
     );
   }
 }

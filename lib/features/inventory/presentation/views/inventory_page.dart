@@ -31,10 +31,10 @@ class InventoryPage extends StatefulWidget {
   });
 
   @override
-  State<InventoryPage> createState() => _InventoryPageState();
+  State<InventoryPage> createState() => InventoryPageState();
 }
 
-class _InventoryPageState extends State<InventoryPage>
+class InventoryPageState extends State<InventoryPage>
     with SingleTickerProviderStateMixin {
   static const List<StockStatus?> _tabStatuses = [
     null,
@@ -88,6 +88,8 @@ class _InventoryPageState extends State<InventoryPage>
     _searchController.dispose();
     super.dispose();
   }
+
+  void openCreateModal() => _openCreateProduct();
 
   void _openCreateProduct() {
     showModalBottomSheet(
@@ -398,22 +400,18 @@ class _InventoryPageState extends State<InventoryPage>
         },
       ),
       ),
-      floatingActionButton: ListenableBuilder(
-        listenable: _viewModel,
-        builder: (context, _) {
-          if (_viewModel.products.isEmpty) {
-            return const SizedBox.shrink();
-          }
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 84),
-            child: ShiftIQPrimaryPillButton(
-              label: loc.translate('new_product'),
-              icon: Icons.add_rounded,
-              onPressed: _openCreateProduct,
-            ),
-          );
-        },
-      ),
+      floatingActionButton:
+          (!ShiftIQActiveTabScope.isManagedByOuterScaffold(context) &&
+                  _viewModel.products.isNotEmpty)
+              ? Padding(
+                  padding: const EdgeInsets.only(bottom: 84),
+                  child: ShiftIQPrimaryPillButton(
+                    label: loc.translate('new_product'),
+                    icon: Icons.add_rounded,
+                    onPressed: _openCreateProduct,
+                  ),
+                )
+              : null,
     );
   }
 

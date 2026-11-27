@@ -61,3 +61,29 @@ class ShiftIQPrimaryPillButton extends StatelessWidget {
     );
   }
 }
+
+/// Inherited scope broadcasting the active tab index of [MainPage] so child
+/// pages inside an [IndexedStack] can animate their floating CTAs on tab entry.
+class ShiftIQActiveTabScope extends InheritedWidget {
+  final int activeIndex;
+
+  const ShiftIQActiveTabScope({
+    super.key,
+    required this.activeIndex,
+    required super.child,
+  });
+
+  static bool isManagedByOuterScaffold(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<ShiftIQActiveTabScope>() !=
+      null;
+
+  static bool isTabActive(BuildContext context, int tabIndex) {
+    final scope =
+        context.dependOnInheritedWidgetOfExactType<ShiftIQActiveTabScope>();
+    return scope == null || scope.activeIndex == tabIndex;
+  }
+
+  @override
+  bool updateShouldNotify(ShiftIQActiveTabScope oldWidget) =>
+      activeIndex != oldWidget.activeIndex;
+}
