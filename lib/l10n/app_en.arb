@@ -372,5 +372,6 @@
   "customer_appointment_future_required": "Please select a future date and time",
   "customer_add_vehicle_first": "Register a vehicle in the Vehicles tab first to book an appointment.",
   "vehicle_pick_photo_gallery": "Gallery",
-  "vehicle_pick_photo_camera": "Camera"
+  "vehicle_pick_photo_camera": "Camera",
+  "customer_appointments_header_sub": "Book and track your upcoming visits"
 }

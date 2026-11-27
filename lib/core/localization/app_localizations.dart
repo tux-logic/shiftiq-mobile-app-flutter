@@ -439,6 +439,7 @@ class AppLocalizations {
       'customer_add_vehicle_first': 'Registra primero un vehículo en la pestaña Vehículos para agendar una cita.',
       'vehicle_pick_photo_gallery': 'Galería',
       'vehicle_pick_photo_camera': 'Cámara',
+      'customer_appointments_header_sub': 'Agenda y consulta tus próximas visitas',
     },
     'en': {
       // General
@@ -839,6 +840,7 @@ class AppLocalizations {
       'customer_add_vehicle_first': 'Register a vehicle in the Vehicles tab first to book an appointment.',
       'vehicle_pick_photo_gallery': 'Gallery',
       'vehicle_pick_photo_camera': 'Camera',
+      'customer_appointments_header_sub': 'Book and track your upcoming visits',
     },
   };
 

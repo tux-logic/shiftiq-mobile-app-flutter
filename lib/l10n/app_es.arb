@@ -372,5 +372,6 @@
   "customer_appointment_future_required": "Elige una fecha y hora futura",
   "customer_add_vehicle_first": "Registra primero un vehículo en la pestaña Vehículos para agendar una cita.",
   "vehicle_pick_photo_gallery": "Galería",
-  "vehicle_pick_photo_camera": "Cámara"
+  "vehicle_pick_photo_camera": "Cámara",
+  "customer_appointments_header_sub": "Agenda y consulta tus próximas visitas"
 }

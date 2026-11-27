@@ -17,6 +17,8 @@ import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/b
 import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/profile_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/workshop_api.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/repositories/core_repository_impl.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_page.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_page.dart';
 import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/customer_home_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/fleet/application/usecases/create_appointment.dart';
@@ -326,9 +328,16 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('MI TALLER ASOCIADO'), findsOneWidget);
-      expect(find.text('AT Motors Miraflores'), findsOneWidget);
-      expect(find.text('3/4 bahías libres hoy'), findsOneWidget);
+      // Summary tab stays clean without the workshop card or appointment FAB
+      expect(find.text('MI TALLER ASOCIADO'), findsNothing);
+      expect(
+        find.byKey(const Key('btn_customer_schedule_appointment')),
+        findsNothing,
+      );
+
+      // Navigate to the dedicated Citas tab (index 2)
+      await tester.tap(find.byKey(const Key('customer_nav_appointments')));
+      await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(const Key('btn_customer_schedule_appointment')));
       await tester.pumpAndSettle();
@@ -345,6 +354,100 @@ void main() {
       expect(vm.summary?.upcomingAppointments.length, 1);
       expect(find.text('PRÓXIMAS CITAS'), findsOneWidget);
       expect(find.text('PENDING'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'ProfilePage displays associated workshop card for customer accounts',
+    (tester) async {
+      final session = SessionStorage();
+      await session.saveSession(
+        accessToken: 'cust-token',
+        refreshToken: 'cust-refresh',
+        userId: 'user-1',
+        username: 'maria@test.com',
+        roles: ['ROLE_CUSTOMER'],
+      );
+      final mockClient = MockClient((request) async {
+        if (request.method == 'GET' && request.url.path == '/api/v1/profiles/me') {
+          return http.Response(
+            jsonEncode({
+              'userId': 'user-1',
+              'roles': ['ROLE_CUSTOMER'],
+              'customer': {
+                'customerId': 'cust-1',
+                'firstName': 'María',
+                'lastName': 'Fernández',
+                'documentType': 'DNI',
+                'documentNumber': '48765432',
+                'phone': '+51922334455',
+              },
+            }),
+            200,
+            headers: {'content-type': 'application/json; charset=utf-8'},
+          );
+        }
+        if (request.method == 'GET' &&
+            request.url.path == '/api/v1/branches/catalog') {
+          return http.Response(
+            jsonEncode([
+              {
+                'branchId': 'br-1',
+                'workshopId': 'ws-1',
+                'workshopBrandName': 'AT Motors Miraflores',
+                'workshopBusinessName': 'AT MOTORS EIRL',
+                'branchCode': 'MIR-01',
+                'branchName': 'Sede Miraflores - Santa Cruz',
+                'address': 'Jr. Toribio Pacheco 550, Miraflores',
+                'phone': '+5114451234',
+                'averageRating': 4.8,
+                'reviewCount': 12,
+                'activeBaysCount': 4,
+                'freeBaysToday': 3,
+              },
+            ]),
+            200,
+            headers: {'content-type': 'application/json; charset=utf-8'},
+          );
+        }
+        return http.Response('[]', 200);
+      });
+
+      final apiClient = ApiClient(sessionStorage: session, client: mockClient);
+      final profileApi = ProfileApi(apiClient: apiClient);
+      final coreRepo = CoreRepositoryImpl(
+        workshopApi: WorkshopApi(apiClient: apiClient),
+        branchApi: BranchApi(apiClient: apiClient),
+        profileApi: profileApi,
+        sessionStorage: session,
+        eventBus: StreamDomainEventBus(),
+      );
+      final profileVm = ProfileViewModel(
+        profileApi: profileApi,
+        employeeRegistrationApi: EmployeeRegistrationApi(apiClient: apiClient),
+        sessionStorage: session,
+        getCustomerBranchCatalog:
+            GetCustomerBranchCatalogUseCase(repository: coreRepo),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('es'),
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('es'), Locale('en')],
+          home: ProfilePage(viewModel: profileVm),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('MI TALLER ASOCIADO'), findsOneWidget);
+      expect(find.text('AT Motors Miraflores'), findsOneWidget);
+      expect(find.text('3/4 bahías libres hoy'), findsOneWidget);
     },
   );
 }

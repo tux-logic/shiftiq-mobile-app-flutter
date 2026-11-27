@@ -2335,6 +2335,12 @@ abstract class AppLocalizationsGen {
   /// In es, this message translates to:
   /// **'Cámara'**
   String get vehicle_pick_photo_camera;
+
+  /// No description provided for @customer_appointments_header_sub.
+  ///
+  /// In es, this message translates to:
+  /// **'Agenda y consulta tus próximas visitas'**
+  String get customer_appointments_header_sub;
 }
 
 class _AppLocalizationsGenDelegate

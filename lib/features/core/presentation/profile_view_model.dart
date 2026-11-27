@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shiftiq_mobile_app_flutter/core/auth/mobile_role_scope.dart';
 import 'package:shiftiq_mobile_app_flutter/core/storage/session_storage.dart';
+import 'package:shiftiq_mobile_app_flutter/features/core/application/usecases/get_customer_branch_catalog.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/domain/core_domain.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/core_dto.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/infrastructure/remote/profile_api.dart';
@@ -15,12 +16,14 @@ class ProfileViewModel extends ChangeNotifier {
   final EmployeeRegistrationApi employeeRegistrationApi;
   final SessionStorage sessionStorage;
   final ManageMediaUploads? manageMediaUploads;
+  final GetCustomerBranchCatalogUseCase? getCustomerBranchCatalog;
 
   ProfileViewModel({
     required this.profileApi,
     required this.employeeRegistrationApi,
     required this.sessionStorage,
     this.manageMediaUploads,
+    this.getCustomerBranchCatalog,
   });
 
   bool _isLoading = false;
@@ -57,6 +60,11 @@ class ProfileViewModel extends ChangeNotifier {
 
   double _salary = 0.0;
   double get salary => _salary;
+
+  List<CustomerBranchCatalogItem> _customerBranches = const [];
+  List<CustomerBranchCatalogItem> get customerBranches => _customerBranches;
+
+  bool get isCustomer => !isOwnerAdmin && !isEmployee;
 
   bool get isOwner {
     final roles = _profileContext?.roles ?? sessionStorage.roles;
@@ -172,6 +180,14 @@ class ProfileViewModel extends ChangeNotifier {
           }
         } catch (_) {
           // Keep default '-' if registration query fails
+        }
+      }
+      // 3. Fetch associated workshop branches for customer accounts
+      if (isCustomer && getCustomerBranchCatalog != null) {
+        try {
+          _customerBranches = await getCustomerBranchCatalog!.execute();
+        } catch (_) {
+          // Keep empty list if catalog call fails
         }
       }
     } catch (e) {

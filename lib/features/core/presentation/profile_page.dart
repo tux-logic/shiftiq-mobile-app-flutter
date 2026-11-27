@@ -18,6 +18,7 @@ import 'package:shiftiq_mobile_app_flutter/features/core/presentation/branch_sel
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/profile_view_model.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_liquid_button.dart';
 import 'package:shiftiq_mobile_app_flutter/features/core/presentation/widgets/shiftiq_logout_sheet.dart';
+import 'package:shiftiq_mobile_app_flutter/features/customer/presentation/widgets/customer_workshop_and_appointments.dart';
 import 'package:shiftiq_mobile_app_flutter/features/operations/presentation/services_catalog_page.dart';
 
 /// Redesigned user profile screen displaying live backend identity and branch context.
@@ -533,6 +534,32 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                               ],
                             ],
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // Associated Workshop Card (Customer only)
+                      if (vm.isCustomer) ...[
+                        _ProfileSectionCard(
+                          icon: Icons.store_mall_directory_outlined,
+                          title: loc.translate('customer_my_workshop_section'),
+                          children: [
+                            if (vm.customerBranches.isEmpty)
+                              Text(
+                                loc.translate('customer_no_workshop_subtitle'),
+                                style: const TextStyle(
+                                  fontSize: 12.5,
+                                  color: Color(0xFF64748B),
+                                ),
+                              )
+                            else
+                              ...vm.customerBranches.map(
+                                (branch) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: CustomerWorkshopCard(branch: branch),
+                                ),
+                              ),
                           ],
                         ),
                         const SizedBox(height: 14),

@@ -294,6 +294,7 @@ void setupDependencies() {
       employeeRegistrationApi: getIt<EmployeeRegistrationApi>(),
       sessionStorage: getIt<SessionStorage>(),
       manageMediaUploads: getIt<ManageMediaUploads>(),
+      getCustomerBranchCatalog: getIt<GetCustomerBranchCatalogUseCase>(),
     ),
   );
 

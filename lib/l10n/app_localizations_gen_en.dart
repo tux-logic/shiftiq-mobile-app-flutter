@@ -1154,4 +1154,8 @@ class AppLocalizationsGenEn extends AppLocalizationsGen {
 
   @override
   String get vehicle_pick_photo_camera => 'Camera';
+
+  @override
+  String get customer_appointments_header_sub =>
+      'Book and track your upcoming visits';
 }
